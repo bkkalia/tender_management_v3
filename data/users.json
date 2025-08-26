@@ -1,0 +1,12 @@
+{
+  "0745b5de-a165-469d-9fc2-9ef4b3762309": {
+    "id": "0745b5de-a165-469d-9fc2-9ef4b3762309",
+    "username": "default",
+    "display_name": "Default User",
+    "email": "",
+    "is_active": true,
+    "role": "admin",
+    "created_at": "2025-06-05T20:16:04.133450",
+    "updated_at": "2025-06-05T20:16:04.133481"
+  }
+}

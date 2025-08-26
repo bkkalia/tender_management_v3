@@ -1,0 +1,4 @@
+2025-06-08 15:19:51 - root - INFO - Logging to file: H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\logs\app_20250608_151951.log
+2025-06-08 15:19:51 - root - INFO - Application starting...
+2025-06-08 15:19:51 - core.config_manager - INFO - Configuration loaded from H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\config\config.json
+2025-06-08 15:19:51 - ui.main_window - INFO - Global styles configured

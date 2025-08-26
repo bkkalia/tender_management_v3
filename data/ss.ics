@@ -1,0 +1,70 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Tender Management System//Calendar Export//EN
+BEGIN:VEVENT
+SUMMARY:Department of Health and Family Welfare
+DTSTART:20250609T120000Z
+DTEND:20250609T130000Z
+UID:840c92f2-6869-4910-bb4c-76af00329643
+DESCRIPTION:Department: Department of Health and Family Welfare\n\nupcomin
+ g
+STATUS:pending
+END:VEVENT
+BEGIN:VEVENT
+SUMMARY:Department of Health and Family Welfare
+DTSTART:20250526T120000Z
+DTEND:20250526T130000Z
+UID:d431ae4e-4c02-468b-96a0-187c9b9ef151
+DESCRIPTION:Department: Department of Health and Family Welfare\n\ntest
+STATUS:pending
+END:VEVENT
+BEGIN:VEVENT
+SUMMARY:Chief Project Director IDP Solan
+DTSTART:20250531T120000Z
+DTEND:20250531T130000Z
+UID:61e0347c-232e-4661-9747-058c8bae5fbc
+DESCRIPTION:Department: Chief Project Director IDP Solan\n\nTender ID: [N-
+ 1/Earthen Dam/25-26] [N-1/Earthen Dam/25-26][2025_CPD1_105811_1]
+STATUS:pending
+END:VEVENT
+BEGIN:VEVENT
+SUMMARY:Department of MPP and Power Govt of Himachal Pradesh
+DTSTART:20250610T120000Z
+DTEND:20250610T130000Z
+UID:6c2ed090-b5d8-4d6a-b8de-99424656da5f
+DESCRIPTION:Department: Department of MPP and Power Govt of Himachal Prade
+ sh\n\nTender ID: [Supply Installation Configuration Testing and Commission
+ ing of Intrusion Prevention System IPS\, Web Application Firewall WAF\, an
+ d AAA device to enhance cyber security of IT system installed at HPSLDC fr
+ om various cyber threats Through e-Reverse Aucti] [03/2025-26][2025_MPP0_1
+ 05709_1]\nTender ID: [Supply Installation Configuration Testing and Commis
+ sioning of Intrusion Prevention System IPS\, Web Application Firewall WAF\
+ , and AAA device to enhance cyber security of IT system installed at HPSLD
+ C from various cyber threats Through e-Reverse Aucti] [03/2025-26][2025_MP
+ P0_105709_1]
+STATUS:pending
+END:VEVENT
+BEGIN:VEVENT
+SUMMARY:Directorate Animal Husbandry
+DTSTART:20250613T120000Z
+DTEND:20250613T130000Z
+UID:f3ffc6a9-8e60-4c5d-b5a3-9d5a3d68bb58
+DESCRIPTION:Department: Directorate Animal Husbandry\n\nTender ID: [Establ
+ ishment of Centre of Excellence Dairy Farm cum Training Centre\,at Mohal B
+ asal\, up Mohal Thakurdwara\, Tehsil\, District Una\, Himachal Pradesh\, I
+ ndia\, PIN 174303] [AHY-H-(II)F-9-102/14-NPBB DD][2025_DAH0_105066_1]\nTen
+ der ID: [Establishment of Centre of Excellence Dairy Farm cum Training Cen
+ tre\,at Mohal Basal\, up Mohal Thakurdwara\, Tehsil\, District Una\, Himac
+ hal Pradesh\, India\, PIN 174303] [AHY-H-(II)F-9-102/14-NPBB DD][2025_DAH0
+ _105066_1]
+STATUS:pending
+END:VEVENT
+BEGIN:VEVENT
+SUMMARY:Chief Project Director IDP Solan
+DTSTART:20250617T120000Z
+DTEND:20250617T130000Z
+UID:d84c708c-3e64-4151-894f-eed137560a7c
+DESCRIPTION:Department: Chief Project Director IDP Solan\n\ntest note
+STATUS:in progress
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,78 @@
+2025-06-06 22:42:36 - root - INFO - Logging to file: H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\logs\app_20250606_224236.log
+2025-06-06 22:42:36 - root - INFO - Application starting...
+2025-06-06 22:42:36 - core.config_manager - INFO - Configuration loaded from H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\config\config.json
+2025-06-06 22:42:36 - ui.main_window - INFO - Global styles configured
+2025-06-06 22:42:37 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-06-06 22:42:37 - ui.calendar_tab.CalendarTab - INFO - Loaded 9 calendar events from H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\data\calendar_events.json
+2025-06-06 22:42:37 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-06-06 22:42:37 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-06-06 22:42:37 - root - INFO - LogsTab initialized and custom log handler added.
+2025-06-06 22:42:37 - core.config_manager - INFO - Configuration saved to H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\config\config.json
+2025-06-06 22:42:37 - core.data_processor.TenderDataProcessor - INFO - Loading data from: ./data/merged_data/hptenders_gov_in_consolidated_master.xlsx
+2025-06-06 22:42:38 - core.data_processor.TenderDataProcessor - INFO - Converted 'Closing Date' to datetime format (closing date)
+2025-06-06 22:42:38 - core.data_processor.TenderDataProcessor - INFO - Identified closing date columns: ['Closing Date']
+2025-06-06 22:42:38 - core.data_processor.TenderDataProcessor - INFO - Successfully loaded 2093 records from 1 files.
+2025-06-06 22:42:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 2093 rows.
+2025-06-06 22:42:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Restored previous session data from 1 files
+2025-06-06 22:42:39 - ui.main_window - INFO - Main application initialized
+2025-06-06 22:42:39 - root - INFO - Main window initialized
+2025-06-06 22:42:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: next_30_days
+2025-06-06 22:42:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 886 rows.
+2025-06-06 22:42:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'next_30_days'}}
+2025-06-06 22:42:47 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: next_7_days
+2025-06-06 22:42:47 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 660 rows.
+2025-06-06 22:42:47 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'next_7_days'}}
+2025-06-06 22:42:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: next_3_days
+2025-06-06 22:42:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 197 rows.
+2025-06-06 22:42:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'next_3_days'}}
+2025-06-06 22:42:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: today
+2025-06-06 22:42:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 149 rows.
+2025-06-06 22:42:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'today'}}
+2025-06-06 22:42:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: next_30_days
+2025-06-06 22:42:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 886 rows.
+2025-06-06 22:42:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'next_30_days'}}
+2025-06-06 22:42:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 323 rows.
+2025-06-06 22:42:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 's', 'DepartmentOperator': 'OR', 'DateFilter': {'type': 'next_30_days'}}
+2025-06-06 22:42:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 11 rows.
+2025-06-06 22:42:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'su', 'DepartmentOperator': 'OR', 'DateFilter': {'type': 'next_30_days'}}
+2025-06-06 22:42:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 323 rows.
+2025-06-06 22:42:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 's', 'DepartmentOperator': 'OR', 'DateFilter': {'type': 'next_30_days'}}
+2025-06-06 22:43:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 7 rows.
+2025-06-06 22:43:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'si', 'DepartmentOperator': 'OR', 'DateFilter': {'type': 'next_30_days'}}
+2025-06-06 22:43:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 1 rows.
+2025-06-06 22:43:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'sid', 'DepartmentOperator': 'OR', 'DateFilter': {'type': 'next_30_days'}}
+2025-06-06 22:43:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'sidc', 'DepartmentOperator': 'OR', 'DateFilter': {'type': 'next_30_days'}}
+2025-06-06 22:43:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 2093 rows.
+2025-06-06 22:43:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True}
+2025-06-06 22:43:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - All filters have been reset
+2025-06-06 22:43:16 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 684 rows.
+2025-06-06 22:43:16 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 's', 'DepartmentOperator': 'OR'}
+2025-06-06 22:43:16 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 34 rows.
+2025-06-06 22:43:16 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'si', 'DepartmentOperator': 'OR'}
+2025-06-06 22:43:17 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 10 rows.
+2025-06-06 22:43:17 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'sid', 'DepartmentOperator': 'OR'}
+2025-06-06 22:43:17 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 9 rows.
+2025-06-06 22:43:17 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'sidc', 'DepartmentOperator': 'OR'}
+2025-06-06 22:43:28 - ui.calendar_tab.CalendarTab - INFO - Saved 10 calendar events to H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\data\calendar_events.json
+2025-06-06 22:43:28 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/4/25
+2025-06-06 22:43:33 - ui.calendar_tab.CalendarTab - INFO - Added new event from external data: [Construction of main road from RD 0 to 2300Mtr. leading to Ind. Area Mandyarpur (Kirpalpur), Teh. Nalagarh Distt. Solan (HP).] [Job No. 8][2025_SIDC_105490_1] on 2025-06-04
+2025-06-06 22:43:33 - ui.search_dashboard_tab.SearchDashboardTab - WARNING - Failed to add item to calendar
+2025-06-06 22:43:37 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/4/25
+2025-06-06 22:43:39 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/4/25
+2025-06-06 22:43:40 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/4/25
+2025-06-06 22:43:43 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/6/25
+2025-06-06 22:43:45 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/5/25
+2025-06-06 22:43:46 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/4/25
+2025-06-06 22:43:49 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/10/25
+2025-06-06 22:43:50 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/9/25
+2025-06-06 22:43:52 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/24/25
+2025-06-06 22:43:53 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/17/25
+2025-06-06 22:44:20 - ui.calendar_tab.CalendarTab - INFO - Saved 11 calendar events to H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\data\calendar_events.json
+2025-06-06 22:44:20 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/4/25
+2025-06-06 22:44:23 - ui.calendar_tab.CalendarTab - INFO - Added new event from external data: [Construction of main road from RD 0 to 2300Mtr. leading to Ind. Area Mandyarpur (Kirpalpur), Teh. Nalagarh Distt. Solan (HP).] [Job No. 8][2025_SIDC_105490_1] on 2025-06-04
+2025-06-06 22:44:23 - ui.search_dashboard_tab.SearchDashboardTab - WARNING - Failed to add item to calendar
+2025-06-06 22:44:27 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/4/25
+2025-06-06 22:44:43 - ui.calendar_tab.CalendarTab - INFO - Saved 11 calendar events to H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\data\calendar_events.json
+2025-06-06 22:44:43 - ui.calendar_tab.CalendarTab - INFO - Updated event: [Construction of main road from RD 0 to 2300Mtr. leading to Ind. Area Mandyarpur (Kirpalpur), Teh. Nalagarh Distt. Solan (HP).] [Job No. 8][2025_SIDC_105490_1] + sidc
+2025-06-06 22:46:02 - ui.main_window - INFO - Application closing
+2025-06-06 22:46:02 - core.config_manager - INFO - Configuration saved to H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\config\config.json

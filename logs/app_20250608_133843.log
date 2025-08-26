@@ -1,0 +1,33 @@
+2025-06-08 13:38:43 - root - INFO - Logging to file: H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\logs\app_20250608_133843.log
+2025-06-08 13:38:43 - root - INFO - Application starting...
+2025-06-08 13:38:43 - core.config_manager - INFO - Configuration loaded from H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\config\config.json
+2025-06-08 13:38:43 - ui.main_window - INFO - Global styles configured
+2025-06-08 13:38:45 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-06-08 13:38:45 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\data\calendar_events.json
+2025-06-08 13:38:45 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-06-08 13:38:45 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-06-08 13:38:45 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-06-08 13:38:45 - core.config_manager - INFO - Configuration saved to H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\config\config.json
+2025-06-08 13:38:45 - core.data_processor.TenderDataProcessor - INFO - Loading data from: ./data/merged_data/hptenders_gov_in_consolidated_master.xlsx
+2025-06-08 13:38:45 - core.data_processor.TenderDataProcessor - INFO - Converted 'Closing Date' to datetime format (closing date)
+2025-06-08 13:38:45 - core.data_processor.TenderDataProcessor - INFO - Identified closing date columns: ['Closing Date']
+2025-06-08 13:38:45 - core.data_processor.TenderDataProcessor - INFO - Successfully loaded 2093 records from 1 files.
+2025-06-08 13:38:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 2093 rows.
+2025-06-08 13:38:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Restored previous session data from 1 files
+2025-06-08 13:38:46 - ui.main_window - INFO - Main application initialized
+2025-06-08 13:38:46 - root - INFO - Main window initialized
+2025-06-08 13:44:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 2093 rows.
+2025-06-08 13:44:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'GlobalSearch': 't', 'GlobalSearchOperator': 'AND'}
+2025-06-08 13:44:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 1341 rows.
+2025-06-08 13:44:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'GlobalSearch': 'ti', 'GlobalSearchOperator': 'AND'}
+2025-06-08 13:44:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 16 rows.
+2025-06-08 13:44:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'GlobalSearch': 'til', 'GlobalSearchOperator': 'AND'}
+2025-06-08 13:44:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 3 rows.
+2025-06-08 13:44:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'GlobalSearch': 'till', 'GlobalSearchOperator': 'AND'}
+2025-06-08 13:44:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 3 rows.
+2025-06-08 13:44:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'GlobalSearch': 'tilla', 'GlobalSearchOperator': 'AND'}
+2025-06-08 13:45:34 - ui.logs_tab.LogsTab - INFO - Logs tab selected
+2025-06-08 13:46:10 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-06-08 13:46:12 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/5/25
+2025-06-08 13:46:13 - ui.calendar_tab.CalendarTab - INFO - Date selected: 6/2/25
+2025-06-08 13:46:15 - ui.logs_tab.LogsTab - INFO - Logs tab selected

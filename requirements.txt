@@ -1,0 +1,21 @@
+# Core dependencies for Tender Management Utility V3
+pandas>=1.3.0
+openpyxl>=3.0.0
+tkcalendar>=1.6.0
+matplotlib>=3.5.0
+
+# Optional dependencies for enhanced functionality
+filelock>=3.0.0
+icalendar>=4.0.0
+numpy>=1.21.0
+
+# Development and utility packages
+setuptools>=40.0.0
+wheel>=0.30.0
+filelock>=3.0.0
+
+# Optional: Calendar export functionality
+icalendar>=4.0.0
+
+# Optional: Enhanced data processing
+numpy>=1.21.0

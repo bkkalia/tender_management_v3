@@ -1,0 +1,22 @@
+2025-06-08 12:31:00 - root - INFO - Logging to file: H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\logs\app_20250608_123100.log
+2025-06-08 12:31:00 - root - INFO - Application starting...
+2025-06-08 12:31:01 - core.config_manager - INFO - Configuration loaded from H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\config\config.json
+2025-06-08 12:31:01 - ui.main_window - INFO - Global styles configured
+2025-06-08 12:31:02 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-06-08 12:31:02 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\data\calendar_events.json
+2025-06-08 12:31:02 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-06-08 12:31:02 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-06-08 12:31:02 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-06-08 12:31:02 - core.config_manager - INFO - Configuration saved to H:\My Drive\0dev\Search Utility v2\tender_management_v2.1\config\config.json
+2025-06-08 12:31:02 - core.data_processor.TenderDataProcessor - INFO - Loading data from: ./data/merged_data/hptenders_gov_in_consolidated_master.xlsx
+2025-06-08 12:31:02 - core.data_processor.TenderDataProcessor - INFO - Converted 'Closing Date' to datetime format (closing date)
+2025-06-08 12:31:02 - core.data_processor.TenderDataProcessor - INFO - Identified closing date columns: ['Closing Date']
+2025-06-08 12:31:02 - core.data_processor.TenderDataProcessor - INFO - Successfully loaded 2093 records from 1 files.
+2025-06-08 12:31:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 2093 rows.
+2025-06-08 12:31:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Restored previous session data from 1 files
+2025-06-08 12:31:03 - ui.main_window - INFO - Main application initialized
+2025-06-08 12:31:03 - root - INFO - Main window initialized
+2025-06-08 12:31:09 - ui.logs_tab.LogsTab - INFO - Logs tab selected
+2025-06-08 12:31:29 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-06-08 12:31:31 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-06-08 12:31:35 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
