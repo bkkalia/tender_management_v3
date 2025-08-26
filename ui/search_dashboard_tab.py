@@ -1005,7 +1005,7 @@ class SearchDashboardTab(ttk.Frame):
             elif 'department' in col_lower or 'dept' in col_lower:
                 self.column_config[col_name]["width"] = 250
             elif 'date' in col_lower or 'time' in col_lower:
-                self.column_config[col_name]["width"] = 120
+                self.column_config[col_name]["width"] = 160  # Increased for datetime display
             elif 'url' in col_lower or 'link' in col_lower:
                 self.column_config[col_name]["width"] = 80
             else:
@@ -1067,7 +1067,7 @@ class SearchDashboardTab(ttk.Frame):
         # Update column config with any new columns
         for col in all_columns:
             if col not in self.column_config:
-                self.column_config[col] = { # Added missing assignment and corrected structure
+                self.column_config[col] = {
                     "visible": True,  # New columns are visible by default
                     "order": self.default_column_order,
                     "width": 150  # Default width
@@ -1142,9 +1142,9 @@ class SearchDashboardTab(ttk.Frame):
                 # Department columns with enough width
                 elif any(keyword in col_lower for keyword in ['dept', 'department']):
                     col_width = 250
-                # Date columns with moderate width
+                # Date columns need more width to show date AND time
                 elif any(keyword in col_lower for keyword in ['date', 'time', 'deadline']):
-                    col_width = 120
+                    col_width = 160  # Increased from 120 to accommodate datetime display
                 
                 # Save the width back to config
                 if col in self.column_config:
@@ -1191,18 +1191,39 @@ class SearchDashboardTab(ttk.Frame):
                             values.append("" if pd.isna(first_val) else str(first_val))
                         except (IndexError, TypeError):
                             values.append(str(value))
-                elif value is None or (not isinstance(value, (pd.DataFrame, pd.Series)) and pd.isna(value)):
+                elif value is None or (isinstance(value, (int, float, str)) and pd.isna(value)):
                     values.append("")
-                # Format date values consistently
+                # Format date values with TIME included for better visibility
                 elif pd.api.types.is_datetime64_any_dtype(filtered_data[col].dtype):
                     try:
-                        date_str = value.strftime("%Y-%m-%d")
-                        values.append(date_str)
-                    except:
-                        values.append("")
+                        # Check if value is null or invalid first - fix the DataFrame boolean issue
+                        if value is None or pd.isna(value) or str(value).lower() in ['nat', 'none', '']:
+                            values.append("")
+                        # Check if this is a scalar datetime value
+                        elif hasattr(value, 'strftime'):  # Valid datetime object
+                            col_lower = str(col).lower()
+                            if any(keyword in col_lower for keyword in ['closing', 'due', 'deadline', 'end', 'expiry']):
+                                # For closing dates, show full datetime with time
+                                date_str = value.strftime("%Y-%m-%d %H:%M")
+                                values.append(date_str)
+                            else:
+                                # For other date columns, show date with time if available
+                                if value.hour != 0 or value.minute != 0 or value.second != 0:
+                                    # Has time component, show it
+                                    date_str = value.strftime("%Y-%m-%d %H:%M")
+                                else:
+                                    # No meaningful time component, show just date
+                                    date_str = value.strftime("%Y-%m-%d")
+                                values.append(date_str)
+                        else:
+                            # Not a valid datetime, show as string or empty
+                            values.append(str(value) if value not in [None, pd.NaT] else "")
+                    except Exception as e:
+                        self.logger.warning(f"Error formatting date value {value} for column {col}: {e}")
+                        values.append(str(value) if value is not None and not pd.isna(value) else "")
+
                 # Handle URL columns - Fix for pandas Series comparison
                 elif col in self.url_columns and isinstance(value, str) and value.strip():
-                    # Fix comparison of pandas Series objects - This was the problematic line
                     # Use explicit string methods to avoid Series boolean operations
                     if isinstance(value, str) and (value.startswith('http') or value.startswith('www')):
                         values.append("🔗")  # Link icon
@@ -1210,19 +1231,27 @@ class SearchDashboardTab(ttk.Frame):
                         values.append(value)
                 # All other values - with highlighting
                 else:
-                    str_value = str(value)
-                    
-                    # Highlight search terms in the displayed value
-                    if search_terms and isinstance(str_value, str):
-                        highlighted_value = str_value
-                        for term in search_terms:
-                            if term.lower() in str_value.lower():
-                                # Mark matching terms with special characters for highlighting
-                                pattern = re.compile(f"({re.escape(term)})", re.IGNORECASE)
-                                highlighted_value = pattern.sub(r"••\1••", highlighted_value)
-                        values.append(highlighted_value)
+                    # Handle DataFrame/Series values first to avoid boolean operation errors
+                    if isinstance(value, pd.DataFrame):
+                        values.append("")
+                    elif isinstance(value, pd.Series):
+                        values.append("")
+                    elif value is None or pd.isna(value):
+                        values.append("")
                     else:
-                        values.append(str_value)
+                        str_value = str(value)
+                        
+                        # Highlight search terms in the displayed value
+                        if search_terms and isinstance(str_value, str):
+                            highlighted_value = str_value
+                            for term in search_terms:
+                                if term.lower() in str_value.lower():
+                                    # Mark matching terms with special characters for highlighting
+                                    pattern = re.compile(f"({re.escape(term)})", re.IGNORECASE)
+                                    highlighted_value = pattern.sub(r"••\1••", highlighted_value)
+                            values.append(highlighted_value)
+                        else:
+                            values.append(str_value)
             
             # Store the original row data in the tree item
             item_id = self.tree.insert("", "end", values=values)
@@ -1609,7 +1638,9 @@ class SearchDashboardTab(ttk.Frame):
         if not search_name:
             return  # User cancelled
             
+
         # Get existing saved searches
+       
         saved_searches = self.main_app.global_config.get("saved_searches", {})
         
         # Check if name already exists

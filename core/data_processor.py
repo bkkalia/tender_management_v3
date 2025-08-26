@@ -119,6 +119,12 @@ class TenderDataProcessor:
         self.date_columns = []
         self.closing_date_columns = []  # Specifically for closing dates
         
+        # Log initial column info
+        self.logger.info(f"Total columns in data: {len(self.raw_data.columns)}")
+        for col in self.raw_data.columns:
+            sample_values = self.raw_data[col].dropna().head(3).tolist()
+            self.logger.debug(f"Column '{col}': Sample values: {sample_values}")
+        
         # First, check for columns that definitely shouldn't be dates
         non_date_columns = []
         for col in self.raw_data.columns:
@@ -141,68 +147,72 @@ class TenderDataProcessor:
             
             # Check if column name suggests it's a closing date
             if any(keyword in col_lower for keyword in closing_keywords):
-                try:
-                    # Try to convert to datetime with explicit format handling to avoid pandas warning
-                    # First, try common date formats
-                    date_formats = ['%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y', '%d-%m-%Y', '%Y/%m/%d']
-                    converted = False
-                    
-                    for date_format in date_formats:
-                        try:
-                            self.raw_data[col] = pd.to_datetime(self.raw_data[col], format=date_format, errors='coerce')
-                            converted = True
-                            self.logger.info(f"Converted '{col}' to datetime format using {date_format} (closing date)")
-                            break
-                        except (ValueError, TypeError):
-                            continue
-                    
-                    if not converted:
-                        # Fallback to automatic inference with explicit format specification
-                        self.raw_data[col] = pd.to_datetime(self.raw_data[col], errors='coerce', infer_datetime_format=True)
-                        self.logger.info(f"Converted '{col}' to datetime format using automatic inference (closing date)")
-                    
-                    self.filtered_data[col] = self.raw_data[col]
-                    self.date_columns.append(col)
-                    self.closing_date_columns.append(col)
-                    
-                except Exception as e:
-                    self.logger.warning(f"Failed to convert '{col}' to datetime: {e}")
-            
-            # Also look for other date columns, but mark them as not closing dates
-            elif 'date' in col_lower and not any(keyword in col_lower for keyword in closing_keywords):
-                # Skip if it's in the non-date list
-                if col in non_date_columns:
-                    continue
+                self.logger.info(f"Found potential closing date column: '{col}'")
+                
+                # Log sample values before conversion
+                sample_before = self.raw_data[col].dropna().head(5).tolist()
+                self.logger.info(f"Sample values before conversion for '{col}': {sample_before}")
                 
                 try:
-                    # Try to convert to datetime with format handling
-                    date_formats = ['%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y', '%d-%m-%Y', '%Y/%m/%d']
+                    # Store original column for debugging
+                    original_values = self.raw_data[col].copy()
+                    
+                    # Try to convert to datetime with explicit format handling
+                    date_formats = [
+                        '%Y-%m-%d %H:%M:%S',  # Full datetime
+                        '%Y-%m-%d %H:%M',     # Date with hour:minute
+                        '%Y-%m-%d',           # Date only
+                        '%d/%m/%Y %H:%M:%S',  # DD/MM/YYYY with time
+                        '%d/%m/%Y %H:%M',     # DD/MM/YYYY with hour:minute
+                        '%d/%m/%Y',           # DD/MM/YYYY
+                        '%m/%d/%Y',           # MM/DD/YYYY
+                        '%d-%m-%Y',           # DD-MM-YYYY
+                        '%Y/%m/%d'            # YYYY/MM/DD
+                    ]
                     converted = False
                     
                     for date_format in date_formats:
                         try:
-                            self.raw_data[col] = pd.to_datetime(self.raw_data[col], format=date_format, errors='coerce')
-                            converted = True
-                            break
-                        except (ValueError, TypeError):
+                            converted_series = pd.to_datetime(original_values, format=date_format, errors='coerce')
+                            valid_count = converted_series.notna().sum()
+                            total_count = len(original_values.dropna())
+                            
+                            if valid_count > 0 and valid_count >= total_count * 0.1:  # At least 10% success rate
+                                self.raw_data[col] = converted_series
+                                converted = True
+                                self.logger.info(f"Converted '{col}' using format '{date_format}': {valid_count}/{total_count} values")
+                                break
+                        except (ValueError, TypeError) as e:
+                            self.logger.debug(f"Format '{date_format}' failed for '{col}': {e}")
                             continue
                     
                     if not converted:
-                        self.raw_data[col] = pd.to_datetime(self.raw_data[col], errors='coerce', infer_datetime_format=True)
+                        # Fallback to automatic inference
+                        try:
+                            converted_series = pd.to_datetime(original_values, errors='coerce')
+                            valid_count = converted_series.notna().sum()
+                            total_count = len(original_values.dropna())
+                            
+                            if valid_count > 0:
+                                self.raw_data[col] = converted_series
+                                converted = True
+                                self.logger.info(f"Converted '{col}' using automatic inference: {valid_count}/{total_count} values")
+                        except Exception as e:
+                            self.logger.warning(f"Automatic conversion failed for '{col}': {e}")
                     
-                    self.filtered_data[col] = self.raw_data[col]
-                    self.date_columns.append(col)
-                    self.logger.debug(f"Converted '{col}' to datetime format (non-closing date)")
-                except:
-                    pass  # Not a date column or failed conversion
-
-        # If no closing date columns were found, try to infer from data patterns
-        if not self.closing_date_columns and self.date_columns:
-            self.closing_date_columns = self.date_columns
-            self.logger.warning("No explicit closing date columns found, using all date columns")
-        
-        self.logger.info(f"Identified closing date columns: {self.closing_date_columns}")
-        self.logger.debug(f"All date columns: {self.date_columns}")
+                    if converted:
+                        # Log sample values after conversion
+                        sample_after = self.raw_data[col].dropna().head(5).tolist()
+                        self.logger.info(f"Sample values after conversion for '{col}': {sample_after}")
+                        
+                        self.filtered_data[col] = self.raw_data[col]
+                        self.date_columns.append(col)
+                        self.closing_date_columns.append(col)
+                    else:
+                        self.logger.warning(f"Failed to convert any values in '{col}' to datetime")
+                        
+                except Exception as e:
+                    self.logger.error(f"Error processing column '{col}': {e}")
 
     def _find_department_column(self) -> Optional[str]:
         """
@@ -467,7 +477,7 @@ class TenderDataProcessor:
                     valid_dates = self.raw_data[~self.raw_data[col].isna()]
                     if valid_dates.empty:
                         continue
-                    
+                        
                     # Closing today (precise time comparison)
                     stats["closing_today"] += ((valid_dates[col] >= today_start) & 
                                             (valid_dates[col] <= today_end)).sum()

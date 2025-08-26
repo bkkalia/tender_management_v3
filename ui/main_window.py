@@ -201,9 +201,6 @@ class MainApplication(tk.Tk):
         # Select the default tab
         self.notebook.select(0)  # Select first tab
 
-        # Now that UI is ready, load any initial data
-        search_tab.load_initial_data_if_any()
-
     def _on_tab_changed(self, event):
         """Handle tab change event."""
         current_tab = self.notebook.select()
