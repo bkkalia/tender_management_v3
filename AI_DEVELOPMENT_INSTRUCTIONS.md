@@ -5,7 +5,7 @@
 This Python application is a **Tender Search & Management Utility (Version 3)**.
 The primary goal is to rewrite an existing application to be more robust, maintainable, and feature-rich, focusing on:
 
-1.  **Advanced Search & Dashboard:** Process Excel/CSV tender data, offer advanced filtering, and display key metrics on a dynamic dashboard.
+1.  **Advanced Search & Dashboard:** Process Excel/CSV tender data, offer advanced filtering with precise date/time handling, and display key metrics on a dynamic dashboard.
 2.  **Excel File Merging:** Intelligently merge new daily scraped tender data (Excel/CSV) with existing consolidated data, handling duplicates and (eventually) changes.
 3.  **Calendar & Basic Team Management:** Manage tender deadlines and assignments (future phase, placeholders for now).
 4.  **Global Settings:** Centralized configuration for all application modules.
@@ -62,8 +62,15 @@ The primary goal is to rewrite an existing application to be more robust, mainta
     *   `pd.read_excel(..., engine='openpyxl')`
     *   `pd.read_csv(...)`
 *   **Main Data Structure:** `pandas.DataFrame` for tender lists.
+*   **Date/Time Handling (CRITICAL):**
+    *   **Closing Date Processing:** All closing date columns must be converted to `datetime` objects with full date AND time information.
+    *   **Time Precision:** When comparing dates for expiry/live status, use `pd.Timestamp.now()` (includes time) rather than `datetime.now().date()` (date only).
+    *   **Missing Time Data:** If source data contains only dates without time, assume end-of-day (23:59:59) for closing dates to be conservative.
+    *   **Timezone Handling:** Consider local timezone for accurate comparisons (future enhancement).
 *   **Data Processing:**
     *   `TenderDataProcessor` (`core/data_processor.py`): Handles loading, filtering, and calculating dashboard stats for the Search tab.
+        *   **Enhanced Date Filtering:** Must support precise time-based filtering for Live/Expired status.
+        *   **Filter Categories:** All, Live (closing date/time > now), Expired (closing date/time <= now).
     *   `PortalDataMerger` (`core/file_merger.py`): Handles merging logic.
         *   **Unique Key for Merging:** Defined in `GlobalConfig` (e.g., `merger_unique_key`).
         *   **Critical Fields for Change Detection (Future):** Defined in `GlobalConfig`.
@@ -147,15 +154,56 @@ The primary goal is to rewrite an existing application to be more robust, mainta
 
 ## ⚙️ **Current Focus / Tasks**
 
-*   **Bug Fixing:** Address errors from initial code setup (refer to terminal output).
-*   **Search & Dashboard (`SearchDashboardTab`):**
+*   **PRIORITY 1: Date/Time Filter System Overhaul:**
+    *   **Precise Time Handling:**
+        *   Update `TenderDataProcessor._identify_and_convert_date_columns()` to preserve time information when converting date columns.
+        *   For dates without time, append "23:59:59" to closing dates for conservative expiry calculations.
+        *   Use `pd.Timestamp.now()` instead of `datetime.now().date()` for all date comparisons.
+    *   **Enhanced Filter Options:**
+        *   **All:** Show all records regardless of closing date/time.
+        *   **Live:** Show only tenders where closing date/time > current date/time.
+        *   **Expired:** Show only tenders where closing date/time <= current date/time.
+        *   **Today:** Closing between start of today and end of today.
+        *   **Next 3/7/30 Days:** Closing within the specified timeframe from now.
+        *   **Custom Range:** User-specified date/time range.
+    *   **Dashboard Stats Update:**
+        *   Ensure all dashboard statistics (closing_today, expired_tenders, etc.) use precise time comparisons.
+        *   Add "Live Tenders" count to dashboard.
+
+*   **PRIORITY 2: Filter System Review & Fixes:**
+    *   **Department Filter:**
+        *   Verify case-insensitive matching works correctly.
+        *   Test both OR and AND operators with multiple comma-separated terms.
+        *   Ensure department column detection is robust across different data sources.
+    *   **Global Search Filter:**
+        *   Verify live search (on key release) functionality.
+        *   Test OR and AND operators with multiple search terms.
+        *   Ensure search works across all text columns correctly.
+    *   **Date Filter Integration:**
+        *   Verify that date filters work in combination with text filters.
+        *   Test preset date buttons (Today, Next 3 Days, etc.) for accuracy.
+        *   Ensure custom date range picker works correctly.
+    *   **Filter Interaction Testing:**
+        *   Test combinations of department + global search + date filters.
+        *   Verify filter reset functionality clears all active filters.
+        *   Ensure saved search profiles work correctly.
+
+*   **Bug Fixing & Performance:**
+    *   Address any remaining errors from filter operations.
+    *   Optimize filter performance for large datasets.
+    *   Fix any UI responsiveness issues during filtering.
+
+*   **Search & Dashboard (`SearchDashboardTab`) - Continued:**
     *   Reliable data loading from multiple Excel/CSV files within selected folders. **Data loading should be live when folders are added.**
-    *   Accurate filtering based on Department and Global Search. **Search should be live (on key release) and case-insensitive.**
+    *   **Updated filtering workflow:**
+        1. Apply date/time filters with precise timestamp comparisons.
+        2. Apply department filters with improved pattern matching.
+        3. Apply global search filters across all relevant columns.
     *   Correct population of the `ttk.Treeview` with filtered data.
-    *   Dynamic update of dashboard statistics.
-    *   Implement date-based filtering (preset buttons: Today, Next 3/7/30 Days; custom date range) and update dashboard stats accordingly.
+    *   Dynamic update of dashboard statistics with time-aware calculations.
     *   **Implement copy functionality for Treeview (cell, row, selected rows).**
     *   **Handle URLs in Treeview: double-click to open in browser; copy should provide the original URL.**
+
 *   **Excel File Merging (`PortalDataMergerTab` & `core/file_merger.py`):**
     *   **UI Workflow:**
         *   User selects one or more *new data files* (daily scrapes) using a listbox.
@@ -170,8 +218,8 @@ The primary goal is to rewrite an existing application to be more robust, mainta
     *   **Dynamic Unique Key for Merging:**
         *   The system attempts to use a unique key from a preferred list (e.g., "Tender ID (Extracted)", then "Title and Ref.No./Tender ID", then "Tender ID").
         *   The chosen key must exist in the new data file and, if an existing file is being merged, in the existing data file as well.
-    *   **Merging Logic:**
-        *   Convert date columns (e.g., 'Closing Date', 'e-Published Date') in both new and existing data to datetime objects, coercing errors.
+    *   **Merging Logic with Time Awareness:**
+        *   Convert date columns (e.g., 'Closing Date', 'e-Published Date') in both new and existing data to datetime objects, preserving time information.
         *   Concatenate new data with existing data (if any for the portal).
         *   Ensure the chosen `unique_key` column is of string type for consistent de-duplication.
         *   **Sort** the combined data:
@@ -185,13 +233,43 @@ The primary goal is to rewrite an existing application to be more robust, mainta
         *   Backups are stored as timestamped ZIP files in a dedicated subfolder (e.g., `output_folder/portal_backups/{portal_name}/`).
         *   A maximum of 5 backup versions are kept per portal; older ones are automatically deleted.
     *   Saving the merged file to the specified output folder, using the portal-specific standardized name.
+
 *   **Settings (`SettingsTab`):**
     *   Allow viewing and editing of key paths (`default_data_folder`, `merged_data_folder`) and merger parameters (`merger_unique_key`, `merger_critical_fields`).
     *   Ensure settings are correctly loaded from and saved to `app_config.json`.
     *   Propagate config changes to relevant components (e.g., re-initialize `TenderDataProcessor` if paths change).
 
+## 🔍 **Filter System Specifications (NEW)**
+
+### **Date/Time Filter Requirements:**
+1. **Time Precision:** All date comparisons must include time components, not just dates.
+2. **Filter Types:**
+   - **All:** No date filtering applied.
+   - **Live:** `closing_datetime > pd.Timestamp.now()`
+   - **Expired:** `closing_datetime <= pd.Timestamp.now()`
+   - **Today:** `start_of_today <= closing_datetime <= end_of_today`
+   - **Next X Days:** `now <= closing_datetime <= now + X days`
+   - **Custom Range:** User-defined start and end datetime range.
+
+### **Text Filter Requirements:**
+1. **Case Insensitive:** All text searches should ignore case.
+2. **Live Search:** Filters apply as user types (on key release events).
+3. **Multiple Terms:** Support comma-separated terms with AND/OR operators.
+4. **Department Filter:** Search specifically in department/organization columns.
+5. **Global Search:** Search across all text columns in the dataset.
+
+### **Filter Combination Rules:**
+1. **Logical AND:** All active filters must be satisfied simultaneously.
+2. **Filter Order:** Apply in sequence: Date → Department → Global Search.
+3. **Reset Functionality:** Clear all filters and return to original dataset.
+4. **Performance:** Maintain responsiveness even with large datasets (>10k records).
+
 ## 🚫 **Avoid**
 
+*   Using date-only comparisons when time precision is required.
+*   Ignoring timezone considerations in date/time handling.
+*   Creating filters that don't work well together or cause performance issues.
+*   Hardcoding date/time formats instead of using pandas datetime parsing.
 *   Introducing new major architectural patterns without discussion.
 *   Ignoring type hints or docstrings.
 *   Hardcoding paths or configuration values that should be in `GlobalConfig`.
@@ -202,7 +280,7 @@ The primary goal is to rewrite an existing application to be more robust, mainta
 **When Asking for Help/Suggestions (from this AI agent or another):**
 
 1.  **Specify the file** you are working on (e.g., `ui/search_dashboard_tab.py`).
-2.  **Describe the specific task or problem** (e.g., "The dashboard stats for 'Closing Today' are not updating correctly.").
+2.  **Describe the specific task or problem** (e.g., "The Live/Expired filter is not working correctly with time precision.").
 3.  **Provide the relevant code snippet.**
 4.  **Include any error messages (full traceback).**
-5.  **Refer to relevant sections of THIS document** if applicable (e.g., "As per 'Data Management', the `merger_unique_key` should come from `GlobalConfig`.").
+5.  **Refer to relevant sections of THIS document** if applicable (e.g., "As per 'Filter System Specifications', time precision is required for date comparisons.").

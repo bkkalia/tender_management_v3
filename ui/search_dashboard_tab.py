@@ -154,11 +154,11 @@ class SearchDashboardTab(ttk.Frame):
         dashboard_container = ttk.Frame(parent)
         dashboard_container.pack(fill=tk.X, expand=True, pady=SPACING['small'])
         
-        # Configure grid with equal column weights
-        for i in range(10):  # We have 10 metrics
+        # Configure grid with equal column weights - Updated for 11 metrics
+        for i in range(11):  # We now have 11 metrics
             dashboard_container.columnconfigure(i, weight=1)
         
-        # Define metrics with their properties
+        # Define metrics with their properties - Add live_tenders
         self.dashboard_labels = {}
         metrics = [
             # key, title, color
@@ -169,6 +169,7 @@ class SearchDashboardTab(ttk.Frame):
             ("closing_today", "Due\nToday", COLORS.get('danger', '#f44336')),
             ("closing_next_3_days", "Due in\n3 Days", COLORS.get('secondary', '#9c27b0')),
             ("closing_next_7_days", "Due in\n7 Days", COLORS.get('info_dark', '#01579b')),
+            ("live_tenders", "Live\nTenders", COLORS.get('success_light', '#66bb6a')),  # New metric
             ("expired_tenders", "Expired\nTenders", COLORS.get('danger_light', '#ef5350')),
             ("data_sources", "Data\nSources", COLORS.get('secondary_light', '#ba68c8')),
             ("current_date", "Date &\nTime", COLORS.get('primary_dark', '#1a237e'))
@@ -177,8 +178,8 @@ class SearchDashboardTab(ttk.Frame):
         # Create a card for each metric
         for i, (key, title, color) in enumerate(metrics):
             # Create card frame with solid background
-            card_frame = tk.Frame(dashboard_container, bg=color, width=100, height=100)
-            card_frame.grid(row=0, column=i, padx=2, sticky="nsew")
+            card_frame = tk.Frame(dashboard_container, bg=color, width=90, height=100)  # Slightly narrower
+            card_frame.grid(row=0, column=i, padx=1, sticky="nsew")  # Reduced padding
             card_frame.grid_propagate(False)  # Fix the size
             
             # Create centered content inside card
@@ -337,17 +338,27 @@ class SearchDashboardTab(ttk.Frame):
 
         create_info_label(date_filter_frame, "Closing Date Filters:").pack(side=tk.LEFT, padx=(0, SPACING['medium']))
 
-        # Preset date filter buttons
+        # Preset date filter buttons - Updated with All and Live options
         presets = {
+            "All": "all",               # Show all records
+            "Live": "live",             # Future dates only
             "Today": "today", 
             "Next 3 Days": "next_3_days", 
             "Next 7 Days": "next_7_days", 
             "Next 30 Days": "next_30_days",
-            "Expired": "expired"  # New filter for expired tenders
+            "Expired": "expired"        # Past dates only
         }
         
         for text, preset_key in presets.items():
-            btn_type = 'danger_outline' if preset_key == 'expired' else 'info_outline'
+            if preset_key == 'expired':
+                btn_type = 'danger_outline'
+            elif preset_key == 'live':
+                btn_type = 'success_outline'
+            elif preset_key == 'all':
+                btn_type = 'secondary_outline'
+            else:
+                btn_type = 'info_outline'
+                
             btn = create_action_button(date_filter_frame, text, lambda p=preset_key: self._filter_by_date_preset(p), 
                                       width=12, button_type=btn_type)
             btn.pack(side=tk.LEFT, padx=SPACING['small']//2)
@@ -438,7 +449,12 @@ class SearchDashboardTab(ttk.Frame):
             'end_date': end_date
         }
         
-        self._apply_all_filters()
+        # Apply filters and check for errors
+        try:
+            self._apply_all_filters()
+        except Exception as e:
+            self.logger.error(f"Error applying custom date filter: {e}")
+            messagebox.showerror("Filter Error", f"Error applying date filter: {str(e)}")
 
     def _apply_custom_date_filter_text(self):
         """Apply the custom date range filter from text entries (fallback when tkcalendar is not available)."""
@@ -464,7 +480,12 @@ class SearchDashboardTab(ttk.Frame):
             'end_date': end_date
         }
         
-        self._apply_all_filters()
+        # Apply filters and check for errors
+        try:
+            self._apply_all_filters()
+        except Exception as e:
+            self.logger.error(f"Error applying custom date filter: {e}")
+            messagebox.showerror("Filter Error", f"Error applying date filter: {str(e)}")
 
     def _setup_treeview_bindings(self):
         self.tree.bind("<Double-1>", self._on_treeview_double_click)
@@ -1026,6 +1047,12 @@ class SearchDashboardTab(ttk.Frame):
         # Get filtered data from data processor
         filtered_data = self.data_processor.filtered_data
         
+        # Ensure filtered_data is a DataFrame
+        if not isinstance(filtered_data, pd.DataFrame):
+            self.logger.error(f"filtered_data is not a DataFrame, it's {type(filtered_data)}")
+            self.status_var.set("Error: Invalid data format. Please reload data.")
+            return
+            
         if filtered_data.empty:
             # No data to display
             self.status_var.set("No data to display. Apply different filters or load data.")
@@ -1397,13 +1424,14 @@ class SearchDashboardTab(ttk.Frame):
         
         # Reset date pickers to today
         today = datetime.now().strftime("%Y-%m-%d")
-        if HAS_TKCALENDAR and hasattr(self, 'start_date_picker'):
+        if HAS_TKCALENDAR and hasattr(self, 'start_date_picker') and hasattr(self, 'end_date_picker'):
             self.start_date_picker.set_date(today)
             self.end_date_picker.set_date(today)
         else:
-            # Reset text entries
-            self.custom_date_start_var.set("")
-            self.custom_date_end_var.set("")
+            # Reset text entries if they exist
+            if hasattr(self, 'custom_date_start_var') and hasattr(self, 'custom_date_end_var'):
+                self.custom_date_start_var.set("")
+                self.custom_date_end_var.set("")
         
         # Apply changes to refresh data
         self._apply_all_filters()
@@ -1415,10 +1443,16 @@ class SearchDashboardTab(ttk.Frame):
         self.logger.info(f"Applying date filter preset: {preset}")
         self.current_date_filter = {'type': preset}
         
-        # Clear custom date fields visually
+        # Clear custom date fields visually only if they exist
         today = datetime.now().strftime("%Y-%m-%d")
-        self.start_date_picker.set_date(today)
-        self.end_date_picker.set_date(today)
+        if HAS_TKCALENDAR and hasattr(self, 'start_date_picker') and hasattr(self, 'end_date_picker'):
+            self.start_date_picker.set_date(today)
+            self.end_date_picker.set_date(today)
+        else:
+            # Reset text entries if they exist
+            if hasattr(self, 'custom_date_start_var') and hasattr(self, 'custom_date_end_var'):
+                self.custom_date_start_var.set("")
+                self.custom_date_end_var.set("")
         
         self._apply_all_filters()
         
@@ -1662,7 +1696,6 @@ class SearchDashboardTab(ttk.Frame):
         if self.data_processor.filtered_data.empty:
             messagebox.showinfo("No Data", "There is no data to visualize.")
             return
-            
         try:
             # Try to import required libraries
             try:
@@ -1976,8 +2009,10 @@ class SearchDashboardTab(ttk.Frame):
             )
             date_picker.pack(pady=20)
             
-            def get_date():
+            def get_date_from_picker():
                 return date_picker.get()
+                
+            get_date = get_date_from_picker
         else:
             # Fallback: text entry
             ttk.Label(dialog, text="Enter date (YYYY-MM-DD):").pack(pady=5)
@@ -1985,7 +2020,7 @@ class SearchDashboardTab(ttk.Frame):
             date_entry = create_input_entry(dialog, date_var, width=15)
             date_entry.pack(pady=10)
             
-            def get_date():
+            def get_date_from_entry():
                 date_str = date_var.get()
                 try:
                     # Validate format
@@ -1994,13 +2029,16 @@ class SearchDashboardTab(ttk.Frame):
                 except ValueError:
                     messagebox.showerror("Invalid Date", "Please enter date in YYYY-MM-DD format.")
                     return None
+                    
+            get_date = get_date_from_entry
         
         # Result variable to store the return value
-        result = {"value": None}
+        result = {"value": None}  # Initialize with None
         
         def on_ok():
-            result["value"] = get_date()
-            if result["value"] is not None:
+            date_value = get_date()
+            if date_value is not None:
+                result["value"] = date_value
                 dialog.destroy()
             
         def on_cancel():

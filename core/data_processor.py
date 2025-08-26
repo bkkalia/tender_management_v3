@@ -142,12 +142,29 @@ class TenderDataProcessor:
             # Check if column name suggests it's a closing date
             if any(keyword in col_lower for keyword in closing_keywords):
                 try:
-                    # Try to convert to datetime
-                    self.raw_data[col] = pd.to_datetime(self.raw_data[col], errors='coerce')
+                    # Try to convert to datetime with explicit format handling to avoid pandas warning
+                    # First, try common date formats
+                    date_formats = ['%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y', '%d-%m-%Y', '%Y/%m/%d']
+                    converted = False
+                    
+                    for date_format in date_formats:
+                        try:
+                            self.raw_data[col] = pd.to_datetime(self.raw_data[col], format=date_format, errors='coerce')
+                            converted = True
+                            self.logger.info(f"Converted '{col}' to datetime format using {date_format} (closing date)")
+                            break
+                        except (ValueError, TypeError):
+                            continue
+                    
+                    if not converted:
+                        # Fallback to automatic inference with explicit format specification
+                        self.raw_data[col] = pd.to_datetime(self.raw_data[col], errors='coerce', infer_datetime_format=True)
+                        self.logger.info(f"Converted '{col}' to datetime format using automatic inference (closing date)")
+                    
                     self.filtered_data[col] = self.raw_data[col]
                     self.date_columns.append(col)
                     self.closing_date_columns.append(col)
-                    self.logger.info(f"Converted '{col}' to datetime format (closing date)")
+                    
                 except Exception as e:
                     self.logger.warning(f"Failed to convert '{col}' to datetime: {e}")
             
@@ -156,10 +173,23 @@ class TenderDataProcessor:
                 # Skip if it's in the non-date list
                 if col in non_date_columns:
                     continue
-                    
+                
                 try:
-                    # Try converting to datetime
-                    self.raw_data[col] = pd.to_datetime(self.raw_data[col], errors='coerce')
+                    # Try to convert to datetime with format handling
+                    date_formats = ['%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y', '%d-%m-%Y', '%Y/%m/%d']
+                    converted = False
+                    
+                    for date_format in date_formats:
+                        try:
+                            self.raw_data[col] = pd.to_datetime(self.raw_data[col], format=date_format, errors='coerce')
+                            converted = True
+                            break
+                        except (ValueError, TypeError):
+                            continue
+                    
+                    if not converted:
+                        self.raw_data[col] = pd.to_datetime(self.raw_data[col], errors='coerce', infer_datetime_format=True)
+                    
                     self.filtered_data[col] = self.raw_data[col]
                     self.date_columns.append(col)
                     self.logger.debug(f"Converted '{col}' to datetime format (non-closing date)")
@@ -297,25 +327,85 @@ class TenderDataProcessor:
         Returns:
             A filtered DataFrame or None if no valid date filter is provided.
         """
-        if not df.empty and 'type' in date_filter:
-            filter_type = date_filter['type']
-            today = pd.Timestamp.now().normalize()
-            current_time = pd.Timestamp.now()  # Current time without normalizing
+        if df.empty or 'type' not in date_filter:
+            return None
             
-            if filter_type == 'today':
-                return df[(df[self.closing_date_columns[0]] >= today) & (df[self.closing_date_columns[0]] < today + timedelta(days=1))]
+        # Ensure we have closing date columns
+        if not self.closing_date_columns:
+            self.logger.warning("No closing date columns found for date filtering")
+            return None
+            
+        filter_type = date_filter['type']
+        
+        # Use pandas Timestamp for precise time comparisons
+        current_time = pd.Timestamp.now()
+        today_start = current_time.normalize()  # Start of today (00:00:00)
+        today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)  # End of today (23:59:59.999999)
+        
+        # Use the first closing date column for filtering
+        date_col = self.closing_date_columns[0]
+        
+        try:
+            if filter_type == 'all':
+                # Return all data without date filtering
+                return df.copy()
+                
+            elif filter_type == 'today':
+                mask = (df[date_col] >= today_start) & (df[date_col] <= today_end)
+                return df[mask].copy()
+                
             elif filter_type == 'next_3_days':
-                return df[(df[self.closing_date_columns[0]] >= today) & (df[self.closing_date_columns[0]] <= today + timedelta(days=3))]
+                end_date = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
+                mask = (df[date_col] >= current_time) & (df[date_col] <= end_date)
+                return df[mask].copy()
+                
             elif filter_type == 'next_7_days':
-                return df[(df[self.closing_date_columns[0]] >= today) & (df[self.closing_date_columns[0]] <= today + timedelta(days=7))]
+                end_date = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
+                mask = (df[date_col] >= current_time) & (df[date_col] <= end_date)
+                return df[mask].copy()
+                
             elif filter_type == 'next_30_days':
-                return df[(df[self.closing_date_columns[0]] >= today) & (df[self.closing_date_columns[0]] <= today + timedelta(days=30))]
+                end_date = today_start + pd.Timedelta(days=30, hours=23, minutes=59, seconds=59)
+                mask = (df[date_col] >= current_time) & (df[date_col] <= end_date)
+                return df[mask].copy()
+                
             elif filter_type == 'expired':
-                return df[df[self.closing_date_columns[0]] < current_time]
+                mask = df[date_col] < current_time
+                return df[mask].copy()
+                
+            elif filter_type == 'live':
+                mask = df[date_col] > current_time
+                return df[mask].copy()
+                
             elif filter_type == 'custom':
-                start_date = pd.Timestamp(date_filter['start_date']) if date_filter.get('start_date') else None
-                end_date = pd.Timestamp(date_filter['end_date']) if date_filter.get('end_date') else None
-                return df[self.closing_date_columns[0]].between(start_date, end_date, inclusive='both')
+                start_date = date_filter.get('start_date')
+                end_date = date_filter.get('end_date')
+                
+                if not start_date or not end_date:
+                    self.logger.warning("Custom date filter missing start_date or end_date")
+                    return None
+                
+                try:
+                    # Convert string dates to pandas timestamps
+                    start_timestamp = pd.Timestamp(start_date)
+                    # Set end date to end of day (23:59:59) for inclusive filtering
+                    end_timestamp = pd.Timestamp(end_date) + pd.Timedelta(hours=23, minutes=59, seconds=59)
+                    
+                    self.logger.info(f"Custom date filter: {start_timestamp} to {end_timestamp}")
+                    
+                    mask = (df[date_col] >= start_timestamp) & (df[date_col] <= end_timestamp)
+                    filtered_result = df[mask].copy()
+                    
+                    self.logger.info(f"Custom date filter returned {len(filtered_result)} records")
+                    return filtered_result
+                    
+                except Exception as e:
+                    self.logger.error(f"Error parsing custom date range: {e}")
+                    return None
+                    
+        except Exception as e:
+            self.logger.error(f"Error in date filtering: {e}")
+            return None
         
         return None
 
@@ -338,6 +428,7 @@ class TenderDataProcessor:
             "closing_next_3_days": 0,
             "closing_next_7_days": 0,
             "expired_tenders": 0,
+            "live_tenders": 0,  # Add live tenders count
             "data_sources": 0
         }
         
@@ -361,10 +452,11 @@ class TenderDataProcessor:
                     unique_depts.update(d.strip() for d in depts if d.strip() and d.strip().lower() not in ['nan', 'none', ''])
                 stats["unique_departments"] = len(unique_depts)
             
-            # Date-based stats - ONLY USE CLOSING DATE COLUMNS
+            # Date-based stats - ONLY USE CLOSING DATE COLUMNS with precise time handling
             if hasattr(self, 'closing_date_columns') and self.closing_date_columns:
-                today = pd.Timestamp.now().normalize()
-                current_time = pd.Timestamp.now()  # Get current time for expired calculation
+                current_time = pd.Timestamp.now()  # Use precise timestamp for all calculations
+                today_start = current_time.normalize()
+                today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)
                 
                 for col in self.closing_date_columns:
                     # Skip columns that aren't datetime type
@@ -376,20 +468,25 @@ class TenderDataProcessor:
                     if valid_dates.empty:
                         continue
                     
-                    # Closing today
-                    stats["closing_today"] += ((valid_dates[col] >= today) & 
-                                            (valid_dates[col] < today + timedelta(days=1))).sum()
+                    # Closing today (precise time comparison)
+                    stats["closing_today"] += ((valid_dates[col] >= today_start) & 
+                                            (valid_dates[col] <= today_end)).sum()
                     
-                    # Next 3 days
-                    stats["closing_next_3_days"] += ((valid_dates[col] >= today) & 
-                                                  (valid_dates[col] <= today + timedelta(days=3))).sum()
+                    # Next 3 days (from now to 3 days ahead)
+                    end_3_days = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
+                    stats["closing_next_3_days"] += ((valid_dates[col] >= current_time) & 
+                                                  (valid_dates[col] <= end_3_days)).sum()
                     
-                    # Next 7 days
-                    stats["closing_next_7_days"] += ((valid_dates[col] >= today) & 
-                                                  (valid_dates[col] <= today + timedelta(days=7))).sum()
+                    # Next 7 days (from now to 7 days ahead)
+                    end_7_days = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
+                    stats["closing_next_7_days"] += ((valid_dates[col] >= current_time) & 
+                                                  (valid_dates[col] <= end_7_days)).sum()
                     
-                    # Expired - use current time with time component for most accurate results
+                    # Expired - closing date/time has passed
                     stats["expired_tenders"] += (valid_dates[col] < current_time).sum()
+                    
+                    # Live - closing date/time is in the future
+                    stats["live_tenders"] += (valid_dates[col] > current_time).sum()
 
             # Count data sources
             stats["data_sources"] = len(set(self.last_loaded_files))
