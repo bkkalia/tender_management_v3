@@ -26,3 +26,33 @@
 2025-08-27 14:47:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: expired
 2025-08-27 14:47:36 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 9028 rows.
 2025-08-27 14:47:36 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'expired'}}
+2025-08-27 15:55:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: expired
+2025-08-27 15:55:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 9034 rows.
+2025-08-27 15:55:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'expired'}}
+2025-08-27 15:55:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: expired
+2025-08-27 15:55:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 9034 rows.
+2025-08-27 15:55:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'expired'}}
+2025-08-27 15:55:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying custom date filter: 2025-08-28 to 2025-08-29
+2025-08-27 15:55:44 - core.data_processor.TenderDataProcessor - INFO - Custom date filter: 2025-08-28 00:00:00 to 2025-08-29 23:59:59
+2025-08-27 15:55:44 - core.data_processor.TenderDataProcessor - INFO - Custom date filter returned 232 records
+2025-08-27 15:55:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 232 rows.
+2025-08-27 15:55:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'custom', 'start_date': '2025-08-28', 'end_date': '2025-08-29'}}
+2025-08-27 15:55:49 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: live
+2025-08-27 15:55:49 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 782 rows.
+2025-08-27 15:55:49 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'live'}}
+2025-08-27 15:55:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: expired
+2025-08-27 15:56:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 9034 rows.
+2025-08-27 15:56:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'expired'}}
+2025-08-27 15:56:38 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: live
+2025-08-27 15:56:38 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 782 rows.
+2025-08-27 15:56:38 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'live'}}
+2025-08-27 20:03:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: live
+2025-08-27 20:03:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 732 rows.
+2025-08-27 20:03:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'live'}}
+2025-08-27 20:03:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: expired
+2025-08-27 20:03:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 9084 rows.
+2025-08-27 20:03:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'expired'}}
+2025-08-27 20:04:19 - matplotlib.font_manager - INFO - generated new fontManager
+2025-08-27 20:04:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Displayed data visualization chart
+2025-08-27 20:07:09 - ui.main_window - INFO - Application closing
+2025-08-27 20:07:09 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
