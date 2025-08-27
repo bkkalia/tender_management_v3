@@ -85,13 +85,9 @@ except ImportError:
     GlobalConfig = None
 
 # Logger setup with fallback
-try:
-    from utils.logger_setup import setup_logger
-    HAS_LOGGER_SETUP = True
-except ImportError:
-    HAS_LOGGER_SETUP = False
-    setup_logger = None
-    print("Warning: logger_setup module not available. Using basic logging.")
+HAS_LOGGER_SETUP = False
+# Provide a proper fallback function
+setup_logger = lambda *args, **kwargs: logging.getLogger(__name__)
 
 # Default configuration
 DEFAULT_CONFIG = {
@@ -117,17 +113,6 @@ def get_project_root() -> Path:
     """Get the project root directory"""
     return Path(__file__).parent.parent
 
-def get_data_dir() -> Path:
-    """Get the data directory"""
-    data_dir = get_project_root() / "data"
-    data_dir.mkdir(exist_ok=True)
-    return data_dir
-
-def get_logs_dir() -> Path:
-    """Get the logs directory"""
-    logs_dir = get_project_root() / "logs"
-    logs_dir.mkdir(exist_ok=True)
-    return logs_dir
 
 # Common logger setup
 def setup_module_logger(name: str) -> logging.Logger:

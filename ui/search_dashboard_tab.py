@@ -158,10 +158,12 @@ class SearchDashboardTab(ttk.Frame):
         for i in range(11):  # We now have 11 metrics
             dashboard_container.columnconfigure(i, weight=1)
         
-        # Define metrics with their properties - Add live_tenders
+        # Define metrics with their properties - Reorder with Live and Expired first
         self.dashboard_labels = {}
         metrics = [
-            # key, title, color
+            # key, title, color - Live and Expired are now first with prominent colors
+            ("live_tenders", "Live\nTenders", "#006400"),  # Dark Green for Live
+            ("expired_tenders", "Expired\nTenders", "#000000"),  # Black for Expired
             ("total_tenders", "Total\nTenders", COLORS.get('primary', '#1976d2')),
             ("filtered_tenders", "Filtered\nResults", COLORS.get('info', '#0288d1')),
             ("match_percentage", "Filter\nMatch %", COLORS.get('success', '#4caf50')),
@@ -169,8 +171,6 @@ class SearchDashboardTab(ttk.Frame):
             ("closing_today", "Due\nToday", COLORS.get('danger', '#f44336')),
             ("closing_next_3_days", "Due in\n3 Days", COLORS.get('secondary', '#9c27b0')),
             ("closing_next_7_days", "Due in\n7 Days", COLORS.get('info_dark', '#01579b')),
-            ("live_tenders", "Live\nTenders", COLORS.get('success_light', '#66bb6a')),  # New metric
-            ("expired_tenders", "Expired\nTenders", COLORS.get('danger_light', '#ef5350')),
             ("data_sources", "Data\nSources", COLORS.get('secondary_light', '#ba68c8')),
             ("current_date", "Date &\nTime", COLORS.get('primary_dark', '#1a237e'))
         ]
@@ -1167,91 +1167,54 @@ class SearchDashboardTab(ttk.Frame):
         for _, row in filtered_data.iterrows():
             values = []
             for col in visible_columns:
-                value = row[col]
-                
-                # Handle null values - safely handle DataFrame, Series and scalar values
-                if isinstance(value, pd.DataFrame):
-                    # Handle DataFrame value (fix for indexing errors)
-                    if len(value) == 0:
-                        values.append("")
-                    else:
-                        try:
-                            # Safely extract first value from DataFrame
-                            first_val = value.iat[0, 0] if value.shape[1] > 0 else ""
-                            values.append("" if pd.isna(first_val) else str(first_val))
-                        except (IndexError, TypeError):
-                            values.append(str(value))
-                elif isinstance(value, pd.Series):
-                    # Handle Series value
-                    if len(value) == 0:
-                        values.append("")
-                    else:
-                        try:
-                            first_val = value.iloc[0]
-                            values.append("" if pd.isna(first_val) else str(first_val))
-                        except (IndexError, TypeError):
-                            values.append(str(value))
-                elif value is None or (isinstance(value, (int, float, str)) and pd.isna(value)):
-                    values.append("")
-                # Format date values with TIME included for better visibility
-                elif pd.api.types.is_datetime64_any_dtype(filtered_data[col].dtype):
-                    try:
-                        # Check if value is null or invalid first - fix the DataFrame boolean issue
-                        if value is None or pd.isna(value) or str(value).lower() in ['nat', 'none', '']:
-                            values.append("")
-                        # Check if this is a scalar datetime value
-                        elif hasattr(value, 'strftime'):  # Valid datetime object
-                            col_lower = str(col).lower()
-                            if any(keyword in col_lower for keyword in ['closing', 'due', 'deadline', 'end', 'expiry']):
-                                # For closing dates, show full datetime with time
-                                date_str = value.strftime("%Y-%m-%d %H:%M")
-                                values.append(date_str)
-                            else:
-                                # For other date columns, show date with time if available
-                                if value.hour != 0 or value.minute != 0 or value.second != 0:
-                                    # Has time component, show it
-                                    date_str = value.strftime("%Y-%m-%d %H:%M")
-                                else:
-                                    # No meaningful time component, show just date
-                                    date_str = value.strftime("%Y-%m-%d")
-                                values.append(date_str)
-                        else:
-                            # Not a valid datetime, show as string or empty
-                            values.append(str(value) if value not in [None, pd.NaT] else "")
-                    except Exception as e:
-                        self.logger.warning(f"Error formatting date value {value} for column {col}: {e}")
-                        values.append(str(value) if value is not None and not pd.isna(value) else "")
+                value = row.get(col)
 
-                # Handle URL columns - Fix for pandas Series comparison
-                elif col in self.url_columns and isinstance(value, str) and value.strip():
-                    # Use explicit string methods to avoid Series boolean operations
+                # 1. Handle non-scalar types FIRST to prevent crashes
+                if isinstance(value, (pd.DataFrame, pd.Series)):
+                    values.append("")
+                    continue
+
+                # 2. Handle None/NaN values
+                if value is None or pd.isna(value):
+                    values.append("")
+                    continue
+
+                # 3. Handle specific data types now that we know it's a scalar
+                # Datetime column handling
+                if pd.api.types.is_datetime64_any_dtype(filtered_data[col].dtype):
+                    dt = pd.to_datetime(value, errors='coerce')
+                    if pd.isna(dt):
+                        values.append("")
+                    else:
+                        col_lower = str(col).lower()
+                        if any(keyword in col_lower for keyword in ['closing', 'due', 'deadline', 'end', 'expiry']):
+                            values.append(dt.strftime("%Y-%m-%d %H:%M"))
+                        else:
+                            if dt.hour != 0 or dt.minute != 0 or dt.second != 0:
+                                values.append(dt.strftime("%Y-%m-%d %H:%M"))
+                            else:
+                                values.append(dt.strftime("%Y-%m-%d"))
+                    continue
+
+                # URL column handling
+                if col in self.url_columns:
                     if isinstance(value, str) and (value.startswith('http') or value.startswith('www')):
                         values.append("🔗")  # Link icon
                     else:
-                        values.append(value)
-                # All other values - with highlighting
+                        values.append(str(value))
+                    continue
+
+                # 4. Handle all other scalar values and apply highlighting
+                str_value = str(value)
+                if search_terms:
+                    highlighted_value = str_value
+                    for term in search_terms:
+                        if term.lower() in str_value.lower():
+                            pattern = re.compile(f"({re.escape(term)})", re.IGNORECASE)
+                            highlighted_value = pattern.sub(r"••\1••", highlighted_value)
+                    values.append(highlighted_value)
                 else:
-                    # Handle DataFrame/Series values first to avoid boolean operation errors
-                    if isinstance(value, pd.DataFrame):
-                        values.append("")
-                    elif isinstance(value, pd.Series):
-                        values.append("")
-                    elif value is None or pd.isna(value):
-                        values.append("")
-                    else:
-                        str_value = str(value)
-                        
-                        # Highlight search terms in the displayed value
-                        if search_terms and isinstance(str_value, str):
-                            highlighted_value = str_value
-                            for term in search_terms:
-                                if term.lower() in str_value.lower():
-                                    # Mark matching terms with special characters for highlighting
-                                    pattern = re.compile(f"({re.escape(term)})", re.IGNORECASE)
-                                    highlighted_value = pattern.sub(r"••\1••", highlighted_value)
-                            values.append(highlighted_value)
-                        else:
-                            values.append(str_value)
+                    values.append(str_value)
             
             # Store the original row data in the tree item
             item_id = self.tree.insert("", "end", values=values)
@@ -1698,7 +1661,7 @@ class SearchDashboardTab(ttk.Frame):
         search_name = self.saved_search_var.get()
         if not search_name or search_name == "No saved searches":
             return
-            
+
         # Confirm deletion
         confirm = messagebox.askyesno(
             "Confirm Deletion",

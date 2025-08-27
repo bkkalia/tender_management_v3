@@ -6,7 +6,11 @@
     "last_used_folders": [
         "H:/My Drive/0dev/Search Utility v2/tender_management_v2.1/data/input_excel_files"
     ],
-    "merger_unique_key": "Tender ID",
+    "merger_preferred_unique_keys": [
+        "Tender ID (Extracted)",
+        "Title and Ref.No./Tender ID",
+        "Tender ID"
+    ],
     "merger_critical_fields": [
         "Closing Date",
         "Status",
