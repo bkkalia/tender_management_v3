@@ -1160,8 +1160,13 @@ class SearchDashboardTab(ttk.Frame):
                     if col in self.column_config:
                         self.column_config[col]["width"] = col_width
             
-            # Set the column width
-            self.tree.column(col, width=col_width, minwidth=80)
+            # Set the column width and alignment
+            anchor = 'w'  # Default to left-align
+            date_keywords = ['date', 'time', 'deadline', 'closing', 'opening', 'published']
+            if any(keyword in col_lower for keyword in date_keywords) or col in self.url_columns:
+                anchor = 'center'
+            
+            self.tree.column(col, width=col_width, minwidth=80, anchor=anchor)
         
         # Insert data rows with proper handling of values
         for _, row in filtered_data.iterrows():
