@@ -26,3 +26,11 @@
 2025-08-30 15:17:31 - ui.main_window.MainApplication - INFO - Initial data loaded for Search tab
 2025-08-30 15:17:37 - ui.main_window.MainApplication - WARNING - Could not load app icon in about dialog: couldn't recognize data in image file "resources\app_icon.ico"
 2025-08-30 15:17:37 - ui.main_window.MainApplication - INFO - Cloud84 logo loaded successfully: resources\cloud84_logo.png
+2025-08-30 15:30:57 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-08-30 15:30:58 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-08-30 15:30:59 - ui.logs_tab.LogsTab - INFO - Logs tab selected
+2025-08-30 15:31:00 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-08-30 15:31:00 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-08-30 15:31:05 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-08-30 15:31:06 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-08-30 15:31:07 - ui.logs_tab.LogsTab - INFO - Logs tab selected

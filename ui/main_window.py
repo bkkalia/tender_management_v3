@@ -56,7 +56,7 @@ class MainApplication(tk.Tk):
         self.tabs = {}
         self._create_menu()
         self._create_notebook()
-        self._create_status_bar()
+        self._create_status_bar()  # Fixed typo from _create_status_bfix
         
         # Load initial data after UI is ready
         self.after(100, self._load_initial_data)

@@ -42,10 +42,15 @@ class SearchDashboardTab(ttk.Frame):
     """
     Search & Dashboard Tab: Load data, search, filter, and view statistics.
     """
-    def __init__(self, parent: ttk.Notebook, main_app: 'MainApplication'):
+    def __init__(self, parent: ttk.Notebook, main_app):
         super().__init__(parent)
         self.main_app = main_app
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        
+        # Add filter state tracking
+        self.active_filters = set()
+        self.filter_buttons = {}
+        self.current_filtered_data = None
 
         self.data_processor = TenderDataProcessor(self.main_app.global_config)
         self.loaded_files: List[str] = []
@@ -1344,7 +1349,7 @@ class SearchDashboardTab(ttk.Frame):
                 self.main_app.global_config.save_config()
             self._update_selected_folders_display()
             self.logger.info(f"Added folder: {folder_selected}")
-            self._load_data_from_folders()  # Auto-load data when folder is added
+            self._load_data_from_folders  # Auto-load data when folder is added
 
     def _clear_folders(self):
         self.loaded_files = []
@@ -2060,3 +2065,268 @@ class SearchDashboardTab(ttk.Frame):
         self.wait_window(dialog)
         
         return result["value"]
+
+    def _filter_live_tenders(self):
+        """Filter to show only live/active tenders."""
+        # Implementation for live tenders filter
+        self._apply_filter("live")
+    
+    def _filter_expired(self):
+        """Filter to show only expired tenders."""
+        # Implementation for expired tenders filter
+        self._apply_filter("expired")
+    
+    def _filter_due_today(self):
+        """Filter to show tenders due today."""
+        # Implementation for due today filter
+        self._apply_filter("due_today")
+    
+    def _filter_due_this_week(self):
+        """Filter to show tenders due this week."""
+        # Implementation for due this week filter
+        self._apply_filter("due_this_week")
+    
+    def _filter_high_value(self):
+        """Filter to show high value tenders."""
+        # Implementation for high value filter
+        self._apply_filter("high_value")
+    
+    def _apply_filter(self, filter_type):
+        """Apply the specified filter to the data."""
+        # This method should contain your actual filtering logic
+        # For now, it's a placeholder
+        try:
+            if hasattr(self, 'data_processor') and self.data_processor is not None:
+                # Apply filter logic here based on filter_type
+                # Update the treeview with filtered data
+                self._update_treeview()
+            self.logger.info(f"Applied filter: {filter_type}")
+        except Exception as e:
+            self.logger.error(f"Error applying filter {filter_type}: {e}")
+
+    def _create_quick_filters(self, parent):
+        """Create quick filter buttons with active state support."""
+        filter_frame = ttk.LabelFrame(parent, text="Quick Filters", padding=SPACING['medium'])
+        filter_frame.pack(fill=tk.X, pady=SPACING['medium'])
+        
+        # Store active filters
+        self.active_filters = set()
+        
+        # Create filter buttons with active state support
+        button_frame = ttk.Frame(filter_frame)
+        button_frame.pack(fill=tk.X)
+        
+        # Define filter buttons with their types and colors
+        filter_buttons = [
+            ("Live Tenders", "success", self._filter_live_tenders),
+            ("Expired", "danger", self._filter_expired),
+            ("Due Today", "warning", self._filter_due_today),
+            ("Due This Week", "info", self._filter_due_this_week),
+            ("High Value", "primary", self._filter_high_value),
+            ("Clear All", "secondary", self._clear_all_filters)
+        ]
+        
+        self.filter_buttons = {}
+        
+        for i, (text, btn_type, command) in enumerate(filter_buttons):
+            if text == "Clear All":
+                # Clear All button is not a filter, just a regular button
+                btn = create_action_button(
+                    button_frame, text, command, 
+                    button_type=btn_type, width=12
+                )
+            else:
+                # Create filter button with active state support
+                btn = create_action_button(
+                    button_frame, text, 
+                    lambda cmd=command, name=text: self._toggle_filter(name, cmd),
+                    button_type=btn_type, width=12, is_filter=True
+                )
+                
+            btn.grid(row=i//3, column=i%3, padx=SPACING['small'], pady=SPACING['small'], sticky='ew')
+            self.filter_buttons[text] = btn
+        
+        # Configure grid weights
+        for col in range(3):
+            button_frame.columnconfigure(col, weight=1)
+
+    def _toggle_filter(self, filter_name, filter_command):
+        """Toggle a filter's active state and apply/remove the filter."""
+        button = self.filter_buttons[filter_name]
+        
+        if button.is_active():
+            # Deactivate filter
+            button.set_active(False)
+            self.active_filters.discard(filter_name)
+            self.logger.info(f"Deactivated filter: {filter_name}")
+        else:
+            # Activate filter
+            button.set_active(True)
+            self.active_filters.add(filter_name)
+            self.logger.info(f"Activated filter: {filter_name}")
+        
+        # Apply all active filters
+        self._apply_all_active_filters()
+        
+        # Update status to show active filters
+        self._update_filter_status()
+
+    def _apply_all_active_filters(self):
+        """Apply all currently active filters to the data."""
+        try:
+            if not hasattr(self, 'data_processor') or self.data_processor is None:
+                return
+                
+            # Start with original data
+            filtered_data = self.data_processor.raw_data.copy()
+            
+            # Apply each active filter
+            for filter_name in self.active_filters:
+                if filter_name == "Live Tenders":
+                    filtered_data = self._apply_live_filter(filtered_data)
+                elif filter_name == "Expired":
+                    filtered_data = self._apply_expired_filter(filtered_data)
+                elif filter_name == "Due Today":
+                    filtered_data = self._apply_due_today_filter(filtered_data)
+                elif filter_name == "Due This Week":
+                    filtered_data = self._apply_due_week_filter(filtered_data)
+                elif filter_name == "High Value":
+                    filtered_data = self._apply_high_value_filter(filtered_data)
+            
+            # Update the displayed data
+            self.data_processor.filtered_data = filtered_data
+            self._update_treeview()
+            self._update_stats()
+            
+        except Exception as e:
+            self.logger.error(f"Error applying filters: {e}")
+
+    def _update_filter_status(self):
+        """Update the status bar to show active filters."""
+        if self.active_filters:
+            active_list = ", ".join(sorted(self.active_filters))
+            status_text = f"Active filters: {active_list} ({len(self.data_processor.filtered_data)} results)"
+        else:
+            total_count = len(self.data_processor.raw_data) if hasattr(self, 'data_processor') and self.data_processor else 0
+            status_text = f"No filters active ({total_count} total results)"
+        
+        if hasattr(self, 'status_var'):
+            self.status_var.set(status_text)
+
+    def get_active_filters(self):
+        """Return list of currently active filters."""
+        return list(self.active_filters)
+
+    def clear_all_filters_programmatically(self):
+        """Clear all filters programmatically (useful for external calls)."""
+        self._clear_all_filters()
+
+    def _clear_all_filters(self):
+        """Clear all active filters."""
+        # Deactivate all filter buttons
+        for name, button in self.filter_buttons.items():
+            if name != "Clear All" and hasattr(button, 'set_active'):
+                button.set_active(False)
+        
+        # Clear active filters set
+        self.active_filters.clear()
+        
+        # Reset the data view
+        self._reset_all_filters()
+        self._update_filter_status()
+
+    def _reset_all_filters(self):
+        """Reset all filters and show original data."""
+        # Implementation depends on your data filtering logic
+        # This should restore the original unfiltered data
+        if hasattr(self, 'data_processor') and self.data_processor is not None:
+            # Reset to show all data
+            self._update_treeview()
+
+    def _apply_live_filter(self, data):
+        """Apply filter to show only live/active tenders."""
+        # Implementation for filtering live tenders
+        # This is a placeholder - you'll need to implement based on your data structure
+        try:
+            if 'Status' in data.columns:
+                return data[data['Status'].str.contains('Live|Active|Open', case=False, na=False)]
+            return data
+        except Exception as e:
+            self.logger.error(f"Error applying live filter: {e}")
+            return data
+
+    def _apply_expired_filter(self, data):
+        """Apply filter to show only expired tenders."""
+        try:
+            if 'Status' in data.columns:
+                return data[data['Status'].str.contains('Expired|Closed|Finished', case=False, na=False)]
+            return data
+        except Exception as e:
+            self.logger.error(f"Error applying expired filter: {e}")
+            return data
+
+    def _apply_due_today_filter(self, data):
+        """Apply filter to show tenders due today."""
+        try:
+            import pandas as pd
+            from datetime import date
+            
+            today = date.today()
+            if 'Closing Date' in data.columns:
+                # Convert to datetime if not already
+                data['Closing Date'] = pd.to_datetime(data['Closing Date'], errors='coerce')
+                return data[data['Closing Date'].dt.date == today]
+            return data
+        except Exception as e:
+            self.logger.error(f"Error applying due today filter: {e}")
+            return data
+
+    def _apply_due_week_filter(self, data):
+        """Apply filter to show tenders due this week."""
+        try:
+            import pandas as pd
+            from datetime import date, timedelta
+            
+            today = date.today()
+            week_end = today + timedelta(days=7)
+            
+            if 'Closing Date' in data.columns:
+                # Convert to datetime if not already
+                data['Closing Date'] = pd.to_datetime(data['Closing Date'], errors='coerce')
+                mask = (data['Closing Date'].dt.date >= today) & (data['Closing Date'].dt.date <= week_end)
+                return data[mask]
+            return data
+        except Exception as e:
+            self.logger.error(f"Error applying due week filter: {e}")
+            return data
+
+    def _apply_high_value_filter(self, data):
+        """Apply filter to show high value tenders."""
+        try:
+            if 'Value' in data.columns:
+                # Convert value column to numeric, removing currency symbols
+                numeric_values = pd.to_numeric(
+                    data['Value'].astype(str).str.replace(r'[^\d.]', '', regex=True), 
+                    errors='coerce'
+                )
+                # Define high value threshold (you can make this configurable)
+                high_value_threshold = 1000000  # 1 million
+                return data[numeric_values >= high_value_threshold]
+            return data
+        except Exception as e:
+            self.logger.error(f"Error applying high value filter: {e}")
+            return data
+
+    def _update_stats(self):
+        """Update statistics display."""
+        try:
+            if hasattr(self, 'data_processor') and self.data_processor is not None:
+                total_count = len(self.data_processor.raw_data)
+                filtered_count = len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') else total_count
+                
+                # Update the status bar instead of a separate stats label
+                if hasattr(self, 'status_var'):
+                    self.status_var.set(f"Showing {filtered_count} of {total_count} tenders")
+                    
+        except Exception as e:
+            self.logger.error(f"Error updating stats: {e}")

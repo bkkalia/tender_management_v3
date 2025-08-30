@@ -93,16 +93,18 @@ class SettingsTab(ttk.Frame):
         default_data_row = ttk.Frame(paths_frame)
         default_data_row.pack(fill=tk.X, padx=SPACING['medium'], pady=SPACING['small'])
         
-        create_info_label(default_data_row, "Default Data Folder:").pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        info_label = create_info_label(default_data_row, "Default Data Folder:")
+        info_label.pack(side=tk.LEFT, padx=(0, SPACING['small']))
         
         default_data_entry = ttk.Entry(default_data_row, textvariable=self.default_data_folder_var, width=50)
         default_data_entry.pack(side=tk.LEFT, padx=(0, SPACING['small']), fill=tk.X, expand=True)
         
-        create_action_button(
+        browse_btn = create_action_button(
             default_data_row, "Browse...", 
             lambda: self._browse_folder(self.default_data_folder_var),
             width=10
-        ).pack(side=tk.LEFT)
+        )
+        browse_btn.pack(side=tk.LEFT)
         
         # Help text for default data folder
         create_info_label(
