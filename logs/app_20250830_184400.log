@@ -1,0 +1,75 @@
+2025-08-30 18:44:00 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250830_184400.log
+2025-08-30 18:44:00 - root - INFO - Application starting...
+2025-08-30 18:44:00 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-08-30 18:44:00 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-08-30 18:44:00 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-08-30 18:44:00 - ui.main_window.MainApplication - INFO - Window icon set successfully: resources\app_icon.ico
+2025-08-30 18:44:00 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-08-30 18:44:01 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-08-30 18:44:01 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-08-30 18:44:01 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-08-30 18:44:01 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-08-30 18:44:01 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-08-30 18:44:01 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-08-30 18:44:01 - ui.main_window - INFO - Main application initialized
+2025-08-30 18:44:01 - root - INFO - Main window initialized
+2025-08-30 18:44:01 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-08-30 18:44:01 - core.data_processor.TenderDataProcessor - INFO - Loading data from: G:/My Drive/0dev/Search Utility v3/tender_management_v3/data/merged_data\hptenders_gov_in_consolidated_master.xlsx
+2025-08-30 18:44:02 - core.data_processor.TenderDataProcessor - INFO - Total columns in data: 10
+2025-08-30 18:44:02 - core.data_processor.TenderDataProcessor - INFO - Found potential closing date column: 'Closing Date'
+2025-08-30 18:44:02 - core.data_processor.TenderDataProcessor - INFO - Sample values before conversion for 'Closing Date': [Timestamp('2025-06-05 13:00:00'), Timestamp('2025-05-27 13:00:00'), Timestamp('2025-05-27 12:00:00'), Timestamp('2025-06-20 15:00:00'), Timestamp('2025-06-24 11:00:00')]
+2025-08-30 18:44:02 - core.data_processor.TenderDataProcessor - INFO - Converted 'Closing Date' using format '%Y-%m-%d %H:%M:%S': 9816/9816 values
+2025-08-30 18:44:02 - core.data_processor.TenderDataProcessor - INFO - Sample values after conversion for 'Closing Date': [Timestamp('2025-06-05 13:00:00'), Timestamp('2025-05-27 13:00:00'), Timestamp('2025-05-27 12:00:00'), Timestamp('2025-06-20 15:00:00'), Timestamp('2025-06-24 11:00:00')]
+2025-08-30 18:44:02 - core.data_processor.TenderDataProcessor - INFO - Successfully loaded 9816 records from 1 files.
+2025-08-30 18:44:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 9816 rows.
+2025-08-30 18:44:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Restored previous session data from 1 files
+2025-08-30 18:44:09 - ui.main_window.MainApplication - INFO - Initial data loaded for Search tab
+2025-08-30 18:44:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' ASC
+2025-08-30 18:44:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 9816 rows.
+2025-08-30 18:44:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: today
+2025-08-30 18:44:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Reset all date filter buttons to original colors
+2025-08-30 18:44:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Set date filter button 'Today' as active
+2025-08-30 18:44:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:44:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'today'}}
+2025-08-30 18:44:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' DESC
+2025-08-30 18:44:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:44:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' ASC
+2025-08-30 18:44:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:44:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' DESC
+2025-08-30 18:44:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:44:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' ASC
+2025-08-30 18:44:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:44:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' DESC
+2025-08-30 18:44:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:44:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' ASC
+2025-08-30 18:44:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:44:58 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' DESC
+2025-08-30 18:44:58 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:44:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' ASC
+2025-08-30 18:44:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:45:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' DESC
+2025-08-30 18:45:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:45:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' ASC
+2025-08-30 18:45:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:45:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' DESC
+2025-08-30 18:45:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:45:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' ASC
+2025-08-30 18:45:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:45:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' DESC
+2025-08-30 18:45:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:45:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Closing Date' ASC
+2025-08-30 18:45:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:45:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'e-Published Date' ASC
+2025-08-30 18:45:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:45:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'e-Published Date' DESC
+2025-08-30 18:45:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:45:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'e-Published Date' ASC
+2025-08-30 18:45:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:45:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Tender ID (Extracted)' ASC
+2025-08-30 18:45:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:45:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Tender ID (Extracted)' DESC
+2025-08-30 18:45:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:45:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Tender ID (Extracted)' ASC
+2025-08-30 18:45:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.
+2025-08-30 18:45:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorting by column 'Tender ID (Extracted)' DESC
+2025-08-30 18:45:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Updated treeview with 133 rows.

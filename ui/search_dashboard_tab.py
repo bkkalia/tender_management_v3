@@ -72,6 +72,9 @@ class SearchDashboardTab(ttk.Frame):
         
         # Initialize tooltip attribute
         self.tooltip = None
+        # --- added sort state ---
+        self.sort_column: Optional[str] = None
+        self.sort_ascending: bool = True
 
         self._create_widgets()
         self._setup_treeview_bindings()
@@ -503,6 +506,10 @@ class SearchDashboardTab(ttk.Frame):
     def _setup_treeview_bindings(self):
         self.tree.bind("<Double-1>", self._on_treeview_double_click)
         self.tree.bind("<Button-3>", self._show_treeview_context_menu)  # Right-click for context menu
+        # Bind column header clicks for sorting
+        self.tree.heading("#0", text="")  # Ensure the first column (tree column) is not empty
+        for col in self.tree["columns"]:
+            self.tree.heading(col, command=lambda c=col: self._on_treeview_heading_click(c))
 
     def _show_treeview_context_menu(self, event):
         self.tree.focus_set()
@@ -1130,16 +1137,53 @@ class SearchDashboardTab(ttk.Frame):
             if self.column_config.get(col, {}).get("visible", True):
                 visible_columns.append(col)
         
+        # After visible_columns list is finalized and BEFORE inserting rows
+        # Apply current sort (including proper date handling)
+        if self.sort_column and self.sort_column in filtered_data.columns:
+            try:
+                sort_series = filtered_data[self.sort_column]
+
+                # Try datetime first (even if dtype is object)
+                dt_conv = pd.to_datetime(sort_series, errors='coerce')
+                if dt_conv.notna().any():
+                    # Use datetime where parsed; NaT go to end when ascending
+                    tmp_df = filtered_data.copy()
+                    tmp_df['_sort_key_'] = dt_conv
+                    filtered_data = tmp_df.sort_values(
+                        by=['_sort_key_'],
+                        ascending=self.sort_ascending,
+                        kind='mergesort'  # stable
+                    ).drop(columns=['_sort_key_'])
+                else:
+                    # Try numeric
+                    num_conv = pd.to_numeric(sort_series, errors='coerce')
+                    if num_conv.notna().any():
+                        tmp_df = filtered_data.copy()
+                        tmp_df['_sort_key_'] = num_conv
+                        filtered_data = tmp_df.sort_values(
+                            by=['_sort_key_'],
+                            ascending=self.sort_ascending,
+                            kind='mergesort'
+                        ).drop(columns=['_sort_key_'])
+                    else:
+                        # Fallback string (case-insensitive)
+                        filtered_data = filtered_data.sort_values(
+                            by=[self.sort_column],
+                            key=lambda s: s.astype(str).str.lower(),
+                            ascending=self.sort_ascending,
+                            kind='mergesort'
+                        )
+            except Exception as e:
+                self.logger.warning(f"Failed to sort by '{self.sort_column}': {e}")
+
         # Set the visible columns in the treeview
         self.tree["columns"] = visible_columns
-        
+
         # Reset URL columns tracking
         self.url_columns = []
-        
-        # Set column headings and properties
+
+        # Set column headings and properties (modified to add clickable sorting + arrow)
         for col in visible_columns:
-            self.tree.heading(col, text=col)
-            
             # Get width from configuration or use default based on column type
             col_width = self.column_config.get(col, {}).get("width", 150)
             col_lower = str(col).lower()
@@ -1172,6 +1216,16 @@ class SearchDashboardTab(ttk.Frame):
                     col_width = 80
                     if col in self.column_config:
                         self.column_config[col]["width"] = col_width
+            
+            # Build heading text with arrow if active sort column
+            heading_text = col
+            if col == self.sort_column:
+                heading_text += " ↑" if self.sort_ascending else " ↓"
+            self.tree.heading(
+                col,
+                text=heading_text,
+                command=lambda c=col: self._on_treeview_heading_click(c)
+            )
             
             # Set the column width and alignment
             anchor = 'w'  # Default to left-align
@@ -2399,3 +2453,22 @@ class SearchDashboardTab(ttk.Frame):
             self.logger.info(f"Applied filter: {filter_type}")
         except Exception as e:
             self.logger.error(f"Error applying filter {filter_type}: {e}")
+    
+    def _on_treeview_heading_click(self, column: str):
+        """
+        Handle click on a Treeview column heading to sort.
+        Toggles ascending/descending when same column clicked again.
+        """
+        try:
+            if self.sort_column == column:
+                # Toggle direction
+                self.sort_ascending = not self.sort_ascending
+            else:
+                self.sort_column = column
+                self.sort_ascending = True
+            self.logger.info(f"Sorting by column '{self.sort_column}' "
+                             f"{'ASC' if self.sort_ascending else 'DESC'}")
+            # Rebuild tree with applied sort
+            self._update_treeview()
+        except Exception as e:
+            self.logger.error(f"Error sorting column '{column}': {e}")
