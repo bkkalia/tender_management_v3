@@ -1328,9 +1328,14 @@ class SearchDashboardTab(ttk.Frame):
 
 
     def _add_folder(self):
+        # Get the default folder from config, with fallback
+        default_folder = self.main_app.global_config.get("default_data_folder", "")
+        if not default_folder or not os.path.exists(default_folder):
+            default_folder = os.path.expanduser("~")
+            
         folder_selected = filedialog.askdirectory(
             title="Select Folder Containing Excel/CSV Files",
-            initialdir=self.main_app.global_config.get("default_data_folder")
+            initialdir=default_folder
         )
         if folder_selected:
             if folder_selected not in self.loaded_files:
@@ -1339,7 +1344,7 @@ class SearchDashboardTab(ttk.Frame):
                 self.main_app.global_config.save_config()
             self._update_selected_folders_display()
             self.logger.info(f"Added folder: {folder_selected}")
-            self._load_data_from_folders  # Live load data when folder is added
+            self._load_data_from_folders()  # Auto-load data when folder is added
 
     def _clear_folders(self):
         self.loaded_files = []

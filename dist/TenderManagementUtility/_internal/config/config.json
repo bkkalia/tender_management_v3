@@ -4,7 +4,7 @@
     "merged_data_folder": "./data/merged_data/",
     "log_level": "INFO",
     "last_used_folders": [
-        "G:/My Drive/0dev/Search Utility v3/tender_management_v3/dist/TenderManagementUtility/data/merged_data"
+        "G:/My Drive/0dev/Search Utility v3/tender_management_v3/data/merged_data"
     ],
     "merger_unique_key": "Tender ID",
     "merger_critical_fields": [
@@ -13,7 +13,7 @@
         "Value"
     ],
     "last_loaded_files": [
-        "G:/My Drive/0dev/Search Utility v3/tender_management_v3/dist/TenderManagementUtility/data/merged_data\\hptenders_gov_in_tenders_20250828_115443.xlsx"
+        "G:/My Drive/0dev/Search Utility v3/tender_management_v3/data/merged_data\\hptenders_gov_in_consolidated_master.xlsx"
     ],
     "merger_preferred_unique_keys": [],
     "merger_max_backups": 5

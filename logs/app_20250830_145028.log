@@ -1,0 +1,15 @@
+2025-08-30 14:50:28 - root - INFO - Logging to file: g:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250830_145028.log
+2025-08-30 14:50:28 - root - INFO - Application starting...
+2025-08-30 14:50:28 - root - CRITICAL - Unhandled exception: '_tkinter.tkapp' object has no attribute 'global_config'
+Traceback (most recent call last):
+  File "g:\My Drive\0dev\Search Utility v3\tender_management_v3\main.py", line 34, in main
+    root = MainApplication()
+  File "g:\My Drive\0dev\Search Utility v3\tender_management_v3\ui\main_window.py", line 38, in __init__
+    self._setup_window()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "g:\My Drive\0dev\Search Utility v3\tender_management_v3\ui\main_window.py", line 70, in _setup_window
+    self.title(f"{self.global_config.get('app_title', 'Tender Management Utility')} - Version 3.0")
+                  ^^^^^^^^^^^^^^^^^^
+  File "c:\Python313\Lib\tkinter\__init__.py", line 2546, in __getattr__
+    return getattr(self.tk, attr)
+AttributeError: '_tkinter.tkapp' object has no attribute 'global_config'

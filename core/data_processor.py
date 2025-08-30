@@ -533,3 +533,8 @@ class TenderDataProcessor:
             # Fill NaN values with 'Unknown', get unique values, sort, and convert to list
             return sorted(list(self.raw_data[department_col].fillna('Unknown').unique()))
         return ["N/A"]
+
+    def update_config(self, new_config_manager):
+        """Update the configuration manager and apply new settings."""
+        self.config_manager = new_config_manager
+        self.logger.info("Configuration updated in TenderDataProcessor")

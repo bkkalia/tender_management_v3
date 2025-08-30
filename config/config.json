@@ -1,7 +1,7 @@
 {
     "app_title": "Tender Search Utility V3",
-    "default_data_folder": "./data/merged_data",
-    "merged_data_folder": "./data/merged_data/",
+    "default_data_folder": "H:/My Drive/CRM T84/0 Live App/Search data/merged_data",
+    "merged_data_folder": "H:/My Drive/CRM T84/0 Live App/Search data/merged_data",
     "log_level": "INFO",
     "last_used_folders": [
         "G:/My Drive/0dev/Search Utility v3/tender_management_v3/data/merged_data"

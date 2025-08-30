@@ -71,6 +71,9 @@ class BaseConfig:
 class GlobalConfig(BaseConfig):
     """Manages global application settings."""
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
+        # Initialize logger first
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        
         default_settings = {
             "app_title": "Tender Search Utility V3",
             "default_data_folder": "./data/input_excel_files/",
@@ -83,6 +86,40 @@ class GlobalConfig(BaseConfig):
         super().__init__(config_path, default_settings)
         os.makedirs(self.get("default_data_folder", "./data/input_excel_files/"), exist_ok=True)
         os.makedirs(self.get("merged_data_folder", "./data/merged_data/"), exist_ok=True)
+
+    def save_config(self, data_to_save: Optional[Dict[str, Any]] = None) -> bool:
+        """Save the current configuration to file."""
+        if not self.config_path:
+            logger.error("Cannot save config: No config_path specified.")
+            return False
+            
+        try:
+            # Ensure the directory exists
+            config_dir = os.path.dirname(self.config_path)
+            if config_dir:  # Only create if dirname returns a non-empty string
+                os.makedirs(config_dir, exist_ok=True)
+            
+            # Use provided data or current config
+            config_to_save = data_to_save if data_to_save is not None else self.config
+            
+            # Normalize paths before saving
+            normalized_config = config_to_save.copy()
+            for key in ["default_data_folder", "merged_data_folder"]:
+                if key in normalized_config:
+                    path = normalized_config[key]
+                    if path:
+                        # Convert to absolute path and normalize
+                        normalized_config[key] = os.path.abspath(path).replace("\\", "/")
+            
+            with open(self.config_path, 'w', encoding='utf-8') as f:
+                json.dump(normalized_config, f, indent=4, ensure_ascii=False)
+            
+            logger.info(f"Configuration saved to {self.config_path}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to save configuration: {e}")
+            return False
 
 class FeatureConfig(BaseConfig):
     """Manages feature-specific configurations."""

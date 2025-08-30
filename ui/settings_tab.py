@@ -333,21 +333,30 @@ class SettingsTab(ttk.Frame):
     
     def _propagate_config_changes(self, new_settings: Dict[str, Any]):
         """Notify other components of configuration changes."""
-        # Reinitialize relevant components that depend on these settings
-        
-        # Update Search tab's data processor with new paths if it exists
-        search_tab = self.main_app.tabs.get("Search & Dashboard")
-        if search_tab and hasattr(search_tab, "data_processor"):
-            search_tab.data_processor.update_config(self.main_app.global_config)
-            self.logger.info("Updated Search tab's data processor with new config")
-        
-        # Update Portal Merger tab with new merger settings if it exists
-        merger_tab = self.main_app.tabs.get("Portal Merger")
-        if merger_tab and hasattr(merger_tab, "merger"):
-            merger_tab.merger = None  # Force recreation with new config
-            # Create a new PortalDataMerger instance directly
-            merger_tab.merger = PortalDataMerger(self.main_app.global_config)
-            self.logger.info("Updated Portal Merger tab with new config")
+        try:
+            # Update Search tab's data processor with new paths if it exists
+            search_tab = self.main_app.tabs.get("Search & Dashboard")
+            if search_tab and hasattr(search_tab, "data_processor"):
+                if hasattr(search_tab.data_processor, 'update_config'):
+                    search_tab.data_processor.update_config(self.main_app.global_config)
+                    self.logger.info("Updated Search tab's data processor with new config")
+                else:
+                    # Recreate the data processor with new config
+                    from core.data_processor import TenderDataProcessor
+                    search_tab.data_processor = TenderDataProcessor(self.main_app.global_config)
+                    self.logger.info("Recreated Search tab's data processor with new config")
+            
+            # Update Portal Merger tab with new merger settings if it exists
+            merger_tab = self.main_app.tabs.get("Portal Merger")
+            if merger_tab and hasattr(merger_tab, "merger"):
+                merger_tab.merger = None  # Force recreation with new config
+                # Create a new PortalDataMerger instance directly
+                merger_tab.merger = PortalDataMerger(self.main_app.global_config)
+                self.logger.info("Updated Portal Merger tab with new config")
+                
+        except Exception as e:
+            self.logger.error(f"Error propagating config changes: {e}")
+            # Don't raise the error, just log it so settings still save
     
     def on_tab_selected(self):
         """Called when this tab is selected."""

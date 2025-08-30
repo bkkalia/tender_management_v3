@@ -80,6 +80,8 @@ def build_exe():
         "--windowed",
         "--clean",
         "--noconfirm",
+        # Add icon to the executable
+        "--icon=resources/app_icon.ico",
         # Use os.pathsep for cross-platform compatibility
         f"--add-data=utils{os.pathsep}utils",
         f"--add-data=ui{os.pathsep}ui",
