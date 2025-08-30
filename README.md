@@ -1,4 +1,4 @@
-# Tender Management Utility (v3)
+# Tender Management Utility (v3.1)
 
 ## Overview
 Desktop application (Tkinter) to load, search, filter, visualize, merge and manage tender data with calendar & task integration.
@@ -98,6 +98,9 @@ Graceful warnings (missing folders, no data, dependency absence).
 - Theming toggle (light/dark)
 
 ## Changelog (Excerpt)
+v3.1  
+- Version bump: UI now reflects 3.1 (minor maintenance update)  
+
 v3.0  
 - Added sortable Treeview headers  
 - Added active date filter visual state + reset restoration  
@@ -121,4 +124,87 @@ pip install pandas tkcalendar openpyxl matplotlib
 ```
 (Visualization optional if matplotlib absent.)
 
+## Suggested Improvements & New Features
+
+### High Impact / Quick Wins
+- Persist column configuration: save visible columns, order, widths, last sort column/direction in config.
+- Multi-column sort: Shift+Click additional headers to create sort priority list.
+- Column header filter row: optional mini entries or dropdowns per column (exact / contains).
+- Auto reapply last session: restore last loaded folders, filters, and sort state.
+- Keyboard shortcuts: e.g. Ctrl+F (focus global search), F5 (refresh data), Ctrl+S (save search), Alt+R (reset filters).
+- Status bar enhancements: show active sort + filter count.
+- Dark mode toggle (store in config).
+
+### UX / Visualization
+- Conditional cell coloring (e.g., deadlines approaching: today = red, 3 days = orange, 7 days = yellow).
+- Inline badge for Expired / Live in a dedicated Status column.
+- Tooltip previews for truncated Title / Department.
+- Mini sparkline widget in dashboard for last 30‑day tender counts.
+- Export profiles: predefined column sets (Minimal / Full / Reporting).
+
+### Search & Filtering Enhancements
+- Fuzzy search (rapidfuzz) with adjustable threshold.
+- Saved search tagging + grouping.
+- Advanced query syntax: dept:"Roads" AND ("bridge" OR "culvert") NOT test.
+- Date range sliders (optional alt UI).
+- Filter history (undo last N filter changes).
+
+### Performance / Scalability
+- Background thread pool for file loading & parsing (non-blocking UI).
+- Incremental data index for faster repeated searches (e.g. whoosh or in-memory inverted index).
+- Virtualized table rendering (replace Treeview with a Canvas-based virtual list for >50k rows).
+- Cached dashboard metrics (invalidate only on data change).
+
+### Data Quality / Integrity
+- Data validation report: missing critical fields, malformed dates, duplicate IDs.
+- Change tracker: highlight rows whose critical fields changed since last load.
+- Hash-based duplication detection across folders.
+
+### Calendar & Notifications
+- Auto reminders: optional notification popup X days before closing.
+- iCal (.ics) export for selected tenders.
+- Batch rule: auto-add to calendar when Closing Date within N days and value > threshold.
+
+### Automation / Integration
+- Scheduled folder rescan (interval-based) with delta detection.
+- Webhook / email export of daily expiring tenders.
+- Plugin architecture for portal scrapers (standard interface: fetch(), normalize()).
+
+### Collaboration / Persistence
+- Profile switcher (different configs per user).
+- Optional cloud sync (OneDrive/Google Drive) for saved searches & layouts.
+- Audit log view (who added calendar events, edits, exports).
+
+### Advanced Analytics
+- Pivot summary (by department, month, status).
+- Value aggregation (sum, median if numeric value column present).
+- Trend anomaly detection (sudden spike/decline warnings).
+
+### Reliability / Diagnostics
+- In-app log viewer filters (level, source module).
+- Self-test utility: verify dependencies, writable dirs, config schema.
+- Crash recovery: autosave session state snapshot every X minutes.
+
+### Extensibility Roadmap
+| Tier | Feature | Notes |
+|------|---------|-------|
+| 1 | Persist columns + sort | Low effort, high usability |
+| 1 | Multi-column sorting | Build upon existing sort handler |
+| 2 | Fuzzy search | Rapidfuzz integration |
+| 2 | Virtualized table | Biggest performance uplift |
+| 3 | Plugin scrapers | Requires interface spec |
+| 3 | Cloud sync | Add abstraction layer for storage |
+
+### Possible Internal Refactors
+- Separate Treeview adapter class (sorting, highlighting, URL tagging).
+- Event bus (pub/sub) for filters, data reload, and dashboard updates.
+- Unified dialog factory (calendar, notes, date picker).
+- Wrap config access with schema validation (pydantic or manual).
+
+### Security / Safety (Future)
+- Optional hashing of exported files for integrity.
+- Sanitization layer for user-entered notes (avoid injection in future HTML exports).
+
 ---
+
+Feel free to prune or re-order based on priority.

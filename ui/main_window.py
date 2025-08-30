@@ -41,6 +41,8 @@ class MainApplication(tk.Tk):
         # Initialize global configuration BEFORE setting up window
         try:
             self.global_config = GlobalConfig()
+            # --- added: ensure version key reflects bump ---
+            self.global_config.set("version", "3.1")
             self.logger.info("Global configuration loaded successfully")
         except Exception as e:
             self.logger.error(f"Failed to load global configuration: {e}")
@@ -68,7 +70,7 @@ class MainApplication(tk.Tk):
 
     def _setup_window(self):
         """Configure the main window properties."""
-        self.title(f"{self.global_config.get('app_title', 'Tender Management Utility')} - Version 3.0")
+        self.title(f"{self.global_config.get('app_title', 'Tender Management Utility')} - Version 3.1")
         
         # Set window icon if it exists
         icon_path = os.path.join("resources", "app_icon.ico")
@@ -202,7 +204,7 @@ class MainApplication(tk.Tk):
         self.status_bar.pack(side=tk.LEFT, fill=tk.X, expand=True)
         
         # Add version label on right side of status bar
-        version_label = ttk.Label(self.status_frame, text="v3.0", padding=(5, 2))
+        version_label = ttk.Label(self.status_frame, text="v3.1", padding=(5, 2))
         version_label.pack(side=tk.RIGHT)
 
     def _load_initial_data(self):
@@ -258,7 +260,7 @@ class MainApplication(tk.Tk):
         # App title and version
         tk.Label(header_frame, text="Tender Management Utility", 
                 font=("Arial", 16, "bold"), bg="white", fg="#333333").pack()
-        tk.Label(header_frame, text="Version 3.0", 
+        tk.Label(header_frame, text="Version 3.1",   # updated from 3.0
                 font=("Arial", 12), bg="white", fg="#666666").pack(pady=(5, 0))
         
         # App description
@@ -495,7 +497,7 @@ India - 174303"""
         self.status_bar.pack(side=tk.LEFT, fill=tk.X, expand=True)
         
         # Add version label on right side of status bar
-        version_label = ttk.Label(self.status_frame, text=f"v{self.global_config.get('version', '2.0')}", padding=(5, 2))
+        version_label = ttk.Label(self.status_frame, text=f"v{self.global_config.get('version', '3.1')}", padding=(5, 2))
         version_label.pack(side=tk.RIGHT)
         
         # Initialize the notebook tabs - will be populated in _initialize_tabs
