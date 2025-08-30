@@ -1,0 +1,10 @@
+2025-08-30 17:41:39 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250830_174139.log
+2025-08-30 17:41:39 - root - INFO - Application starting...
+2025-08-30 17:41:39 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-08-30 17:41:39 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-08-30 17:41:39 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-08-30 17:41:39 - ui.main_window.MainApplication - INFO - Window icon set successfully: resources\app_icon.ico
+2025-08-30 17:41:39 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-08-30 17:41:39 - ui.main_window.MainApplication - ERROR - Error initializing tabs: 'SearchDashboardTab' object has no attribute '_show_data_visualization'
+2025-08-30 17:42:00 - ui.main_window - INFO - Main application initialized
+2025-08-30 17:42:00 - root - INFO - Main window initialized
