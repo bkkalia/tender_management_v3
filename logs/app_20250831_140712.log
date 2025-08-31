@@ -31,3 +31,43 @@
 2025-08-31 14:08:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: expired
 2025-08-31 14:08:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 9449 rows.
 2025-08-31 14:08:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'expired'}}
+2025-08-31 14:10:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-08-31 14:10:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 367 rows.
+2025-08-31 14:10:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'live'}}
+2025-08-31 14:11:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 15 rows.
+2025-08-31 14:11:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'idp', 'DepartmentOperator': 'OR', 'DateFilter': {'type': 'live'}}
+2025-08-31 14:11:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'idp', 'DepartmentOperator': 'OR', 'GlobalSearch': 'una', 'GlobalSearchOperator': 'AND', 'DateFilter': {'type': 'live'}}
+2025-08-31 14:11:11 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 15 rows.
+2025-08-31 14:11:11 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'idp', 'DepartmentOperator': 'OR', 'DateFilter': {'type': 'live'}}
+2025-08-31 14:11:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 15 rows.
+2025-08-31 14:11:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'idp', 'DepartmentOperator': 'OR', 'GlobalSearch': 'solan', 'GlobalSearchOperator': 'AND', 'DateFilter': {'type': 'live'}}
+2025-08-31 14:11:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 15 rows.
+2025-08-31 14:11:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'idp', 'DepartmentOperator': 'OR', 'GlobalSearch': 'solan', 'GlobalSearchOperator': 'AND', 'DateFilter': {'type': 'live'}}
+2025-08-31 14:11:21 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-08-31 14:11:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Saved search profile 'IDP'
+2025-08-31 14:11:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: today
+2025-08-31 14:11:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 231 rows.
+2025-08-31 14:11:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'idp', 'DepartmentOperator': 'OR', 'GlobalSearch': 'solan', 'GlobalSearchOperator': 'AND', 'DateFilter': {'type': 'combined', 'status': 'live', 'time_range': 'today'}}
+2025-08-31 14:11:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 9816 rows.
+2025-08-31 14:11:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True}
+2025-08-31 14:11:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - All filters have been reset
+2025-08-31 14:11:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'IPH', 'DepartmentOperator': 'OR'}
+2025-08-31 14:11:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'IPH', 'DepartmentOperator': 'OR', 'GlobalSearch': 'Una', 'GlobalSearchOperator': 'AND'}
+2025-08-31 14:12:11 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-08-31 14:12:11 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Saved search profile 'IPH Una'
+2025-08-31 14:12:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 108 rows.
+2025-08-31 14:12:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'PWD', 'DepartmentOperator': 'OR', 'GlobalSearch': 'Una', 'GlobalSearchOperator': 'AND'}
+2025-08-31 14:12:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 108 rows.
+2025-08-31 14:12:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'PWD', 'DepartmentOperator': 'OR', 'GlobalSearch': 'Una ', 'GlobalSearchOperator': 'AND'}
+2025-08-31 14:12:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'PWD', 'DepartmentOperator': 'OR', 'GlobalSearch': '"Una ', 'GlobalSearchOperator': 'AND'}
+2025-08-31 14:12:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'PWD', 'DepartmentOperator': 'OR', 'GlobalSearch': '"Una', 'GlobalSearchOperator': 'AND'}
+2025-08-31 14:12:53 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'PWD', 'DepartmentOperator': 'OR', 'GlobalSearch': '"Una"', 'GlobalSearchOperator': 'AND'}
+2025-08-31 14:12:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 3775 rows.
+2025-08-31 14:12:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'PWD', 'DepartmentOperator': 'OR'}
+2025-08-31 14:13:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 108 rows.
+2025-08-31 14:13:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'Department': 'PWD', 'DepartmentOperator': 'OR', 'GlobalSearch': 'una', 'GlobalSearchOperator': 'AND'}
+2025-08-31 14:13:29 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-08-31 14:13:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Saved search profile 'PWD Una'
+2025-08-31 14:13:47 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 9816 rows.
+2025-08-31 14:13:47 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True}
+2025-08-31 14:13:47 - ui.search_dashboard_tab.SearchDashboardTab - INFO - All filters have been reset

@@ -17,5 +17,24 @@
     ],
     "merger_preferred_unique_keys": [],
     "merger_max_backups": 5,
-    "version": "3.1"
+    "version": "3.1",
+    "saved_searches": {
+        "IDP": {
+            "department_filter": "idp",
+            "global_search": "solan",
+            "date_filter": {
+                "type": "live"
+            }
+        },
+        "IPH Una": {
+            "department_filter": "IPH",
+            "global_search": "Una",
+            "date_filter": {}
+        },
+        "PWD Una": {
+            "department_filter": "PWD",
+            "global_search": "una",
+            "date_filter": {}
+        }
+    }
 }
