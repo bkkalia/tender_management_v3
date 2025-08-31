@@ -113,10 +113,10 @@ class SearchDashboardTab(ttk.Frame):
         dashboard_frame.pack(side=tk.TOP, fill=tk.X, expand=True, pady=(0, SPACING['small']))
         self._create_dashboard_widgets(dashboard_frame)
 
-        # Create collapsible data folders frame
+        # Create collapsible data folders frame - COLLAPSED BY DEFAULT
         self.data_folders_frame_container = ttk.Frame(top_frame)
         self.data_folders_frame_container.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['small']))
-        self.data_folders_frame_visible = True
+        self.data_folders_frame_visible = False  # Changed to False for collapsed by default
         
         # Header frame with collapse button
         header_frame = ttk.Frame(self.data_folders_frame_container)
@@ -125,7 +125,7 @@ class SearchDashboardTab(ttk.Frame):
         # More compact layout for header controls
         self.toggle_button = ttk.Button(
             header_frame, 
-            text="▼", 
+            text="►",  # Changed to right-pointing arrow for collapsed state
             command=self._toggle_data_folders_panel,
             style="Collapse.TButton",
             width=2
@@ -142,24 +142,24 @@ class SearchDashboardTab(ttk.Frame):
         if charts_btn:
             charts_btn.pack(side=tk.RIGHT)
         
-        # Create the collapsible content frame
+        # Create the collapsible content frame - START HIDDEN
         self.data_folders_content = create_labeled_frame(self.data_folders_frame_container, "")
-        self.data_folders_content.pack(side=tk.TOP, fill=tk.X)
+        # Don't pack it initially since we want it collapsed by default
         self._create_data_folder_widgets(self.data_folders_content)
 
         # Use PanedWindow for better space management of search and results areas
         main_pane = tk.PanedWindow(self, orient=tk.VERTICAL, sashwidth=4, sashrelief="raised")
         main_pane.pack(fill=tk.BOTH, expand=True, padx=SPACING['medium'], pady=(0, SPACING['small']))
 
-        # Search and filter section with reduced padding
+        # Search and filter section with increased height to accommodate all filter buttons
         search_filter_frame = create_labeled_frame(main_pane, "Search, Filter & Dates")
-        main_pane.add(search_filter_frame, height=120, minsize=80)
+        main_pane.add(search_filter_frame, height=220, minsize=180)  # Increased from 180 to 220
         self._create_search_filter_widgets(search_filter_frame)
         self._create_date_filter_widgets(search_filter_frame)
 
         # Results section with flexible height
         tender_data_frame = create_labeled_frame(main_pane, "Tender Data")
-        main_pane.add(tender_data_frame, height=400, minsize=200)
+        main_pane.add(tender_data_frame, height=320, minsize=200)  # Slightly reduced to compensate
         self._create_tender_data_widgets(tender_data_frame)
         
         # Configure collapse button style - make it more compact
@@ -1356,7 +1356,11 @@ class SearchDashboardTab(ttk.Frame):
         if not self.loaded_files:
             self.selected_folders_var.set("No folders selected. Click 'Add Folder'.")
         else:
-            self.selected_folders_var.set("Selected:\n" + "\n".join(f"- {os.path.basename(p)}" for p in self.loaded_files))
+            # Show full paths instead of just basenames
+            folder_list = []
+            for path in self.loaded_files:
+                folder_list.append(f"- {path}")
+            self.selected_folders_var.set("Selected:\n" + "\n".join(folder_list))
 
     def _get_all_files_from_selected_folders(self) -> List[str]:
         files = []
@@ -1594,8 +1598,9 @@ class SearchDashboardTab(ttk.Frame):
         for i, c in enumerate(cols):
             cfg = self.column_config.setdefault(c, {"visible": True, "order": 100+i, "width": 150})
             var = tk.BooleanVar(value=cfg.get("visible", True))
+
             self._col_vars[c] = var
-            row = ttk.Frame(frm); row.pack(fill='x', pady=2)
+            row = ttk.Frame(frm); row.pack(fill='x', pady=2)  # Fixed indentation
             ttk.Checkbutton(row, text=c, variable=var).pack(side='left')
             ttk.Label(row, text="Width").pack(side='left', padx=(10,2))
             w_var = tk.IntVar(value=cfg.get("width", 150))

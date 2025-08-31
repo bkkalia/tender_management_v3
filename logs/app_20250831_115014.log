@@ -1,0 +1,26 @@
+2025-08-31 11:50:14 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250831_115014.log
+2025-08-31 11:50:14 - root - INFO - Application starting...
+2025-08-31 11:50:14 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-08-31 11:50:14 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-08-31 11:50:14 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-08-31 11:50:14 - ui.main_window.MainApplication - INFO - Window icon set successfully: resources\app_icon.ico
+2025-08-31 11:50:14 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-08-31 11:50:15 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-08-31 11:50:15 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-08-31 11:50:15 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-08-31 11:50:15 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-08-31 11:50:15 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-08-31 11:50:15 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-08-31 11:50:15 - ui.main_window - INFO - Main application initialized
+2025-08-31 11:50:15 - root - INFO - Main window initialized
+2025-08-31 11:50:15 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-08-31 11:50:15 - core.data_processor.TenderDataProcessor - INFO - Loading data from: G:/My Drive/0dev/Search Utility v3/tender_management_v3/data/merged_data\hptenders_gov_in_consolidated_master.xlsx
+2025-08-31 11:50:16 - core.data_processor.TenderDataProcessor - INFO - Total columns in data: 10
+2025-08-31 11:50:16 - core.data_processor.TenderDataProcessor - INFO - Found potential closing date column: 'Closing Date'
+2025-08-31 11:50:16 - core.data_processor.TenderDataProcessor - INFO - Sample values before conversion for 'Closing Date': [Timestamp('2025-06-05 13:00:00'), Timestamp('2025-05-27 13:00:00'), Timestamp('2025-05-27 12:00:00'), Timestamp('2025-06-20 15:00:00'), Timestamp('2025-06-24 11:00:00')]
+2025-08-31 11:50:16 - core.data_processor.TenderDataProcessor - INFO - Converted 'Closing Date' using format '%Y-%m-%d %H:%M:%S': 9816/9816 values
+2025-08-31 11:50:16 - core.data_processor.TenderDataProcessor - INFO - Sample values after conversion for 'Closing Date': [Timestamp('2025-06-05 13:00:00'), Timestamp('2025-05-27 13:00:00'), Timestamp('2025-05-27 12:00:00'), Timestamp('2025-06-20 15:00:00'), Timestamp('2025-06-24 11:00:00')]
+2025-08-31 11:50:16 - core.data_processor.TenderDataProcessor - INFO - Successfully loaded 9816 records from 1 files.
+2025-08-31 11:50:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 9816 rows.
+2025-08-31 11:50:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Restored previous session data from 1 files
+2025-08-31 11:50:23 - ui.main_window.MainApplication - INFO - Initial data loaded for Search tab

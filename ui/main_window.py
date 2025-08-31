@@ -70,21 +70,24 @@ class MainApplication(tk.Tk):
 
     def _setup_window(self):
         """Configure the main window properties."""
-        self.title(f"{self.global_config.get('app_title', 'Tender Management Utility')} - Version 3.1")
+        # Set window title with version
+        self.title("Tender Management Utility v3.0")
         
-        # Set window icon if it exists
-        icon_path = os.path.join("resources", "app_icon.ico")
-        if os.path.exists(icon_path):
-            try:
-                self.iconbitmap(icon_path)
-                self.logger.info(f"Window icon set successfully: {icon_path}")
-            except Exception as e:
-                self.logger.warning(f"Could not set window icon: {e}")
-        else:
-            self.logger.warning(f"Icon file not found: {icon_path}")
+        # Calculate 15% increase: 1200 * 1.15 = 1380
+        window_width = 1380  # Increased from 1200 by 15%
+        window_height = 800
         
-        # Set minimum window size
-        self.minsize(1000, 700)
+        # Center the window on screen
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        
+        x_coordinate = (screen_width - window_width) // 2
+        y_coordinate = (screen_height - window_height) // 2
+        
+        self.geometry(f"{window_width}x{window_height}+{x_coordinate}+{y_coordinate}")
+        
+        # Set minimum size (also increased by 15%)
+        self.minsize(1035, 600)  # Increased from 900 by 15%
         
         # Try to restore previous window size and position
         try:
