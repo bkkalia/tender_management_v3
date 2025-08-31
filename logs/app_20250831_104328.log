@@ -131,3 +131,36 @@
 2025-08-31 10:52:09 - core.data_processor.TenderDataProcessor - INFO - Custom date filter returned 2 records
 2025-08-31 10:52:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 2 rows.
 2025-08-31 10:52:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'custom', 'start_date': '2025-08-31', 'end_date': '2025-08-31', 'start_datetime': '2025-08-31 20:00', 'end_datetime': '2025-08-31 23:59'}}
+2025-08-31 10:57:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying custom date-time filter: 2025-08-31 10:00 -> 2025-08-31 23:59
+2025-08-31 10:57:54 - core.data_processor.TenderDataProcessor - INFO - Custom date filter: 2025-08-31 00:00:00 to 2025-08-31 23:59:59
+2025-08-31 10:57:54 - core.data_processor.TenderDataProcessor - INFO - Custom date filter returned 2 records
+2025-08-31 10:57:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 2 rows.
+2025-08-31 10:57:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'custom', 'start_date': '2025-08-31', 'end_date': '2025-08-31', 'start_datetime': '2025-08-31 10:00', 'end_datetime': '2025-08-31 23:59'}}
+2025-08-31 10:57:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying custom date-time filter: 2025-08-31 10:00 -> 2025-08-31 23:59
+2025-08-31 10:57:56 - core.data_processor.TenderDataProcessor - INFO - Custom date filter: 2025-08-31 00:00:00 to 2025-08-31 23:59:59
+2025-08-31 10:57:56 - core.data_processor.TenderDataProcessor - INFO - Custom date filter returned 2 records
+2025-08-31 10:57:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 2 rows.
+2025-08-31 10:57:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'custom', 'start_date': '2025-08-31', 'end_date': '2025-08-31', 'start_datetime': '2025-08-31 10:00', 'end_datetime': '2025-08-31 23:59'}}
+2025-08-31 10:57:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying custom date-time filter: 2025-08-31 10:00 -> 2025-08-31 23:59
+2025-08-31 10:57:57 - core.data_processor.TenderDataProcessor - INFO - Custom date filter: 2025-08-31 00:00:00 to 2025-08-31 23:59:59
+2025-08-31 10:57:57 - core.data_processor.TenderDataProcessor - INFO - Custom date filter returned 2 records
+2025-08-31 10:57:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 2 rows.
+2025-08-31 10:57:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'custom', 'start_date': '2025-08-31', 'end_date': '2025-08-31', 'start_datetime': '2025-08-31 10:00', 'end_datetime': '2025-08-31 23:59'}}
+2025-08-31 10:57:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying custom date-time filter: 2025-08-31 10:00 -> 2025-08-31 23:59
+2025-08-31 10:57:57 - core.data_processor.TenderDataProcessor - INFO - Custom date filter: 2025-08-31 00:00:00 to 2025-08-31 23:59:59
+2025-08-31 10:57:57 - core.data_processor.TenderDataProcessor - INFO - Custom date filter returned 2 records
+2025-08-31 10:57:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 2 rows.
+2025-08-31 10:57:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'custom', 'start_date': '2025-08-31', 'end_date': '2025-08-31', 'start_datetime': '2025-08-31 10:00', 'end_datetime': '2025-08-31 23:59'}}
+2025-08-31 10:58:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying date filter preset: live
+2025-08-31 10:58:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 367 rows.
+2025-08-31 10:58:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'live'}}
+2025-08-31 10:58:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying custom date-time filter: 2025-08-31 10:00 -> 2025-08-31 23:59
+2025-08-31 10:58:26 - core.data_processor.TenderDataProcessor - INFO - Custom date filter: 2025-08-31 00:00:00 to 2025-08-31 23:59:59
+2025-08-31 10:58:26 - core.data_processor.TenderDataProcessor - INFO - Custom date filter returned 2 records
+2025-08-31 10:58:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 2 rows.
+2025-08-31 10:58:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'custom', 'start_date': '2025-08-31', 'end_date': '2025-08-31', 'start_datetime': '2025-08-31 10:00', 'end_datetime': '2025-08-31 23:59'}}
+2025-08-31 10:58:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying custom date-time filter: 2025-08-31 10:00 -> 2025-09-01 23:59
+2025-08-31 10:58:44 - core.data_processor.TenderDataProcessor - INFO - Custom date filter: 2025-08-31 00:00:00 to 2025-09-01 23:59:59
+2025-08-31 10:58:44 - core.data_processor.TenderDataProcessor - INFO - Custom date filter returned 137 records
+2025-08-31 10:58:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Treeview updated with 137 rows.
+2025-08-31 10:58:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied filters: {'CaseInsensitive': True, 'DateFilter': {'type': 'custom', 'start_date': '2025-08-31', 'end_date': '2025-09-01', 'start_datetime': '2025-08-31 10:00', 'end_datetime': '2025-09-01 23:59'}}

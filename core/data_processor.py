@@ -388,6 +388,31 @@ class TenderDataProcessor:
                 return df[mask].copy()
                 
             elif filter_type == 'custom':
+                # FIXED: Check for datetime strings FIRST and use them exclusively
+                start_datetime_str = date_filter.get('start_datetime')
+                end_datetime_str = date_filter.get('end_datetime')
+                
+                if start_datetime_str and end_datetime_str:
+                    try:
+                        # Parse the datetime strings directly
+                        start_dt = pd.to_datetime(start_datetime_str)
+                        end_dt = pd.to_datetime(end_datetime_str)
+                        
+                        # LOG THE CORRECT DATETIME RANGE
+                        self.logger.info(f"Custom date filter: {start_dt} to {end_dt}")
+                        
+                        # Apply the filter using datetime comparison
+                        mask = (df[date_col] >= start_dt) & (df[date_col] <= end_dt)
+                        filtered_result = df[mask].copy()
+                        
+                        self.logger.info(f"Custom date filter returned {len(filtered_result)} records")
+                        return filtered_result
+                        
+                    except Exception as e:
+                        self.logger.error(f"Error parsing custom datetime range: {e}")
+                        return None
+                
+                # Fallback to legacy date-only filtering ONLY if no datetime strings
                 start_date = date_filter.get('start_date')
                 end_date = date_filter.get('end_date')
                 
@@ -538,3 +563,114 @@ class TenderDataProcessor:
         """Update the configuration manager and apply new settings."""
         self.config_manager = new_config_manager
         self.logger.info("Configuration updated in TenderDataProcessor")
+
+    def _apply_date_filter(self, df: pd.DataFrame, date_filter: Dict[str, Any]) -> pd.DataFrame:
+        """Apply date filtering based on the filter configuration."""
+        if not date_filter or df.empty:
+            return df
+
+        # Find the date column (prefer exact matches first)
+        date_columns = ['Closing Date', 'Due Date', 'Deadline', 'Expiry Date']
+        date_col = None
+        
+        for col_name in date_columns:
+            if col_name in df.columns:
+                date_col = col_name
+                break
+        
+        # If no exact match, look for columns containing date-related keywords
+        if not date_col:
+            for col in df.columns:
+                col_lower = col.lower()
+                if any(keyword in col_lower for keyword in ['closing', 'due', 'deadline', 'expiry', 'date']):
+                    date_col = col
+                    break
+        
+        if not date_col:
+            self.logger.warning("No date column found for filtering")
+            return df
+
+        # Convert the date column to datetime
+        try:
+            df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+        except Exception as e:
+            self.logger.error(f"Error converting date column: {e}")
+            return df
+
+        # Remove rows with invalid dates
+        original_count = len(df)
+        df = df.dropna(subset=[date_col])
+        if len(df) < original_count:
+            self.logger.info(f"Removed {original_count - len(df)} rows with invalid dates")
+
+        if df.empty:
+            return df
+
+        filter_type = date_filter.get('type', '')
+        now = datetime.now()
+        today = now.date()
+
+        try:
+            if filter_type == 'all':
+                return df
+            elif filter_type == 'live':
+                return df[df[date_col] >= now]
+            elif filter_type == 'today':
+                return df[df[date_col].dt.date == today]
+            elif filter_type == 'next_3_days':
+                end_date = today + timedelta(days=3)
+                return df[(df[date_col].dt.date >= today) & (df[date_col].dt.date <= end_date)]
+            elif filter_type == 'next_7_days':
+                end_date = today + timedelta(days=7)
+                return df[(df[date_col].dt.date >= today) & (df[date_col].dt.date <= end_date)]
+            elif filter_type == 'next_30_days':
+                end_date = today + timedelta(days=30)
+                return df[(df[date_col].dt.date >= today) & (df[date_col].dt.date <= end_date)]
+            elif filter_type == 'expired':
+                return df[df[date_col] < now]
+            elif filter_type == 'custom':
+                # FIXED: Check for datetime strings FIRST and use them exclusively
+                start_datetime_str = date_filter.get('start_datetime')
+                end_datetime_str = date_filter.get('end_datetime')
+                
+                if start_datetime_str and end_datetime_str:
+                    try:
+                        # Parse the datetime strings directly - this was the issue
+                        start_dt = pd.to_datetime(start_datetime_str)
+                        end_dt = pd.to_datetime(end_datetime_str)
+                        
+                        # LOG THE CORRECT DATETIME RANGE
+                        self.logger.info(f"Custom date filter: {start_dt} to {end_dt}")
+                        
+                        # Apply the filter using datetime comparison
+                        filtered_df = df[(df[date_col] >= start_dt) & (df[date_col] <= end_dt)]
+                        
+                        self.logger.info(f"Custom date filter returned {len(filtered_df)} records")
+                        return filtered_df
+                        
+                    except Exception as e:
+                        self.logger.error(f"Error parsing custom datetime range: {e}")
+                        return pd.DataFrame()  # Return empty on error
+                
+                # Only use legacy date-only filtering if no datetime strings are provided
+                start_date = date_filter.get('start_date')
+                end_date = date_filter.get('end_date')
+                if start_date and end_date:
+                    try:
+                        # Create full-day datetime range for legacy support
+                        start_dt = pd.to_datetime(f"{start_date} 00:00:00")
+                        end_dt = pd.to_datetime(f"{end_date} 23:59:59")
+                        
+                        self.logger.info(f"Legacy date filter: {start_dt} to {end_dt}")
+                        filtered_df = df[(df[date_col] >= start_dt) & (df[date_col] <= end_dt)]
+                        self.logger.info(f"Legacy date filter returned {len(filtered_df)} records")
+                        return filtered_df
+                    except Exception as e:
+                        self.logger.error(f"Error parsing legacy date range: {e}")
+                        return pd.DataFrame()
+
+        except Exception as e:
+            self.logger.error(f"Error applying date filter: {e}")
+            return df
+
+        return df

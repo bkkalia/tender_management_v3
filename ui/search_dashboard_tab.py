@@ -498,12 +498,15 @@ class SearchDashboardTab(ttk.Frame):
                 raise ValueError
         except Exception:
             raise ValueError("Invalid time (HH:MM) values.")
-        start_iso = f"{start_date} {sh_i:02d}:{sm_i:02d}"
-        end_iso = f"{end_date} {eh_i:02d}:{em_i:02d}"
+        
+        # Create proper ISO datetime strings with seconds
+        start_iso = f"{start_date} {sh_i:02d}:{sm_i:02d}:00"
+        end_iso = f"{end_date} {eh_i:02d}:{em_i:02d}:59"
+        
         # Validate ordering
         try:
-            sd_dt = datetime.strptime(start_iso, "%Y-%m-%d %H:%M")
-            ed_dt = datetime.strptime(end_iso, "%Y-%m-%d %H:%M")
+            sd_dt = datetime.strptime(start_iso, "%Y-%m-%d %H:%M:%S")
+            ed_dt = datetime.strptime(end_iso, "%Y-%m-%d %H:%M:%S")
             if ed_dt < sd_dt:
                 raise ValueError("End datetime is before start datetime.")
         except ValueError as ve:
@@ -516,7 +519,7 @@ class SearchDashboardTab(ttk.Frame):
             self.custom_date_start_var.set(self.start_date_picker.get())
             self.custom_date_end_var.set(self.end_date_picker.get())
             self.logger.debug(f"Selected dates - Start: {self.custom_date_start_var.get()}, End: {self.custom_date_end_var.get()}")
-        
+
     def _apply_custom_date_filter(self):
         """Apply the custom date range filter selected from the calendar pickers."""
         if not HAS_TKCALENDAR or not hasattr(self, 'start_date_picker'):
@@ -528,7 +531,12 @@ class SearchDashboardTab(ttk.Frame):
         except ValueError as e:
             messagebox.showerror("Invalid Time", str(e))
             return
+        
         self.logger.info(f"Applying custom date-time filter: {start_iso} -> {end_iso}")
+        
+        # Clear any existing date filter first
+        self._reset_date_filter_buttons()
+        
         self.current_date_filter = {
             'type': 'custom',
             'start_date': self.custom_date_start_var.get(),   # legacy key (date only)
@@ -536,6 +544,10 @@ class SearchDashboardTab(ttk.Frame):
             'start_datetime': start_iso,
             'end_datetime': end_iso
         }
+        
+        # Set visual indicator for custom filter
+        self.active_date_filter = 'custom'
+        
         try:
             self._apply_all_filters()
         except Exception as e:
@@ -549,20 +561,24 @@ class SearchDashboardTab(ttk.Frame):
         if not start_raw or not end_raw:
             messagebox.showwarning("Date Range Required", "Please enter both start and end dates.")
             return
+        
         # Allow optional time in the text (YYYY-MM-DD HH:MM); if absent we use spinboxes/defaults
         def split_dt(txt):
             parts = txt.split()
             if len(parts) == 2:
                 return parts[0], parts[1]
             return parts[0], None
+            
         start_date, start_time = split_dt(start_raw)
         end_date, end_time = split_dt(end_raw)
+        
         try:
             datetime.strptime(start_date, "%Y-%m-%d")
             datetime.strptime(end_date, "%Y-%m-%d")
         except ValueError:
             messagebox.showerror("Invalid Date Format", "Use YYYY-MM-DD or YYYY-MM-DD HH:MM.")
             return
+            
         if start_time:
             try:
                 datetime.strptime(start_time, "%H:%M")
@@ -572,6 +588,7 @@ class SearchDashboardTab(ttk.Frame):
             except ValueError:
                 messagebox.showerror("Invalid Time", "Start time must be HH:MM.")
                 return
+                
         if end_time:
             try:
                 datetime.strptime(end_time, "%H:%M")
@@ -581,12 +598,18 @@ class SearchDashboardTab(ttk.Frame):
             except ValueError:
                 messagebox.showerror("Invalid Time", "End time must be HH:MM.")
                 return
+                
         try:
             start_iso, end_iso = self._get_custom_range_datetimes()
         except ValueError as e:
             messagebox.showerror("Invalid Time", str(e))
             return
+            
         self.logger.info(f"Applying custom date-time filter (text): {start_iso} -> {end_iso}")
+        
+        # Clear any existing date filter first
+        self._reset_date_filter_buttons()
+        
         self.current_date_filter = {
             'type': 'custom',
             'start_date': start_date,
@@ -594,6 +617,10 @@ class SearchDashboardTab(ttk.Frame):
             'start_datetime': start_iso,
             'end_datetime': end_iso
         }
+        
+        # Set visual indicator for custom filter
+        self.active_date_filter = 'custom'
+        
         try:
             self._apply_all_filters()
         except Exception as e:
@@ -1576,8 +1603,6 @@ class SearchDashboardTab(ttk.Frame):
                         width=6, command=lambda name=c,v=w_var: self._set_column_width(name,v)).pack(side='left')
             cfg['_w_var'] = w_var
             ttk.Button(row, text="▲", width=2,
-
-
                        command=lambda name=c: self._bump_column_order(name, -1)).pack(side='left', padx=2)
             ttk.Button(row, text="▼", width=2,
                        command=lambda name=c: self._bump_column_order(name, 1)).pack(side='left')
