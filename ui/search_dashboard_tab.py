@@ -562,7 +562,7 @@ class SearchDashboardTab(ttk.Frame):
         self._apply_time_range_filter(preset)
 
     def _load_saved_search(self, event=None):
-        """Load a saved search configuration."""
+        """Load a saved search configuration with corrected logic."""
         search_name = self.saved_search_var.get()
         if not search_name:
             return
@@ -577,30 +577,47 @@ class SearchDashboardTab(ttk.Frame):
         # Get the saved search configuration
         search_config = saved_searches_data[search_name]
         
-        # Apply saved search parameters to UI
-        if 'dept_filter' in search_config:
-            self.dept_filter_var.set(search_config['dept_filter'])
-        
-        if 'global_search' in search_config:
-            self.global_search_var.set(search_config['global_search'])
-        
-        if 'dept_operator' in search_config:
-            self.dept_operator_var.set(search_config['dept_operator'])
-        
-        if 'global_operator' in search_config:
-            self.global_operator_var.set(search_config['global_operator'])
-        
-        if 'status_filter' in search_config:
-            self.status_filter_var.set(search_config['status_filter'])
-            self._apply_status_filter(search_config['status_filter'])
-        
-        # Apply the filters
-        self._apply_filters()
-        
-        messagebox.showinfo("Search Loaded", f"Search '{search_name}' loaded successfully.")
+        try:
+            # Apply saved search parameters to UI
+            if 'dept_filter' in search_config:
+                self.dept_filter_var.set(search_config['dept_filter'])
+            
+            if 'global_search' in search_config:
+                self.global_search_var.set(search_config['global_search'])
+            
+            if 'dept_operator' in search_config:
+                self.dept_operator_var.set(search_config['dept_operator'])
+            
+            if 'global_operator' in search_config:
+                self.global_operator_var.set(search_config['global_operator'])
+            
+            if 'status_filter' in search_config:
+                self.status_filter_var.set(search_config['status_filter'])
+            
+            # Restore date filter state
+            if 'current_date_filter' in search_config:
+                self.current_date_filter = search_config['current_date_filter'].copy()
+            
+            if 'active_date_filter' in search_config:
+                self.active_date_filter = search_config['active_date_filter']
+            
+            # Apply the filters in the correct order
+            # First apply status filter
+            if 'status_filter' in search_config:
+                self._apply_status_filter(search_config['status_filter'])
+            
+            # Then apply text filters
+            self._apply_filters()
+            
+            messagebox.showinfo("Search Loaded", f"Search '{search_name}' loaded successfully.")
+            self.logger.info(f"Loaded search configuration: {search_name}")
+            
+        except Exception as e:
+            self.logger.error(f"Error loading saved search: {e}")
+            messagebox.showerror("Load Error", f"Error loading search '{search_name}':\n{str(e)}")
 
     def _save_current_search(self):
-        """Save the current search configuration."""
+        """Save the current search configuration with corrected logic."""
         # Ask for a name for the search
         search_name = tkinter.simpledialog.askstring(
             "Save Search", 
@@ -611,13 +628,15 @@ class SearchDashboardTab(ttk.Frame):
         if not search_name:
             return  # User canceled
         
-        # Create search configuration
+        # Create search configuration - Save all current filter states
         search_config = {
             'dept_filter': self.dept_filter_var.get(),
             'global_search': self.global_search_var.get(),
             'dept_operator': self.dept_operator_var.get(),
             'global_operator': self.global_operator_var.get(),
-            'status_filter': self.status_filter_var.get()
+            'status_filter': self.status_filter_var.get(),
+            'current_date_filter': self.current_date_filter.copy() if hasattr(self, 'current_date_filter') else {},
+            'active_date_filter': getattr(self, 'active_date_filter', 'live')
         }
         
         # Get existing saved searches
@@ -643,6 +662,7 @@ class SearchDashboardTab(ttk.Frame):
         self.saved_search_var.set(search_name)
         
         messagebox.showinfo("Search Saved", f"Search '{search_name}' saved successfully.")
+        self.logger.info(f"Saved search configuration: {search_name}")
 
     def _delete_saved_search(self):
         """Delete a saved search configuration."""
@@ -1025,167 +1045,319 @@ class SearchDashboardTab(ttk.Frame):
         empty_frame.grid_rowconfigure(0, weight=1)
         empty_frame.grid_columnconfigure(0, weight=1)
 
-    def _create_search_filter_widgets(self, parent):
-        """Create search and filter widgets."""
-        # Search section
-        search_frame = ttk.Frame(parent)
-        search_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
+    def _create_search_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
+        """Create redesigned search and filter widgets with better visual layout."""
+        # Main container for all search components
+        search_container = ttk.Frame(parent)
+        search_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
         
-        # Global search
-        global_search_frame = ttk.Frame(search_frame)
-        global_search_frame.pack(fill=tk.X, pady=SPACING['small']//2)
+        # Top Row: Side-by-side Department and Global Search with colored borders
+        search_row_frame = ttk.Frame(search_container)
+        search_row_frame.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['medium']))
         
-        ttk.Label(global_search_frame, text="Global Search:").pack(side=tk.LEFT)
-        global_search_entry = create_input_entry(global_search_frame, textvariable=self.global_search_var, width=30)
-        global_search_entry.pack(side=tk.LEFT, padx=SPACING['small'])
-        global_search_entry.bind('<KeyRelease>', self._on_live_search_key)
+        # Left: Department Search Section
+        dept_section = ttk.LabelFrame(search_row_frame, text="Department Search", 
+                                     style="Primary.TLabelframe", padding=SPACING['medium'])
+        dept_section.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, SPACING['small']))
         
-        # Global search operator
-        self.global_operator_var = tk.StringVar(value="AND")
-        ttk.Label(global_search_frame, text="Op:").pack(side=tk.LEFT, padx=(SPACING['small'], 0))
-        global_op_combo = ttk.Combobox(global_search_frame, textvariable=self.global_operator_var, values=["AND", "OR"], width=5, state="readonly")
-        global_op_combo.pack(side=tk.LEFT, padx=SPACING['small']//2)
+        # Department input with increased height
+        dept_input_frame = ttk.Frame(dept_section)
+        dept_input_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
         
-        # Department filter
-        dept_filter_frame = ttk.Frame(search_frame)
-        dept_filter_frame.pack(fill=tk.X, pady=SPACING['small']//2)
+        # Custom style for colored border
+        style = ttk.Style()
+        style.configure("Department.TEntry", fieldbackground="#E8F4FD", relief="solid", borderwidth=2)
         
-        ttk.Label(dept_filter_frame, text="Department Filter:").pack(side=tk.LEFT)
-        dept_filter_entry = create_input_entry(dept_filter_frame, textvariable=self.dept_filter_var, width=30)
-        dept_filter_entry.pack(side=tk.LEFT, padx=SPACING['small'])
-        dept_filter_entry.bind('<KeyRelease>', self._on_live_search_key)
+        self.dept_entry = ttk.Entry(dept_input_frame, textvariable=self.dept_filter_var, 
+                                   style="Department.TEntry", font=('TkDefaultFont', 11))
+        self.dept_entry.pack(fill=tk.X, ipady=8)  # Increased height
+        self.dept_entry.bind("<KeyRelease>", self._on_live_search_key)
         
-        # Department filter operator
+        # Department operator buttons
+        dept_op_frame = ttk.Frame(dept_section)
+        dept_op_frame.pack(fill=tk.X, pady=(SPACING['small'], 0))
+        
+        ttk.Label(dept_op_frame, text="Match:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        
         self.dept_operator_var = tk.StringVar(value="OR")
-        ttk.Label(dept_filter_frame, text="Op:").pack(side=tk.LEFT, padx=(SPACING['small'], 0))
-        dept_op_combo = ttk.Combobox(dept_filter_frame, textvariable=self.dept_operator_var, values=["AND", "OR"], width=5, state="readonly")
-        dept_op_combo.pack(side=tk.LEFT, padx=SPACING['small']//2)
+        ttk.Radiobutton(dept_op_frame, text="Any (OR)", variable=self.dept_operator_var, 
+                       value="OR", command=self._on_live_search_key).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        ttk.Radiobutton(dept_op_frame, text="All (AND)", variable=self.dept_operator_var, 
+                       value="AND", command=self._on_live_search_key).pack(side=tk.LEFT)
         
-        # Status filter
-        status_frame = ttk.Frame(search_frame)
-        status_frame.pack(fill=tk.X, pady=SPACING['small']//2)
+        ttk.Label(dept_op_frame, text="(comma-separated)", 
+                 font=('TkDefaultFont', 8), foreground='gray').pack(side=tk.RIGHT)
         
-        ttk.Label(status_frame, text="Status:").pack(side=tk.LEFT)
-        self.status_filter_var = tk.StringVar(value="live")
-        status_combo = ttk.Combobox(status_frame, textvariable=self.status_filter_var, 
-                                   values=["all", "live", "expired"], width=10, state="readonly")
-        status_combo.pack(side=tk.LEFT, padx=SPACING['small'])
-        status_combo.bind('<<ComboboxSelected>>', lambda e: self._apply_status_filter(self.status_filter_var.get()))
+        # Right: Global Search Section
+        global_section = ttk.LabelFrame(search_row_frame, text="Global Search", 
+                                       style="Success.TLabelframe", padding=SPACING['medium'])
+        global_section.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(SPACING['small'], 0))
         
-        # Action buttons
-        buttons_frame = ttk.Frame(search_frame)
-        buttons_frame.pack(fill=tk.X, pady=SPACING['small'])
+        # Global search input with increased height
+        global_input_frame = ttk.Frame(global_section)
+        global_input_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
         
-        create_action_button(buttons_frame, "Reset Filters", self._reset_filters, button_type='secondary', width=12).pack(side=tk.LEFT, padx=2)
-        create_action_button(buttons_frame, "Apply Filters", self._apply_filters, width=12).pack(side=tk.LEFT, padx=2)
+        style.configure("Global.TEntry", fieldbackground="#E8F8E8", relief="solid", borderwidth=2)
         
-        # Saved searches
-        saved_search_frame = ttk.Frame(buttons_frame)
-        saved_search_frame.pack(side=tk.RIGHT)
+        self.global_entry = ttk.Entry(global_input_frame, textvariable=self.global_search_var, 
+                                     style="Global.TEntry", font=('TkDefaultFont', 11))
+        self.global_entry.pack(fill=tk.X, ipady=8)  # Increased height
+        self.global_entry.bind("<KeyRelease>", self._on_live_search_key)
         
-        ttk.Label(saved_search_frame, text="Saved:").pack(side=tk.LEFT)
-        self.saved_search_var = tk.StringVar()
-        self.saved_searches_combo = ttk.Combobox(saved_search_frame, textvariable=self.saved_search_var, width=15, state="readonly")
-        self.saved_searches_combo.pack(side=tk.LEFT, padx=2)
-        self.saved_searches_combo.bind('<<ComboboxSelected>>', self._load_saved_search)
+        # Global search operator buttons
+        global_op_frame = ttk.Frame(global_section)
+        global_op_frame.pack(fill=tk.X, pady=(SPACING['small'], 0))
         
-        create_action_button(saved_search_frame, "Save", self._save_current_search, button_type='info_outline', width=8).pack(side=tk.LEFT, padx=2)
-        create_action_button(saved_search_frame, "Delete", self._delete_saved_search, button_type='danger_outline', width=8).pack(side=tk.LEFT, padx=2)
+        ttk.Label(global_op_frame, text="Match:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT, padx=(0, SPACING['small']))
         
-        # Update saved searches list
-        self._update_saved_searches_list()
+        self.global_operator_var = tk.StringVar(value="AND")
+        ttk.Radiobutton(global_op_frame, text="Any (OR)", variable=self.global_operator_var, 
+                       value="OR", command=self._on_live_search_key).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        ttk.Radiobutton(global_op_frame, text="All (AND)", variable=self.global_operator_var, 
+                       value="AND", command=self._on_live_search_key).pack(side=tk.LEFT)
+        
+        ttk.Label(global_op_frame, text="(search all columns)", 
+                 font=('TkDefaultFont', 8), foreground='gray').pack(side=tk.RIGHT)
+        
+        # Configure custom LabelFrame styles
+        style.configure("Primary.TLabelframe", borderwidth=2, relief="solid")
+        style.configure("Primary.TLabelframe.Label", foreground="#1976d2", font=('TkDefaultFont', 10, 'bold'))
+        style.configure("Success.TLabelframe", borderwidth=2, relief="solid")
+        style.configure("Success.TLabelframe.Label", foreground="#4caf50", font=('TkDefaultFont', 10, 'bold'))
+        
+        # Reset button
+        reset_frame = ttk.Frame(search_container)
+        reset_frame.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['medium']))
+        
+        reset_btn = create_action_button(reset_frame, "🔄 Reset All Filters", self._reset_filters, 
+                                        button_type='danger', width=18)
+        reset_btn.pack(side=tk.RIGHT)
 
-    def _create_date_filter_widgets(self, parent):
-        """Create date filter widgets."""
-        date_frame = ttk.Frame(parent)
-        date_frame.pack(fill=tk.X, pady=SPACING['small'])
+    def _create_date_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
+        """Create redesigned date filter widgets in three horizontal sections."""
+        # Main date filter container
+        date_container = ttk.Frame(parent)
+        date_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
         
-        # Status and time filter buttons in one row
-        filter_buttons_frame = ttk.Frame(date_frame)
-        filter_buttons_frame.pack(fill=tk.X, pady=SPACING['small']//2)
+        # Configure grid with three equal columns
+        date_container.grid_columnconfigure(0, weight=1)
+        date_container.grid_columnconfigure(1, weight=1) 
+        date_container.grid_columnconfigure(2, weight=1)
         
-        # Time range filter buttons
-        ttk.Label(filter_buttons_frame, text="Quick Filters:").pack(side=tk.LEFT)
+        # Section 1: Status Filter (Left)
+        status_section = ttk.LabelFrame(date_container, text="📊 Status Filter", 
+                                       padding=SPACING['medium'])
+        status_section.grid(row=0, column=0, sticky="nsew", padx=(0, SPACING['small']))
         
-        time_filters = [
+        # Status dropdown with better styling
+        status_label = ttk.Label(status_section, text="Show tenders:", font=('TkDefaultFont', 10))
+        status_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
+        
+        self.status_filter_var = tk.StringVar(value="live")
+        status_options = [
+            ("All Records", "all"),
+            ("Live Tenders", "live"), 
+            ("Expired Tenders", "expired")
+        ]
+        
+        for text, value in status_options:
+            radio_btn = ttk.Radiobutton(status_section, text=text, variable=self.status_filter_var,
+                                       value=value, command=lambda v=value: self._apply_status_filter(v))
+            radio_btn.pack(anchor=tk.W, pady=2)
+        
+        # Section 2: Time Range Filter (Center)
+        time_section = ttk.LabelFrame(date_container, text="📅 Time Range Filter", 
+                                     padding=SPACING['medium'])
+        time_section.grid(row=0, column=1, sticky="nsew", padx=SPACING['small'])
+        
+        # Quick filter buttons in a grid
+        quick_label = ttk.Label(time_section, text="Quick filters:", font=('TkDefaultFont', 10))
+        quick_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
+        
+        button_grid = ttk.Frame(time_section)
+        button_grid.pack(fill=tk.X)
+        
+        time_presets = [
             ("Today", "today"),
             ("Next 3 Days", "next_3_days"),
-            ("Next 7 Days", "next_7_days"),
+            ("Next 7 Days", "next_7_days"), 
             ("Next 30 Days", "next_30_days")
         ]
         
-        for label, filter_key in time_filters:
-            btn = create_action_button(
-                filter_buttons_frame, label, 
-                lambda f=filter_key: self._apply_time_filter(f),
-                button_type='info_outline', width=12
-            )
-            if btn:
-                btn.pack(side=tk.LEFT, padx=2)
-                self.date_filter_buttons[filter_key] = btn
+        for i, (text, preset_key) in enumerate(time_presets):
+            row = i // 2
+            col = i % 2
+            btn = create_action_button(button_grid, text, 
+                                      lambda p=preset_key: self._apply_time_filter(p),
+                                      width=12, button_type='info_outline')
+            btn.grid(row=row, column=col, padx=2, pady=2, sticky="ew")
+            self.date_filter_buttons[preset_key] = btn
         
-        # Custom date range section
+        button_grid.grid_columnconfigure(0, weight=1)
+        button_grid.grid_columnconfigure(1, weight=1)
+        
+        # Section 3: Custom Date Range & Saved Searches (Right)
+        custom_section = ttk.LabelFrame(date_container, text="🔧 Custom & Saved", 
+                                       padding=SPACING['medium'])
+        custom_section.grid(row=0, column=2, sticky="nsew", padx=(SPACING['small'], 0))
+        
+        # Custom Date Range (Restored functionality)
+        custom_label = ttk.Label(custom_section, text="Custom Date Range:", font=('TkDefaultFont', 10, 'bold'))
+        custom_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
+        
         if HAS_TKCALENDAR and DateEntry is not None:
-            custom_date_frame = ttk.LabelFrame(date_frame, text="Custom Date Range")
-            custom_date_frame.pack(fill=tk.X, pady=SPACING['small'])
+            # Date picker row
+            date_row = ttk.Frame(custom_section)
+            date_row.pack(fill=tk.X, pady=(0, SPACING['small']))
             
-            # Date pickers row
-            date_row = ttk.Frame(custom_date_frame)
-            date_row.pack(fill=tk.X, padx=SPACING['small'], pady=SPACING['small']//2)
+            ttk.Label(date_row, text="From:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT)
+            self.start_date_picker = DateEntry(date_row, width=10, 
+                                              background=COLORS.get('primary', 'blue'),
+                                              foreground='white', borderwidth=1,
+                                              date_pattern='yyyy-mm-dd')
+            self.start_date_picker.pack(side=tk.LEFT, padx=(2, 8))
             
-            ttk.Label(date_row, text="From:").pack(side=tk.LEFT)
-            self.start_date_picker = DateEntry(date_row, width=12, background='darkblue',
-                                             foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
-            self.start_date_picker.pack(side=tk.LEFT, padx=SPACING['small'])
-            self.start_date_picker.bind('<<DateEntrySelected>>', self._on_calendar_date_selected)
+            ttk.Label(date_row, text="To:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT)
+            self.end_date_picker = DateEntry(date_row, width=10,
+                                            background=COLORS.get('primary', 'blue'),
+                                            foreground='white', borderwidth=1,
+                                            date_pattern='yyyy-mm-dd')
+            self.end_date_picker.pack(side=tk.LEFT, padx=2)
             
-            ttk.Label(date_row, text="To:").pack(side=tk.LEFT, padx=(SPACING['medium'], 0))
-            self.end_date_picker = DateEntry(date_row, width=12, background='darkblue',
-                                           foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
-            self.end_date_picker.pack(side=tk.LEFT, padx=SPACING['small'])
-            self.end_date_picker.bind('<<DateEntrySelected>>', self._on_calendar_date_selected)
+            # Time row
+            time_row = ttk.Frame(custom_section)
+            time_row.pack(fill=tk.X, pady=(0, SPACING['small']))
             
-            # Time spinboxes row
-            time_row = ttk.Frame(custom_date_frame)
-            time_row.pack(fill=tk.X, padx=SPACING['small'], pady=SPACING['small']//2)
+            ttk.Label(time_row, text="Time:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT)
             
             # Start time
-            ttk.Label(time_row, text="Start Time:").pack(side=tk.LEFT)
-            start_hour_spin = tk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.start_hour_var, format="%02.0f")
-            start_hour_spin.pack(side=tk.LEFT, padx=2)
+            ttk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.start_hour_var, 
+                       format="%02.0f").pack(side=tk.LEFT, padx=1)
             ttk.Label(time_row, text=":").pack(side=tk.LEFT)
-            start_min_spin = tk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.start_min_var, format="%02.0f")
-            start_min_spin.pack(side=tk.LEFT, padx=2)
+            ttk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.start_min_var, 
+                       format="%02.0f").pack(side=tk.LEFT, padx=(0, 5))
+            
+            ttk.Label(time_row, text="to").pack(side=tk.LEFT, padx=3)
             
             # End time
-            ttk.Label(time_row, text="End Time:").pack(side=tk.LEFT, padx=(SPACING['medium'], 0))
-            end_hour_spin = tk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.end_hour_var, format="%02.0f")
-            end_hour_spin.pack(side=tk.LEFT, padx=2)
+            ttk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.end_hour_var, 
+                       format="%02.0f").pack(side=tk.LEFT, padx=1)
             ttk.Label(time_row, text=":").pack(side=tk.LEFT)
-            end_min_spin = tk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.end_min_var, format="%02.0f")
-            end_min_spin.pack(side=tk.LEFT, padx=2)
+            ttk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.end_min_var, 
+                       format="%02.0f").pack(side=tk.LEFT)
             
-            # Apply button
-            create_action_button(time_row, "Apply Date Range", self._apply_custom_date_filter,
-                               button_type='success', width=15).pack(side=tk.RIGHT, padx=SPACING['medium'])
+            # GO button
+            go_btn = create_action_button(custom_section, "Apply Custom Range", 
+                                         self._apply_custom_date_filter,
+                                         button_type='primary', width=15)
+            go_btn.pack(fill=tk.X, pady=SPACING['small'])
         else:
-            # Fallback to text entry if tkcalendar is not available
-            custom_date_frame = ttk.LabelFrame(date_frame, text="Custom Date Range (YYYY-MM-DD)")
-            custom_date_frame.pack(fill=tk.X, pady=SPACING['small'])
+            # Fallback text entries
+            date_row = ttk.Frame(custom_section)
+            date_row.pack(fill=tk.X, pady=(0, SPACING['small']))
             
-            date_entry_frame = ttk.Frame(custom_date_frame)
-            date_entry_frame.pack(fill=tk.X, padx=SPACING['small'], pady=SPACING['small'])
+            ttk.Label(date_row, text="From (YYYY-MM-DD):").pack(anchor=tk.W)
+            self.start_date_entry = ttk.Entry(date_row, textvariable=self.custom_date_start_var, width=12)
+            self.start_date_entry.pack(fill=tk.X, pady=1)
             
-            ttk.Label(date_entry_frame, text="Start Date:").pack(side=tk.LEFT)
-            start_date_entry = create_input_entry(date_entry_frame, textvariable=self.custom_date_start_var, width=12)
-            start_date_entry.pack(side=tk.LEFT, padx=SPACING['small'])
+            ttk.Label(date_row, text="To (YYYY-MM-DD):").pack(anchor=tk.W, pady=(5, 0))
+            self.end_date_entry = ttk.Entry(date_row, textvariable=self.custom_date_end_var, width=12)
+            self.end_date_entry.pack(fill=tk.X, pady=1)
             
-            ttk.Label(date_entry_frame, text="End Date:").pack(side=tk.LEFT, padx=(SPACING['medium'], 0))
-            end_date_entry = create_input_entry(date_entry_frame, textvariable=self.custom_date_end_var, width=12)
-            end_date_entry.pack(side=tk.LEFT, padx=SPACING['small'])
+            go_btn = create_action_button(custom_section, "Apply Custom Range", 
+                                         self._apply_custom_date_filter_text,
+                                         button_type='primary', width=15)
+            go_btn.pack(fill=tk.X, pady=SPACING['small'])
+        
+        # Separator
+        ttk.Separator(custom_section, orient='horizontal').pack(fill=tk.X, pady=SPACING['medium'])
+        
+        # Saved Searches Section (Fixed logic)
+        saved_label = ttk.Label(custom_section, text="Saved Searches:", font=('TkDefaultFont', 10, 'bold'))
+        saved_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
+        
+        self.saved_search_var = tk.StringVar()
+        self.saved_searches_combo = ttk.Combobox(custom_section, textvariable=self.saved_search_var, 
+                                                width=18, state="readonly")
+        self.saved_searches_combo.pack(fill=tk.X, pady=(0, SPACING['small']))
+        self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
+        
+        # Saved search buttons
+        saved_btn_frame = ttk.Frame(custom_section)
+        saved_btn_frame.pack(fill=tk.X)
+        
+        load_btn = create_action_button(saved_btn_frame, "Load", self._load_saved_search, 
+                                       width=8, button_type='info_outline')
+        load_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 1))
+        
+        save_btn = create_action_button(saved_btn_frame, "Save", self._save_current_search, 
+                                       width=8, button_type='success_outline')
+        save_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=1)
+        
+        delete_btn = create_action_button(saved_btn_frame, "Del", self._delete_saved_search, 
+                                         width=6, button_type='danger_outline')
+        delete_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(1, 0))
+        
+        # Update saved searches list
+        self._update_saved_searches_list()
+        
+        # Apply default Live filter
+        self._apply_status_filter("live")
+
+    def _add_folder(self):
+        """Add a folder to the list."""
+        folder = filedialog.askdirectory(title="Select Data Folder")
+        if folder and folder not in self.loaded_files:
+            self.loaded_files.append(folder)
+        self._update_selected_folders_display()
+
+    def _add_remote_url(self):
+        """Add a remote URL data source."""
+        dialog = RemoteUrlDialog(self, self.remote_loader)
+        self.wait_window(dialog)
+        
+        if dialog.result:
+            url, username, password = dialog.result
+            # Store URL with credentials (if provided) for loading
+            if username and password:
+                url_with_auth = f"{url}||{username}||{password}"  # Simple encoding
+            else:
+                url_with_auth = url
             
-            create_action_button(date_entry_frame, "Apply", self._apply_custom_date_filter_text,
-                               button_type='success', width=10).pack(side=tk.RIGHT, padx=SPACING['medium'])
+            if url_with_auth not in self.remote_urls:
+                self.remote_urls.append(url_with_auth)
+                self._update_selected_folders_display()
+                messagebox.showinfo("URL Added", f"Remote URL added successfully:\n{url}")
+
+    def _clear_folders(self):
+        """Clear selected folders and remote URLs."""
+        self.loaded_files = []
+        self.remote_urls = []
+        # Cleanup remote files
+        if hasattr(self, 'remote_loader'):
+            self.remote_loader.cleanup_temp_files()
+        self._update_selected_folders_display()
+
+    def _update_selected_folders_display(self):
+        """Update label with selected folders and remote URLs."""
+        sources = []
+        
+        # Add local folders
+        if self.loaded_files:
+            sources.extend([f"📁 {folder}" for folder in self.loaded_files])
+        
+        # Add remote URLs
+        if self.remote_urls:
+            for url_entry in self.remote_urls:
+                url = url_entry.split('||')[0]  # Remove credentials for display
+                sources.append(f"🌐 {url}")
+        
+        if sources:
+            text = "\n".join(sources)
+        else:
+            text = "No data sources selected."
+        
+        self.selected_folders_var.set(text)
 
     def _create_tender_data_widgets(self, parent):
         """Create the widgets for displaying and interacting with tender data."""
@@ -1247,61 +1419,6 @@ class SearchDashboardTab(ttk.Frame):
                    rowheight=24)
         style.map("Custom.Treeview", 
              background=[('selected', COLORS.get('primary', '#1976d2'))])
-
-    def _add_folder(self):
-        """Add a folder to the list."""
-        folder = filedialog.askdirectory(title="Select Data Folder")
-        if folder and folder not in self.loaded_files:
-            self.loaded_files.append(folder)
-        self._update_selected_folders_display()
-
-    def _add_remote_url(self):
-        """Add a remote URL data source."""
-        dialog = RemoteUrlDialog(self, self.remote_loader)
-        self.wait_window(dialog)
-        
-        if dialog.result:
-            url, username, password = dialog.result
-            # Store URL with credentials (if provided) for loading
-            if username and password:
-                url_with_auth = f"{url}||{username}||{password}"  # Simple encoding
-            else:
-                url_with_auth = url
-            
-            if url_with_auth not in self.remote_urls:
-                self.remote_urls.append(url_with_auth)
-                self._update_selected_folders_display()
-                messagebox.showinfo("URL Added", f"Remote URL added successfully:\n{url}")
-
-    def _clear_folders(self):
-        """Clear selected folders and remote URLs."""
-        self.loaded_files = []
-        self.remote_urls = []
-        # Cleanup remote files
-        if hasattr(self, 'remote_loader'):
-            self.remote_loader.cleanup_temp_files()
-        self._update_selected_folders_display()
-
-    def _update_selected_folders_display(self):
-        """Update label with selected folders and remote URLs."""
-        sources = []
-        
-        # Add local folders
-        if self.loaded_files:
-            sources.extend([f"📁 {folder}" for folder in self.loaded_files])
-        
-        # Add remote URLs
-        if self.remote_urls:
-            for url_entry in self.remote_urls:
-                url = url_entry.split('||')[0]  # Remove credentials for display
-                sources.append(f"🌐 {url}")
-        
-        if sources:
-            text = "\n".join(sources)
-        else:
-            text = "No data sources selected."
-        
-        self.selected_folders_var.set(text)
 
     def _export_to_excel(self):
         """Export filtered data to Excel."""
@@ -1393,7 +1510,6 @@ class SearchDashboardTab(ttk.Frame):
         details = "\n".join(f"{col}: {val}" for col, val in zip(columns, values))
         messagebox.showinfo("Tender Details", details)
 
-
     def _toggle_data_folders_panel(self):
         """Toggle visibility of data folders panel."""
         if getattr(self, 'data_folders_frame_visible', False):
@@ -1413,52 +1529,6 @@ class SearchDashboardTab(ttk.Frame):
         if hasattr(self, 'tree') and self.tree:
             self.tree.bind("<Double-1>", self._on_row_double_click)
             self.tree.bind("<Button-3>", self._show_context_menu)
-
-    def _reset_filters(self):
-        """Reset all filters to their default state."""
-        # Clear search fields
-        self.dept_filter_var.set("")
-        self.global_search_var.set("")
-        
-        # Reset operators to defaults
-        self.dept_operator_var.set("OR")
-        self.global_operator_var.set("AND")
-        
-        # Reset status filter to live
-        self.status_filter_var.set("live")
-        
-        # Clear date filter state
-        self.current_date_filter = {}
-        self.active_date_filter = "live"
-        
-        # Reset time filter button states
-        self._clear_time_filter_selection()
-        
-        # Clear custom date fields if they exist
-        if hasattr(self, 'custom_date_start_var'):
-            self.custom_date_start_var.set("")
-        if hasattr(self, 'custom_date_end_var'):
-            self.custom_date_end_var.set("")
-        
-        # Reset time spinboxes to defaults
-        self.start_hour_var.set("00")
-        self.start_min_var.set("00")
-        self.end_hour_var.set("23")
-        self.end_min_var.set("59")
-        
-        # Apply default live filter
-        self._apply_status_filter("live")
-
-    def _update_saved_searches_list(self):
-        """Update the saved searches dropdown list."""
-        if not hasattr(self, 'saved_searches_combo'):
-            return
-        
-        # Get saved searches from config
-        saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-        
-        # Update the combobox values
-        self.saved_searches_combo['values'] = saved_searches_list
 
     def _apply_status_filter(self, status):
         """Apply status-based filter (all, live, expired)."""
@@ -1517,8 +1587,8 @@ class SearchDashboardTab(ttk.Frame):
             status_cols = [col for col in self.data_processor.filtered_data.columns if 'status' in col.lower()]
             if status_cols:
                 status_col = status_cols[0]
-                mask = self.data_processor.filtered_data[status_col].astype(str).str.lower().str.contains('active|live|open', na=False)
-                self.data_processor.filtered_data = self.data_processor.filtered_data[mask]
+                live_mask = self.data_processor.filtered_data[status_col].astype(str).str.lower().str.contains('active|live|open', na=False)
+                self.data_processor.filtered_data = self.data_processor.filtered_data[live_mask]
 
     def _apply_expired_tenders_filter(self):
         """Filter to show only expired/closed tenders."""
@@ -1553,8 +1623,8 @@ class SearchDashboardTab(ttk.Frame):
             status_cols = [col for col in self.data_processor.filtered_data.columns if 'status' in col.lower()]
             if status_cols:
                 status_col = status_cols[0]
-                mask = ~self.data_processor.filtered_data[status_col].astype(str).str.lower().str.contains('active|live|open', na=False)
-                self.data_processor.filtered_data = self.data_processor.filtered_data[mask]
+                expired_mask = ~self.data_processor.filtered_data[status_col].astype(str).str.lower().str.contains('active|live|open', na=False)
+                self.data_processor.filtered_data = self.data_processor.filtered_data[expired_mask]
 
     def _apply_time_range_filter(self, time_range):
         """Apply time range filter (today, next_3_days, etc.)."""
@@ -1580,46 +1650,139 @@ class SearchDashboardTab(ttk.Frame):
         # Calculate date ranges using current datetime for precise filtering
         current_datetime = pd.Timestamp.now()
         today_start = current_datetime.normalize()  # Start of today (00:00:00)
+        today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)  # End of today (23:59:59)
+        
+        # Get current status filter to determine how to apply time range
+        current_status = getattr(self, 'status_filter_var', tk.StringVar()).get()
         
         if time_range == "today":
-            # Today: from now until end of today
-            end_date = today_start + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
-            mask = (
-                (self.data_processor.filtered_data[date_col] >= current_datetime) & 
-                (self.data_processor.filtered_data[date_col] <= end_date)
-            )
+            if current_status == "expired":
+                # For expired + today: show tenders that closed/expired today (before current time)
+                mask = (
+                    (self.data_processor.filtered_data[date_col] >= today_start) & 
+                    (self.data_processor.filtered_data[date_col] < current_datetime)
+                )
+            elif current_status == "live":
+                # For live + today: show tenders closing today (after current time)
+                mask = (
+                    (self.data_processor.filtered_data[date_col] >= current_datetime) & 
+                    (self.data_processor.filtered_data[date_col] <= today_end)
+                )
+            else:  # "all"
+                # For all + today: show all tenders with closing date today
+                mask = (
+                    (self.data_processor.filtered_data[date_col] >= today_start) & 
+                    (self.data_processor.filtered_data[date_col] <= today_end)
+                )
         elif time_range == "next_3_days":
-            # Next 3 days: from now until end of 3 days from today
-            end_date = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
-            mask = (
-                (self.data_processor.filtered_data[date_col] >= current_datetime) & 
-                (self.data_processor.filtered_data[date_col] <= end_date)
-            )
+            end_3_days = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
+            if current_status == "expired":
+                # For expired + next 3 days: show tenders that expired in the last 3 days
+                start_3_days_ago = today_start - pd.Timedelta(days=3)
+                mask = (
+                    (self.data_processor.filtered_data[date_col] >= start_3_days_ago) & 
+                    (self.data_processor.filtered_data[date_col] < current_datetime)
+                )
+            elif current_status == "live":
+                # For live + next 3 days: show tenders closing in next 3 days
+                mask = (
+                    (self.data_processor.filtered_data[date_col] >= current_datetime) & 
+                    (self.data_processor.filtered_data[date_col] <= end_3_days)
+                )
+            else:  # "all"
+                # For all + next 3 days: show all tenders closing in next 3 days from today start
+                mask = (
+                    (self.data_processor.filtered_data[date_col] >= today_start) & 
+                    (self.data_processor.filtered_data[date_col] <= end_3_days)
+                )
         elif time_range == "next_7_days":
-            # Next 7 days: from now until end of 7 days from today
-            end_date = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
-            mask = (
-                (self.data_processor.filtered_data[date_col] >= current_datetime) & 
-                (self.data_processor.filtered_data[date_col] <= end_date)
-            )
+            end_7_days = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
+            if current_status == "expired":
+                # For expired + next 7 days: show tenders that expired in the last 7 days
+                start_7_days_ago = today_start - pd.Timedelta(days=7)
+                mask = (
+                    (self.data_processor.filtered_data[date_col] >= start_7_days_ago) & 
+                    (self.data_processor.filtered_data[date_col] < current_datetime)
+                )
+            elif current_status == "live":
+                # For live + next 7 days: show tenders closing in next 7 days
+                mask = (
+                    (self.data_processor.filtered_data[date_col] >= current_datetime) & 
+                    (self.data_processor.filtered_data[date_col] <= end_7_days)
+                )
+            else:  # "all"
+                # For all + next 7 days: show all tenders closing in next 7 days from today start
+                mask = (
+                    (self.data_processor.filtered_data[date_col] >= today_start) & 
+                    (self.data_processor.filtered_data[date_col] <= end_7_days)
+                )
         elif time_range == "next_30_days":
-            # Next 30 days: from now until end of 30 days from today
-            end_date = today_start + pd.Timedelta(days=30, hours=23, minutes=59, seconds=59)
-            mask = (
-                (self.data_processor.filtered_data[date_col] >= current_datetime) & 
-                (self.data_processor.filtered_data[date_col] <= end_date)
-            )
+            end_30_days = today_start + pd.Timedelta(days=30, hours=23, minutes=59, seconds=59)
+            if current_status == "expired":
+                # For expired + next 30 days: show tenders that expired in the last 30 days
+                start_30_days_ago = today_start - pd.Timedelta(days=30)
+                mask = (
+                    (self.data_processor.filtered_data[date_col] >= start_30_days_ago) & 
+                    (self.data_processor.filtered_data[date_col] < current_datetime)
+                )
+            elif current_status == "live":
+                # For live + next 30 days: show tenders closing in next 30 days
+                mask = (
+                    (self.data_processor.filtered_data[date_col] >= current_datetime) & 
+                    (self.data_processor.filtered_data[date_col] <= end_30_days)
+                )
+            else:  # "all"
+                # For all + next 30 days: show all tenders closing in next 30 days from today start
+                mask = (
+                    (self.data_processor.filtered_data[date_col] >= today_start) & 
+                    (self.data_processor.filtered_data[date_col] <= end_30_days)
+                )
         else:
             return
         
         # Apply the date range filter
         self.data_processor.filtered_data = self.data_processor.filtered_data[mask]
         
-        self.logger.info(f"Time range filter ({time_range}): {len(self.data_processor.filtered_data)} records from {current_datetime}")
+        self.logger.info(f"Time range filter ({time_range}) with status ({current_status}): {len(self.data_processor.filtered_data)} records")
         
         # Refresh display
         self._refresh_tree_data()
         self.update_dashboard()
+
+    def _reset_filters(self):
+        """Reset all filters to their default state."""
+        # Clear search fields
+        self.dept_filter_var.set("")
+        self.global_search_var.set("")
+        
+        # Reset operators to defaults
+        self.dept_operator_var.set("OR")
+        self.global_operator_var.set("AND")
+        
+        # Reset status filter to live
+        self.status_filter_var.set("live")
+        
+        # Clear date filter state
+        self.current_date_filter = {}
+        self.active_date_filter = "live"
+        
+        # Reset time filter button states
+        self._clear_time_filter_selection()
+        
+        # Clear custom date fields if they exist
+        if hasattr(self, 'custom_date_start_var'):
+            self.custom_date_start_var.set("")
+        if hasattr(self, 'custom_date_end_var'):
+            self.custom_date_end_var.set("")
+        
+        # Reset time spinboxes to defaults
+        self.start_hour_var.set("00")
+        self.start_min_var.set("00")
+        self.end_hour_var.set("23")
+        self.end_min_var.set("59")
+        
+        # Apply default live filter
+        self._apply_status_filter("live")
 
     def _clear_time_filter_selection(self):
         """Clear the visual selection of time filter buttons."""
@@ -1636,3 +1799,14 @@ class SearchDashboardTab(ttk.Frame):
                     if hasattr(btn, 'configure'):
                         btn['background'] = "#f0f0f0"
                         btn['foreground'] = "black"
+
+    def _update_saved_searches_list(self):
+        """Update the saved searches dropdown list."""
+        if not hasattr(self, 'saved_searches_combo'):
+            return
+        
+        # Get saved searches from config
+        saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+        
+        # Update the combobox values
+        self.saved_searches_combo['values'] = saved_searches_list
