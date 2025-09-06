@@ -1124,27 +1124,20 @@ class SearchDashboardTab(ttk.Frame):
         style.configure("Primary.TLabelframe.Label", foreground="#1976d2", font=('TkDefaultFont', 10, 'bold'))
         style.configure("Success.TLabelframe", borderwidth=2, relief="solid")
         style.configure("Success.TLabelframe.Label", foreground="#4caf50", font=('TkDefaultFont', 10, 'bold'))
-        
-        # Reset button
-        reset_frame = ttk.Frame(search_container)
-        reset_frame.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['medium']))
-        
-        reset_btn = create_action_button(reset_frame, "🔄 Reset All Filters", self._reset_filters, 
-                                        button_type='danger', width=18)
-        reset_btn.pack(side=tk.RIGHT)
 
     def _create_date_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
-        """Create redesigned date filter widgets in three horizontal sections."""
-        # Main date filter container
+        """Create redesigned date filter widgets in four horizontal sections."""
+        # Main date filter container with 4 sections
         date_container = ttk.Frame(parent)
         date_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
         
-        # Configure grid with three equal columns
+        # Configure grid with four equal columns
         date_container.grid_columnconfigure(0, weight=1)
         date_container.grid_columnconfigure(1, weight=1) 
         date_container.grid_columnconfigure(2, weight=1)
+        date_container.grid_columnconfigure(3, weight=1)
         
-        # Section 1: Status Filter (Left)
+        # Section 1: Status Filter (Far Left)
         status_section = ttk.LabelFrame(date_container, text="📊 Status Filter", 
                                        padding=SPACING['medium'])
         status_section.grid(row=0, column=0, sticky="nsew", padx=(0, SPACING['small']))
@@ -1165,7 +1158,7 @@ class SearchDashboardTab(ttk.Frame):
                                        value=value, command=lambda v=value: self._apply_status_filter(v))
             radio_btn.pack(anchor=tk.W, pady=2)
         
-        # Section 2: Time Range Filter (Center)
+        # Section 2: Time Range Filter with Reset Button (Center Left)
         time_section = ttk.LabelFrame(date_container, text="📅 Time Range Filter", 
                                      padding=SPACING['medium'])
         time_section.grid(row=0, column=1, sticky="nsew", padx=SPACING['small'])
@@ -1196,13 +1189,18 @@ class SearchDashboardTab(ttk.Frame):
         button_grid.grid_columnconfigure(0, weight=1)
         button_grid.grid_columnconfigure(1, weight=1)
         
-        # Section 3: Custom Date Range & Saved Searches (Right)
-        custom_section = ttk.LabelFrame(date_container, text="🔧 Custom & Saved", 
-                                       padding=SPACING['medium'])
-        custom_section.grid(row=0, column=2, sticky="nsew", padx=(SPACING['small'], 0))
+        # Reset button in time range section
+        reset_btn = create_action_button(time_section, "🔄 Reset All Filters", self._reset_filters, 
+                                        button_type='danger', width=15)
+        reset_btn.pack(fill=tk.X, pady=(SPACING['medium'], 0))
         
-        # Custom Date Range (Restored functionality)
-        custom_label = ttk.Label(custom_section, text="Custom Date Range:", font=('TkDefaultFont', 10, 'bold'))
+        # Section 3: Custom Date Range (Center Right)
+        custom_section = ttk.LabelFrame(date_container, text="🗓️ Custom Date Range", 
+                                       padding=SPACING['medium'])
+        custom_section.grid(row=0, column=2, sticky="nsew", padx=SPACING['small'])
+        
+        # Custom Date Range functionality
+        custom_label = ttk.Label(custom_section, text="Date Range:", font=('TkDefaultFont', 10, 'bold'))
         custom_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
         
         if HAS_TKCALENDAR and DateEntry is not None:
@@ -1269,34 +1267,36 @@ class SearchDashboardTab(ttk.Frame):
                                          button_type='primary', width=15)
             go_btn.pack(fill=tk.X, pady=SPACING['small'])
         
-        # Separator
-        ttk.Separator(custom_section, orient='horizontal').pack(fill=tk.X, pady=SPACING['medium'])
+        # Section 4: Saved Searches (Far Right)
+        saved_section = ttk.LabelFrame(date_container, text="💾 Saved Searches", 
+                                      padding=SPACING['medium'])
+        saved_section.grid(row=0, column=3, sticky="nsew", padx=(SPACING['small'], 0))
         
-        # Saved Searches Section (Fixed logic)
-        saved_label = ttk.Label(custom_section, text="Saved Searches:", font=('TkDefaultFont', 10, 'bold'))
+        # Saved Searches functionality
+        saved_label = ttk.Label(saved_section, text="Saved Searches:", font=('TkDefaultFont', 10, 'bold'))
         saved_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
         
         self.saved_search_var = tk.StringVar()
-        self.saved_searches_combo = ttk.Combobox(custom_section, textvariable=self.saved_search_var, 
+        self.saved_searches_combo = ttk.Combobox(saved_section, textvariable=self.saved_search_var, 
                                                 width=18, state="readonly")
         self.saved_searches_combo.pack(fill=tk.X, pady=(0, SPACING['small']))
         self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
         
-        # Saved search buttons
-        saved_btn_frame = ttk.Frame(custom_section)
+        # Saved search buttons in vertical layout for better fit
+        saved_btn_frame = ttk.Frame(saved_section)
         saved_btn_frame.pack(fill=tk.X)
         
         load_btn = create_action_button(saved_btn_frame, "Load", self._load_saved_search, 
                                        width=8, button_type='info_outline')
-        load_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 1))
+        load_btn.pack(fill=tk.X, pady=(0, 2))
         
         save_btn = create_action_button(saved_btn_frame, "Save", self._save_current_search, 
                                        width=8, button_type='success_outline')
-        save_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=1)
+        save_btn.pack(fill=tk.X, pady=2)
         
-        delete_btn = create_action_button(saved_btn_frame, "Del", self._delete_saved_search, 
-                                         width=6, button_type='danger_outline')
-        delete_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(1, 0))
+        delete_btn = create_action_button(saved_btn_frame, "Delete", self._delete_saved_search, 
+                                         width=8, button_type='danger_outline')
+        delete_btn.pack(fill=tk.X, pady=(2, 0))
         
         # Update saved searches list
         self._update_saved_searches_list()
