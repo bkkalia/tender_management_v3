@@ -6,6 +6,10 @@
     "last_used_folders": [
         "H:/My Drive/0dev/Search Utility v2/tender_management_v2.1/data/input_excel_files"
     ],
+    "remote_data_sources": [],
+    "remote_connection_timeout": 30,
+    "remote_download_chunk_size": 8192,
+    "cleanup_temp_files_on_exit": true,
     "merger_preferred_unique_keys": [
         "Tender ID (Extracted)",
         "Title and Ref.No./Tender ID",

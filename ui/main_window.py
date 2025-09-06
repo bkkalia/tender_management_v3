@@ -13,7 +13,10 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 # Import tabs
-from ui.search_dashboard_tab import SearchDashboardTab
+try:
+    from ui.search_dashboard_tab import SearchDashboardTab
+except ImportError:
+    SearchDashboardTab = None
 from ui.portal_merger_tab import PortalDataMergerTab
 from ui.settings_tab import SettingsTab
 from ui.logs_tab import LogsTab
@@ -373,15 +376,18 @@ India - 174303"""
             import webbrowser
             webbrowser.open(url)
         except Exception as e:
-            self.logger.error(f"Could not open website: {e}")
-
+            self.logger.error(f"Failed to open website {url}: {e}")
+            
     def _initialize_tabs(self):
         """Initialize and add all tabs to the notebook."""
         try:
             # Search & Dashboard Tab
-            search_tab = SearchDashboardTab(self.notebook, self)
-            self.notebook.add(search_tab, text="Search & Dashboard")
-            self.tabs["Search & Dashboard"] = search_tab
+            if SearchDashboardTab is not None:
+                search_tab = SearchDashboardTab(self.notebook, self)
+                self.notebook.add(search_tab, text="Search & Dashboard")
+                self.tabs["Search & Dashboard"] = search_tab
+            else:
+                self.logger.warning("SearchDashboardTab not available - skipping this tab")
             
             # Portal Data Merger Tab
             merger_tab = PortalDataMergerTab(self.notebook, self)

@@ -93,6 +93,11 @@ def build_exe():
         "--hidden-import=tkinter",
         "--hidden-import=tkcalendar",
         "--hidden-import=openpyxl", # Explicitly include for pandas Excel support
+        "--hidden-import=requests",  # For HTTP downloads
+        "--hidden-import=urllib.request",  # For basic URL handling
+        "--hidden-import=ftplib",  # For FTP support
+        "--hidden-import=paramiko",  # For SFTP support (optional)
+        "--hidden-import=ssl",  # For secure connections
         "main.py"
     ]
     

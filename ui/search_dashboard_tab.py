@@ -32,11 +32,81 @@ if parent_dir not in sys.path:
 from utils.constants import SPACING, FONTS, COLORS
 from ui.common_widgets import create_labeled_frame, create_action_button, create_input_entry, create_info_label
 from core.data_processor import TenderDataProcessor
+from core.remote_data_loader import RemoteDataLoader
 
 if TYPE_CHECKING:
     from ui.main_window import MainApplication # Use absolute import
 
 logger = logging.getLogger(__name__)
+
+class RemoteUrlDialog(tk.Toplevel):
+    """Dialog for entering remote URL and credentials."""
+    
+    def __init__(self, parent, remote_loader):
+        super().__init__(parent)
+        self.parent = parent
+        self.remote_loader = remote_loader
+        self.result = None
+        
+        self.title("Add Remote URL")
+        self.geometry("400x300")
+        self.transient(parent)
+        self.grab_set()
+        
+        # Center the dialog
+        self.geometry("+%d+%d" % (parent.winfo_rootx() + 50, parent.winfo_rooty() + 50))
+        
+        self._create_widgets()
+        
+    def _create_widgets(self):
+        main_frame = ttk.Frame(self)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # URL field
+        ttk.Label(main_frame, text="URL:").pack(anchor=tk.W)
+        self.url_var = tk.StringVar()
+        url_entry = ttk.Entry(main_frame, textvariable=self.url_var, width=50)
+        url_entry.pack(fill=tk.X, pady=(0, 10))
+        url_entry.focus()
+        
+        # Username field
+        ttk.Label(main_frame, text="Username (optional):").pack(anchor=tk.W)
+        self.username_var = tk.StringVar()
+        username_entry = ttk.Entry(main_frame, textvariable=self.username_var, width=50)
+        username_entry.pack(fill=tk.X, pady=(0, 10))
+        
+        # Password field
+        ttk.Label(main_frame, text="Password (optional):").pack(anchor=tk.W)
+        self.password_var = tk.StringVar()
+        password_entry = ttk.Entry(main_frame, textvariable=self.password_var, width=50, show="*")
+        password_entry.pack(fill=tk.X, pady=(0, 20))
+        
+        # Buttons
+        button_frame = ttk.Frame(main_frame)
+        button_frame.pack(fill=tk.X)
+        
+        ttk.Button(button_frame, text="Cancel", command=self._cancel).pack(side=tk.RIGHT, padx=(10, 0))
+        ttk.Button(button_frame, text="OK", command=self._ok).pack(side=tk.RIGHT)
+        
+        # Bind Enter key to OK
+        self.bind('<Return>', lambda e: self._ok())
+        self.bind('<Escape>', lambda e: self._cancel())
+        
+    def _ok(self):
+        url = self.url_var.get().strip()
+        if not url:
+            messagebox.showwarning("Missing URL", "Please enter a URL.")
+            return
+            
+        username = self.username_var.get().strip() or None
+        password = self.password_var.get().strip() or None
+        
+        self.result = (url, username, password)
+        self.destroy()
+        
+    def _cancel(self):
+        self.result = None
+        self.destroy()
 
 class SearchDashboardTab(ttk.Frame):
     """
@@ -103,6 +173,12 @@ class SearchDashboardTab(ttk.Frame):
         self._index_min_rows = 5000  # threshold to build index
 
         self.date_filter_buttons: Dict[str, tk.Widget] = {}  # typed to suppress bool expectation
+
+        # Initialize remote data loader
+        self.remote_loader = RemoteDataLoader()
+        
+        # Add UI variables for remote sources
+        self.remote_urls: List[str] = []
 
         self._create_widgets()
         self._setup_treeview_bindings()
@@ -202,306 +278,23 @@ class SearchDashboardTab(ttk.Frame):
         action_frame.pack(side=tk.LEFT, padx=(0, SPACING['medium']))
 
         create_action_button(action_frame, "Add Folder", self._add_folder, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
+        create_action_button(action_frame, "Add Cloud URL", self._add_remote_url, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
         create_action_button(action_frame, "Refresh Data", self._load_data_from_folders, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
-        create_action_button(action_frame, "Clear Folders", self._clear_folders, button_type='secondary', width=12).pack(pady=SPACING['small']//2, fill=tk.X)
+        create_action_button(action_frame, "Clear All", self._clear_folders, button_type='secondary', width=12).pack(pady=SPACING['small']//2, fill=tk.X)
 
         selected_folders_label = create_info_label(parent, "", textvariable=self.selected_folders_var, wraplength=600, justify=tk.LEFT)
         selected_folders_label.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=SPACING['small'])
         self._update_selected_folders_display()
 
-    def _create_search_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
-        # Using a sub-frame for better organization
-        text_search_frame = ttk.Frame(parent)
-        text_search_frame.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['small']))
-
-        # Department Filter
-        dept_label = create_info_label(text_search_frame, "Department(s):")
-        dept_label.grid(row=0, column=0, padx=(SPACING['small'], 0), pady=SPACING['small'], sticky="w")
-        dept_entry = create_input_entry(text_search_frame, self.dept_filter_var, width=35) # Increased width
-        dept_entry.grid(row=0, column=1, padx=(SPACING['small']//2, 0), pady=SPACING['small'], sticky="ew")
-        dept_entry.bind("<KeyRelease>", self._on_live_search_key)  # Changed to use _on_live_search_key
-        
-        # Department search operator radio buttons
-        dept_op_frame = ttk.Frame(text_search_frame)
-        dept_op_frame.grid(row=0, column=2, padx=(SPACING['small']//2, 0), sticky="w")
-        
-        self.dept_operator_var = tk.StringVar(value="OR")
-        ttk.Radiobutton(dept_op_frame, text="OR", variable=self.dept_operator_var, 
-                        value="OR", command=self._on_live_search_key).pack(side=tk.LEFT, padx=1)
-        ttk.Radiobutton(dept_op_frame, text="AND", variable=self.dept_operator_var, 
-                        value="AND", command=self._on_live_search_key).pack(side=tk.LEFT, padx=1)
-        
-        create_info_label(text_search_frame, "CSV", font_style=FONTS['small']).grid(row=0, column=3, padx=(SPACING['small']//2, SPACING['small']), sticky='w') # Changed label and reduced padding
-
-        # Global Search
-        search_label = create_info_label(text_search_frame, "Global Search:")
-        search_label.grid(row=0, column=4, padx=(SPACING['medium'], 0), pady=SPACING['small'], sticky="w") # Adjusted padding
-        search_entry = create_input_entry(text_search_frame, self.global_search_var, width=50) # Increased width
-        search_entry.grid(row=0, column=5, padx=(SPACING['small']//2, 0), pady=SPACING['small'], sticky="ew")
-        search_entry.bind("<KeyRelease>", self._on_live_search_key)  # Changed to use _on_live_search_key
-        
-        # Global search operator radio buttons
-        global_op_frame = ttk.Frame(text_search_frame)
-        global_op_frame.grid(row=0, column=6, padx=(SPACING['small']//2, 0), sticky="w")
-        
-        self.global_operator_var = tk.StringVar(value="AND")
-        ttk.Radiobutton(global_op_frame, text="OR", variable=self.global_operator_var, 
-                        value="OR", command=self._on_live_search_key).pack(side=tk.LEFT, padx=1)
-        ttk.Radiobutton(global_op_frame, text="AND", variable=self.global_operator_var, 
-                        value="AND", command=self._on_live_search_key).pack(side=tk.LEFT, padx=1)
-        
-        create_info_label(text_search_frame, "CSV", font_style=FONTS['small']).grid(row=0, column=7, padx=(SPACING['small']//2, SPACING['small']), sticky='w') # Changed label and reduced padding
-        
-        text_search_frame.grid_columnconfigure(1, weight=1) # Allow dept entry to expand
-        text_search_frame.grid_columnconfigure(5, weight=2) # Allow global search entry to expand more
-
-        # Only keep the Reset button since we have live search
-        btn_frame = ttk.Frame(text_search_frame)
-        btn_frame.grid(row=0, column=8, padx=(SPACING['medium'], SPACING['small']), sticky="e")
-        create_action_button(btn_frame, "Reset All Filters", self._reset_filters, button_type='danger').pack(side=tk.LEFT, padx=SPACING['small']//2)
-
-        # Update the saved searches dropdown
-        self._update_saved_searches_list()
-
-    def _create_date_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
-        # Main date filter container with reduced padding
-        date_filter_frame = ttk.Frame(parent)
-        date_filter_frame.pack(side=tk.TOP, fill=tk.X, pady=(SPACING['small'], SPACING['small']))
-
-        # Create a professional header with smaller font and reduced spacing
-        header_frame = ttk.Frame(date_filter_frame)
-        header_frame.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['small']))
-        
-        create_info_label(header_frame, "Filters & Search Options", 
-                         font_style=FONTS.get('body', ('TkDefaultFont', 10, 'bold'))).pack(side=tk.LEFT)
-
-        # Main content frame with three sections: Status, Time Range, and Saved Searches
-        content_frame = ttk.Frame(date_filter_frame)
-        content_frame.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['small']))
-        
-        # Configure proportional weights for the three sections
-        content_frame.grid_columnconfigure(0, weight=2)  # Status Filter
-        content_frame.grid_columnconfigure(1, weight=5)  # Time Range Filter (largest)
-        content_frame.grid_columnconfigure(2, weight=2)  # Saved Searches
-
-        # Left section: Status-based filters with reduced padding
-        status_section = ttk.LabelFrame(content_frame, text="Status Filter", padding=(SPACING['small'], SPACING['small']))
-        status_section.grid(row=0, column=0, sticky="nsew", padx=(SPACING['small'], SPACING['small']//2), 
-                           pady=(0, SPACING['small']//2))
-
-        # Configure the LabelFrame to center its text with smaller font
-        style = ttk.Style()
-        style.configure("Centered.TLabelframe.Label", anchor="center", font=('TkDefaultFont', 9))
-        status_section.configure(style="Centered.TLabelframe")
-        
-        # Define active filter style - dark green background for active filters
-        style.configure("Active.TRadiobutton", background="#006400")
-        style.configure("Active.TButton", background="#006400", foreground="white")
-
-        # Radio button variable for mutually exclusive status filters
-        self.status_filter_var = tk.StringVar(value="live")  # Default to Live
-        self.active_date_filter = "live"  # Set default active filter
-        
-        # Container for radio buttons with reduced spacing
-        radio_container = ttk.Frame(status_section)
-        radio_container.pack(expand=True, fill=tk.BOTH)
-        
-        # Status filter options with radio buttons and reduced spacing
-        status_options = [
-            ("All Records", "all", "Show all tender records regardless of status"),
-            ("Live Tenders", "live", "Show only active/open tenders"),
-            ("Expired Tenders", "expired", "Show only expired/closed tenders")
-        ]
-        
-        for text, value, tooltip in status_options:
-            radio_btn = ttk.Radiobutton(
-                radio_container, 
-                text=text, 
-                variable=self.status_filter_var,
-                value=value,
-                command=lambda v=value: self._apply_status_filter(v)
-            )
-            radio_btn.pack(anchor=tk.W, pady=SPACING['small']//2)
-            
-            # Store reference for potential styling later
-            if not hasattr(self, 'date_filter_buttons'):
-                self.date_filter_buttons = {}
-            self.date_filter_buttons[value] = radio_btn
-
-        # Center section: Time-based filters with reduced padding
-        time_section = ttk.LabelFrame(content_frame, text="Time Range Filter", padding=(SPACING['small'], SPACING['small']))
-        time_section.grid(row=0, column=1, sticky="nsew", padx=(SPACING['small']//2, SPACING['small']//2), 
-                         pady=(0, SPACING['small']//2))
-        time_section.configure(style="Centered.TLabelframe")
-
-        # Time filter buttons frame with center alignment and reduced spacing
-        time_buttons_frame = ttk.Frame(time_section)
-        time_buttons_frame.pack(anchor=tk.CENTER, pady=(0, SPACING['small']))
-
-        # Quick time filter buttons with reduced spacing
-        time_presets = [
-            ("Today", "today", "Tenders closing today"),
-            ("Next 3 Days", "next_3_days", "Tenders closing in next 3 days"), 
-            ("Next 7 Days", "next_7_days", "Tenders closing in next 7 days"),
-            ("Next 30 Days", "next_30_days", "Tenders closing in next 30 days")
-        ]
-        
-        for text, preset_key, tooltip in time_presets:
-            btn = create_action_button(
-                time_buttons_frame,
-                text,
-                lambda p=preset_key: self._apply_time_filter(p),
-                width=11,  # Slightly smaller width
-                button_type='info_outline'
-            )
-            btn.pack(side=tk.LEFT, padx=1)  # Reduced horizontal padding
-            self.date_filter_buttons[preset_key] = btn
-
-        # Custom date range section with center alignment and reduced spacing
-        custom_frame = ttk.Frame(time_section)
-        custom_frame.pack(anchor=tk.CENTER, pady=(SPACING['small'], 0))
-        
-        # Custom date range label with smaller font and less space
-        create_info_label(custom_frame, "Custom Date Range:", 
-                         font_style=FONTS.get('small', ('TkDefaultFont', 9, 'bold'))).pack(anchor=tk.CENTER, pady=(0, SPACING['small']))
-
-        # Custom Date Range with Calendar Pickers (only if tkcalendar is available)
-        if HAS_TKCALENDAR and DateEntry is not None:
-            # First row: Date pickers and time spinboxes with reduced spacing
-            date_controls_frame = ttk.Frame(custom_frame)
-            date_controls_frame.pack(anchor=tk.CENTER, pady=(0, SPACING['small']))
-            
-            # Start date picker with reduced spacing
-            start_date_frame = ttk.Frame(date_controls_frame)
-            start_date_frame.pack(side=tk.LEFT, padx=SPACING['small'])
-            
-            create_info_label(start_date_frame, "From:").pack(side=tk.LEFT)
-            self.start_date_picker = DateEntry(
-                start_date_frame, 
-                width=10,
-                background=COLORS.get('primary', 'blue'),
-                foreground='white',
-                borderwidth=2,
-                date_pattern='yyyy-mm-dd',
-                selectmode='day'
-            )
-            self.start_date_picker.pack(side=tk.LEFT, padx=(SPACING['small']//2, 0))
-            self.start_date_picker.bind("<<DateEntrySelected>>", self._on_calendar_date_selected)
-
-            # Start time spinboxes (HH:MM) with reduced spacing
-            hh_sb = ttk.Spinbox(start_date_frame, from_=0, to=23, width=3,
-                                textvariable=self.start_hour_var, format="%02.0f")
-            hh_sb.pack(side=tk.LEFT, padx=1)
-            ttk.Label(start_date_frame, text=":").pack(side=tk.LEFT)
-            mm_sb = ttk.Spinbox(start_date_frame, from_=0, to=59, width=3,
-                                textvariable=self.start_min_var, format="%02.0f")
-            mm_sb.pack(side=tk.LEFT, padx=(0, SPACING['small']//2))
-
-            # "to" label with reduced spacing
-            create_info_label(date_controls_frame, "To:").pack(side=tk.LEFT, padx=(SPACING['small']//2, 0))
-
-            # End date picker with reduced spacing
-            end_date_frame = ttk.Frame(date_controls_frame)
-            end_date_frame.pack(side=tk.LEFT, padx=SPACING['small'])
-            
-            self.end_date_picker = DateEntry(
-                end_date_frame, 
-                width=10,
-                background=COLORS.get('primary', 'blue'),
-                foreground='white',
-                borderwidth=2,
-                date_pattern='yyyy-mm-dd',
-                selectmode='day'
-            )
-            self.end_date_picker.pack(side=tk.LEFT, padx=(SPACING['small']//2, 0))
-            self.end_date_picker.bind("<<DateEntrySelected>>", self._on_calendar_date_selected)
-
-            # End time spinboxes (HH:MM) with reduced spacing
-            ehh_sb = ttk.Spinbox(end_date_frame, from_=0, to=23, width=3,
-                                 textvariable=self.end_hour_var, format="%02.0f")
-            ehh_sb.pack(side=tk.LEFT, padx=1)
-            ttk.Label(end_date_frame, text=":").pack(side=tk.LEFT)
-            emm_sb = ttk.Spinbox(end_date_frame, from_=0, to=59, width=3,
-                                 textvariable=self.end_min_var, format="%02.0f")
-            emm_sb.pack(side=tk.LEFT, padx=(0, SPACING['small']//2))
-            
-            # GO button placed on the same line
-            go_btn = create_action_button(
-                date_controls_frame, "GO", self._apply_custom_date_filter, 
-                button_type='primary', width=5
-            )
-            go_btn.pack(side=tk.LEFT, padx=SPACING['small'])
-        else:
-            # Fallback: text entries with reduced spacing
-            # First row: Date and time entries
-            date_controls_frame = ttk.Frame(custom_frame)
-            date_controls_frame.pack(anchor=tk.CENTER, pady=(0, SPACING['small']))
-            
-            create_info_label(date_controls_frame, "From (YYYY-MM-DD):").pack(side=tk.LEFT)
-            self.start_date_entry = create_input_entry(date_controls_frame, self.custom_date_start_var, width=12)
-            self.start_date_entry.pack(side=tk.LEFT, padx=SPACING['small']//2)
-            
-            # Time spinboxes for fallback with reduced spacing
-            ttk.Spinbox(date_controls_frame, from_=0, to=23, width=3,
-                        textvariable=self.start_hour_var, format="%02.0f").pack(side=tk.LEFT, padx=1)
-            ttk.Label(date_controls_frame, text=":").pack(side=tk.LEFT)
-            ttk.Spinbox(date_controls_frame, from_=0, to=59, width=3,
-                        textvariable=self.start_min_var, format="%02.0f").pack(side=tk.LEFT, padx=(0, SPACING['small']))
-            
-            create_info_label(date_controls_frame, "To:").pack(side=tk.LEFT, padx=(SPACING['small'], 0))
-            self.end_date_entry = create_input_entry(date_controls_frame, self.custom_date_end_var, width=12)
-            self.end_date_entry.pack(side=tk.LEFT, padx=SPACING['small']//2)
-            
-            ttk.Spinbox(date_controls_frame, from_=0, to=23, width=3,
-                        textvariable=self.end_hour_var, format="%02.0f").pack(side=tk.LEFT, padx=1)
-            ttk.Label(date_controls_frame, text=":").pack(side=tk.LEFT)
-            ttk.Spinbox(date_controls_frame, from_=0, to=59, width=3,
-                        textvariable=self.end_min_var, format="%02.0f").pack(side=tk.LEFT, padx=(0, SPACING['small']//2))
-            
-            # GO button placed on the same line
-            go_btn = create_action_button(
-                date_controls_frame, "GO", self._apply_custom_date_filter_text, 
-                button_type='primary', width=5
-            )
-            go_btn.pack(side=tk.LEFT, padx=SPACING['small'])
-
-        # Right section: Saved Searches with reduced padding
-        saved_search_section = ttk.LabelFrame(content_frame, text="Saved Searches", padding=(SPACING['small'], SPACING['small']))
-        saved_search_section.grid(row=0, column=2, sticky="nsew", padx=(SPACING['small']//2, SPACING['small']), 
-                                 pady=(0, SPACING['small']//2))
-        saved_search_section.configure(style="Centered.TLabelframe")
-        
-        # Container for saved search elements with center alignment and reduced space
-        saved_container = ttk.Frame(saved_search_section)
-        saved_container.pack(expand=True, fill=tk.BOTH)
-        
-        # Dropdown for saved searches with reduced spacing
-        self.saved_search_var = tk.StringVar()
-        self.saved_searches_combo = ttk.Combobox(saved_container, textvariable=self.saved_search_var, width=18)
-        self.saved_searches_combo.pack(pady=(0, SPACING['small']))
-        self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
-        
-        # Buttons for saved search operations (in a single row with reduced width)
-        buttons_frame = ttk.Frame(saved_container)
-        buttons_frame.pack(fill=tk.X, pady=SPACING['small']//2)
-        
-        create_action_button(buttons_frame, "Load", self._load_saved_search, width=6, 
-                            button_type='info_outline').pack(side=tk.LEFT, padx=1, expand=True, fill=tk.X)
-        create_action_button(buttons_frame, "Save", self._save_current_search, width=6, 
-                            button_type='success_outline').pack(side=tk.LEFT, padx=1, expand=True, fill=tk.X)
-        create_action_button(buttons_frame, "Delete", self._delete_saved_search, width=6, 
-                            button_type='danger_outline').pack(side=tk.LEFT, padx=1, expand=True, fill=tk.X)
-
-        # Apply default Live filter on initialization
-        self._apply_status_filter("live")
-
     def _load_data_from_folders(self):
-        """Load data from all selected folders."""
-        if not self.loaded_files:
-            messagebox.showinfo("No Folders", "Please add one or more data folders first.")
+        """Load data from all selected folders and remote URLs."""
+        if not self.loaded_files and not self.remote_urls:
+            messagebox.showinfo("No Sources", "Please add one or more data folders or remote URLs first.")
             return
 
         all_files = []
+        
+        # Load from local folders
         for folder in self.loaded_files:
             try:
                 excel_files = [f for f in os.listdir(folder) if f.lower().endswith(('.xlsx', '.xls', '.csv'))]
@@ -510,8 +303,37 @@ class SearchDashboardTab(ttk.Frame):
             except Exception as e:
                 self.logger.error(f"Error accessing folder {folder}: {e}")
         
+        # Load from remote URLs
+        remote_files = []
+        for url_entry in self.remote_urls:
+            try:
+                # Parse URL and credentials
+                parts = url_entry.split('||')
+                url = parts[0]
+                username = parts[1] if len(parts) > 1 else None
+                password = parts[2] if len(parts) > 2 else None
+                
+                self.results_count_var.set(f"Downloading from {url}...")
+                self.update_idletasks()
+                
+                success, message, local_file = self.remote_loader.load_from_remote_source(url, username, password)
+                
+                if success and local_file:
+                    remote_files.append(local_file)
+                    self.logger.info(f"Successfully downloaded: {message}")
+                else:
+                    self.logger.error(f"Failed to download from {url}: {message}")
+                    messagebox.showwarning("Download Failed", f"Failed to download from {url}:\n{message}")
+                    
+            except Exception as e:
+                self.logger.error(f"Error downloading from {url_entry}: {e}")
+                messagebox.showwarning("Download Error", f"Error downloading from remote source:\n{str(e)}")
+        
+        # Combine local and remote files
+        all_files.extend(remote_files)
+        
         if not all_files:
-            messagebox.showinfo("No Files", "No Excel or CSV files found in the selected folders.")
+            messagebox.showinfo("No Files", "No Excel or CSV files found in the selected sources.")
             return
 
         # Show loading indicator
@@ -1203,6 +1025,168 @@ class SearchDashboardTab(ttk.Frame):
         empty_frame.grid_rowconfigure(0, weight=1)
         empty_frame.grid_columnconfigure(0, weight=1)
 
+    def _create_search_filter_widgets(self, parent):
+        """Create search and filter widgets."""
+        # Search section
+        search_frame = ttk.Frame(parent)
+        search_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
+        
+        # Global search
+        global_search_frame = ttk.Frame(search_frame)
+        global_search_frame.pack(fill=tk.X, pady=SPACING['small']//2)
+        
+        ttk.Label(global_search_frame, text="Global Search:").pack(side=tk.LEFT)
+        global_search_entry = create_input_entry(global_search_frame, textvariable=self.global_search_var, width=30)
+        global_search_entry.pack(side=tk.LEFT, padx=SPACING['small'])
+        global_search_entry.bind('<KeyRelease>', self._on_live_search_key)
+        
+        # Global search operator
+        self.global_operator_var = tk.StringVar(value="AND")
+        ttk.Label(global_search_frame, text="Op:").pack(side=tk.LEFT, padx=(SPACING['small'], 0))
+        global_op_combo = ttk.Combobox(global_search_frame, textvariable=self.global_operator_var, values=["AND", "OR"], width=5, state="readonly")
+        global_op_combo.pack(side=tk.LEFT, padx=SPACING['small']//2)
+        
+        # Department filter
+        dept_filter_frame = ttk.Frame(search_frame)
+        dept_filter_frame.pack(fill=tk.X, pady=SPACING['small']//2)
+        
+        ttk.Label(dept_filter_frame, text="Department Filter:").pack(side=tk.LEFT)
+        dept_filter_entry = create_input_entry(dept_filter_frame, textvariable=self.dept_filter_var, width=30)
+        dept_filter_entry.pack(side=tk.LEFT, padx=SPACING['small'])
+        dept_filter_entry.bind('<KeyRelease>', self._on_live_search_key)
+        
+        # Department filter operator
+        self.dept_operator_var = tk.StringVar(value="OR")
+        ttk.Label(dept_filter_frame, text="Op:").pack(side=tk.LEFT, padx=(SPACING['small'], 0))
+        dept_op_combo = ttk.Combobox(dept_filter_frame, textvariable=self.dept_operator_var, values=["AND", "OR"], width=5, state="readonly")
+        dept_op_combo.pack(side=tk.LEFT, padx=SPACING['small']//2)
+        
+        # Status filter
+        status_frame = ttk.Frame(search_frame)
+        status_frame.pack(fill=tk.X, pady=SPACING['small']//2)
+        
+        ttk.Label(status_frame, text="Status:").pack(side=tk.LEFT)
+        self.status_filter_var = tk.StringVar(value="live")
+        status_combo = ttk.Combobox(status_frame, textvariable=self.status_filter_var, 
+                                   values=["all", "live", "expired"], width=10, state="readonly")
+        status_combo.pack(side=tk.LEFT, padx=SPACING['small'])
+        status_combo.bind('<<ComboboxSelected>>', lambda e: self._apply_status_filter(self.status_filter_var.get()))
+        
+        # Action buttons
+        buttons_frame = ttk.Frame(search_frame)
+        buttons_frame.pack(fill=tk.X, pady=SPACING['small'])
+        
+        create_action_button(buttons_frame, "Reset Filters", self._reset_filters, button_type='secondary', width=12).pack(side=tk.LEFT, padx=2)
+        create_action_button(buttons_frame, "Apply Filters", self._apply_filters, width=12).pack(side=tk.LEFT, padx=2)
+        
+        # Saved searches
+        saved_search_frame = ttk.Frame(buttons_frame)
+        saved_search_frame.pack(side=tk.RIGHT)
+        
+        ttk.Label(saved_search_frame, text="Saved:").pack(side=tk.LEFT)
+        self.saved_search_var = tk.StringVar()
+        self.saved_searches_combo = ttk.Combobox(saved_search_frame, textvariable=self.saved_search_var, width=15, state="readonly")
+        self.saved_searches_combo.pack(side=tk.LEFT, padx=2)
+        self.saved_searches_combo.bind('<<ComboboxSelected>>', self._load_saved_search)
+        
+        create_action_button(saved_search_frame, "Save", self._save_current_search, button_type='info_outline', width=8).pack(side=tk.LEFT, padx=2)
+        create_action_button(saved_search_frame, "Delete", self._delete_saved_search, button_type='danger_outline', width=8).pack(side=tk.LEFT, padx=2)
+        
+        # Update saved searches list
+        self._update_saved_searches_list()
+
+    def _create_date_filter_widgets(self, parent):
+        """Create date filter widgets."""
+        date_frame = ttk.Frame(parent)
+        date_frame.pack(fill=tk.X, pady=SPACING['small'])
+        
+        # Status and time filter buttons in one row
+        filter_buttons_frame = ttk.Frame(date_frame)
+        filter_buttons_frame.pack(fill=tk.X, pady=SPACING['small']//2)
+        
+        # Time range filter buttons
+        ttk.Label(filter_buttons_frame, text="Quick Filters:").pack(side=tk.LEFT)
+        
+        time_filters = [
+            ("Today", "today"),
+            ("Next 3 Days", "next_3_days"),
+            ("Next 7 Days", "next_7_days"),
+            ("Next 30 Days", "next_30_days")
+        ]
+        
+        for label, filter_key in time_filters:
+            btn = create_action_button(
+                filter_buttons_frame, label, 
+                lambda f=filter_key: self._apply_time_filter(f),
+                button_type='info_outline', width=12
+            )
+            if btn:
+                btn.pack(side=tk.LEFT, padx=2)
+                self.date_filter_buttons[filter_key] = btn
+        
+        # Custom date range section
+        if HAS_TKCALENDAR and DateEntry is not None:
+            custom_date_frame = ttk.LabelFrame(date_frame, text="Custom Date Range")
+            custom_date_frame.pack(fill=tk.X, pady=SPACING['small'])
+            
+            # Date pickers row
+            date_row = ttk.Frame(custom_date_frame)
+            date_row.pack(fill=tk.X, padx=SPACING['small'], pady=SPACING['small']//2)
+            
+            ttk.Label(date_row, text="From:").pack(side=tk.LEFT)
+            self.start_date_picker = DateEntry(date_row, width=12, background='darkblue',
+                                             foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
+            self.start_date_picker.pack(side=tk.LEFT, padx=SPACING['small'])
+            self.start_date_picker.bind('<<DateEntrySelected>>', self._on_calendar_date_selected)
+            
+            ttk.Label(date_row, text="To:").pack(side=tk.LEFT, padx=(SPACING['medium'], 0))
+            self.end_date_picker = DateEntry(date_row, width=12, background='darkblue',
+                                           foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
+            self.end_date_picker.pack(side=tk.LEFT, padx=SPACING['small'])
+            self.end_date_picker.bind('<<DateEntrySelected>>', self._on_calendar_date_selected)
+            
+            # Time spinboxes row
+            time_row = ttk.Frame(custom_date_frame)
+            time_row.pack(fill=tk.X, padx=SPACING['small'], pady=SPACING['small']//2)
+            
+            # Start time
+            ttk.Label(time_row, text="Start Time:").pack(side=tk.LEFT)
+            start_hour_spin = tk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.start_hour_var, format="%02.0f")
+            start_hour_spin.pack(side=tk.LEFT, padx=2)
+            ttk.Label(time_row, text=":").pack(side=tk.LEFT)
+            start_min_spin = tk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.start_min_var, format="%02.0f")
+            start_min_spin.pack(side=tk.LEFT, padx=2)
+            
+            # End time
+            ttk.Label(time_row, text="End Time:").pack(side=tk.LEFT, padx=(SPACING['medium'], 0))
+            end_hour_spin = tk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.end_hour_var, format="%02.0f")
+            end_hour_spin.pack(side=tk.LEFT, padx=2)
+            ttk.Label(time_row, text=":").pack(side=tk.LEFT)
+            end_min_spin = tk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.end_min_var, format="%02.0f")
+            end_min_spin.pack(side=tk.LEFT, padx=2)
+            
+            # Apply button
+            create_action_button(time_row, "Apply Date Range", self._apply_custom_date_filter,
+                               button_type='success', width=15).pack(side=tk.RIGHT, padx=SPACING['medium'])
+        else:
+            # Fallback to text entry if tkcalendar is not available
+            custom_date_frame = ttk.LabelFrame(date_frame, text="Custom Date Range (YYYY-MM-DD)")
+            custom_date_frame.pack(fill=tk.X, pady=SPACING['small'])
+            
+            date_entry_frame = ttk.Frame(custom_date_frame)
+            date_entry_frame.pack(fill=tk.X, padx=SPACING['small'], pady=SPACING['small'])
+            
+            ttk.Label(date_entry_frame, text="Start Date:").pack(side=tk.LEFT)
+            start_date_entry = create_input_entry(date_entry_frame, textvariable=self.custom_date_start_var, width=12)
+            start_date_entry.pack(side=tk.LEFT, padx=SPACING['small'])
+            
+            ttk.Label(date_entry_frame, text="End Date:").pack(side=tk.LEFT, padx=(SPACING['medium'], 0))
+            end_date_entry = create_input_entry(date_entry_frame, textvariable=self.custom_date_end_var, width=12)
+            end_date_entry.pack(side=tk.LEFT, padx=SPACING['small'])
+            
+            create_action_button(date_entry_frame, "Apply", self._apply_custom_date_filter_text,
+                               button_type='success', width=10).pack(side=tk.RIGHT, padx=SPACING['medium'])
+
     def _create_tender_data_widgets(self, parent):
         """Create the widgets for displaying and interacting with tender data."""
         # Container frame for all tender data elements
@@ -1271,14 +1255,52 @@ class SearchDashboardTab(ttk.Frame):
             self.loaded_files.append(folder)
         self._update_selected_folders_display()
 
+    def _add_remote_url(self):
+        """Add a remote URL data source."""
+        dialog = RemoteUrlDialog(self, self.remote_loader)
+        self.wait_window(dialog)
+        
+        if dialog.result:
+            url, username, password = dialog.result
+            # Store URL with credentials (if provided) for loading
+            if username and password:
+                url_with_auth = f"{url}||{username}||{password}"  # Simple encoding
+            else:
+                url_with_auth = url
+            
+            if url_with_auth not in self.remote_urls:
+                self.remote_urls.append(url_with_auth)
+                self._update_selected_folders_display()
+                messagebox.showinfo("URL Added", f"Remote URL added successfully:\n{url}")
+
     def _clear_folders(self):
-        """Clear selected folders."""
+        """Clear selected folders and remote URLs."""
         self.loaded_files = []
+        self.remote_urls = []
+        # Cleanup remote files
+        if hasattr(self, 'remote_loader'):
+            self.remote_loader.cleanup_temp_files()
         self._update_selected_folders_display()
 
     def _update_selected_folders_display(self):
-        """Update label with selected folders."""
-        text = "\n".join(self.loaded_files) if self.loaded_files else "No folders selected."
+        """Update label with selected folders and remote URLs."""
+        sources = []
+        
+        # Add local folders
+        if self.loaded_files:
+            sources.extend([f"📁 {folder}" for folder in self.loaded_files])
+        
+        # Add remote URLs
+        if self.remote_urls:
+            for url_entry in self.remote_urls:
+                url = url_entry.split('||')[0]  # Remove credentials for display
+                sources.append(f"🌐 {url}")
+        
+        if sources:
+            text = "\n".join(sources)
+        else:
+            text = "No data sources selected."
+        
         self.selected_folders_var.set(text)
 
     def _export_to_excel(self):
