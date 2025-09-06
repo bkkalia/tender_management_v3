@@ -1484,10 +1484,12 @@ class SearchDashboardTab(ttk.Frame):
                 self.data_processor.filtered_data[date_col] = pd.to_datetime(
                     self.data_processor.filtered_data[date_col], errors='coerce')
             
-            # Filter for dates in the future (live tenders)
-            today = pd.Timestamp.today().normalize()
-            mask = self.data_processor.filtered_data[date_col] >= today
+            # Filter for dates/times in the future (live tenders) - USE CURRENT DATETIME
+            current_datetime = pd.Timestamp.now()  # This includes time
+            mask = self.data_processor.filtered_data[date_col] > current_datetime
             self.data_processor.filtered_data = self.data_processor.filtered_data[mask]
+            
+            self.logger.info(f"Live tenders filter: {len(self.data_processor.filtered_data)} records closing after {current_datetime}")
         else:
             # Fallback: look for status column
             status_cols = [col for col in self.data_processor.filtered_data.columns if 'status' in col.lower()]
@@ -1518,10 +1520,12 @@ class SearchDashboardTab(ttk.Frame):
                 self.data_processor.filtered_data[date_col] = pd.to_datetime(
                     self.data_processor.filtered_data[date_col], errors='coerce')
             
-            # Filter for dates in the past (expired tenders)
-            today = pd.Timestamp.today().normalize()
-            mask = self.data_processor.filtered_data[date_col] < today
+            # Filter for dates/times in the past (expired tenders) - USE CURRENT DATETIME
+            current_datetime = pd.Timestamp.now()  # This includes time
+            mask = self.data_processor.filtered_data[date_col] < current_datetime
             self.data_processor.filtered_data = self.data_processor.filtered_data[mask]
+            
+            self.logger.info(f"Expired tenders filter: {len(self.data_processor.filtered_data)} records closed before {current_datetime}")
         else:
             # Fallback: look for status column
             status_cols = [col for col in self.data_processor.filtered_data.columns if 'status' in col.lower()]
@@ -1551,31 +1555,45 @@ class SearchDashboardTab(ttk.Frame):
             self.data_processor.filtered_data[date_col] = pd.to_datetime(
                 self.data_processor.filtered_data[date_col], errors='coerce')
         
-        # Calculate date ranges
-        today = pd.Timestamp.today().normalize()
+        # Calculate date ranges using current datetime for precise filtering
+        current_datetime = pd.Timestamp.now()
+        today_start = current_datetime.normalize()  # Start of today (00:00:00)
         
         if time_range == "today":
-            start_date = today
-            end_date = today + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
+            # Today: from now until end of today
+            end_date = today_start + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
+            mask = (
+                (self.data_processor.filtered_data[date_col] >= current_datetime) & 
+                (self.data_processor.filtered_data[date_col] <= end_date)
+            )
         elif time_range == "next_3_days":
-            start_date = today
-            end_date = today + pd.Timedelta(days=3)
+            # Next 3 days: from now until end of 3 days from today
+            end_date = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
+            mask = (
+                (self.data_processor.filtered_data[date_col] >= current_datetime) & 
+                (self.data_processor.filtered_data[date_col] <= end_date)
+            )
         elif time_range == "next_7_days":
-            start_date = today
-            end_date = today + pd.Timedelta(days=7)
+            # Next 7 days: from now until end of 7 days from today
+            end_date = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
+            mask = (
+                (self.data_processor.filtered_data[date_col] >= current_datetime) & 
+                (self.data_processor.filtered_data[date_col] <= end_date)
+            )
         elif time_range == "next_30_days":
-            start_date = today
-            end_date = today + pd.Timedelta(days=30)
+            # Next 30 days: from now until end of 30 days from today
+            end_date = today_start + pd.Timedelta(days=30, hours=23, minutes=59, seconds=59)
+            mask = (
+                (self.data_processor.filtered_data[date_col] >= current_datetime) & 
+                (self.data_processor.filtered_data[date_col] <= end_date)
+            )
         else:
             return
         
         # Apply the date range filter
-        mask = (
-            (self.data_processor.filtered_data[date_col] >= start_date) & 
-            (self.data_processor.filtered_data[date_col] <= end_date)
-        )
-        
         self.data_processor.filtered_data = self.data_processor.filtered_data[mask]
+        
+        self.logger.info(f"Time range filter ({time_range}): {len(self.data_processor.filtered_data)} records from {current_datetime}")
         
         # Refresh display
         self._refresh_tree_data()
