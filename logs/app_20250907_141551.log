@@ -1,0 +1,74 @@
+2025-09-07 14:15:51 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250907_141551.log
+2025-09-07 14:15:51 - root - INFO - Application starting...
+2025-09-07 14:15:51 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-07 14:15:51 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-07 14:15:51 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-07 14:15:51 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-07 14:15:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-07 14:15:52 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-07 14:15:52 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-07 14:15:52 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-07 14:15:52 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-07 14:15:52 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-07 14:15:52 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-07 14:15:52 - ui.main_window - INFO - Main application initialized
+2025-09-07 14:15:52 - root - INFO - Main window initialized
+2025-09-07 14:17:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-07 14:17:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:17:30.510279
+2025-09-07 14:18:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:14.946728
+2025-09-07 14:18:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 1 records match 'pw' with OR logic
+2025-09-07 14:18:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:15.439107
+2025-09-07 14:18:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 1 records match 'pwd' with OR logic
+2025-09-07 14:18:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:19.755837
+2025-09-07 14:18:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:21.063461
+2025-09-07 14:18:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 49 records match 'i' with OR logic
+2025-09-07 14:18:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:21.511993
+2025-09-07 14:18:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 0 records match 'i[' with OR logic
+2025-09-07 14:18:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:23.223569
+2025-09-07 14:18:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 49 records match 'i' with OR logic
+2025-09-07 14:18:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:24.354421
+2025-09-07 14:18:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 0 records match 'iph' with OR logic
+2025-09-07 14:18:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:26.410812
+2025-09-07 14:18:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:27.882307
+2025-09-07 14:18:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 0 records match 'idp' with OR logic
+2025-09-07 14:18:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:30.319822
+2025-09-07 14:18:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 49 records match 'i' with OR logic
+2025-09-07 14:18:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:30.690426
+2025-09-07 14:18:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 49 records match 'i' with OR logic
+2025-09-07 14:18:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:31.487245
+2025-09-07 14:18:36 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:36.804655
+2025-09-07 14:18:36 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 49 records match 'i' with OR logic
+2025-09-07 14:18:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:37.641066
+2025-09-07 14:18:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 7 records match 'irri' with OR logic
+2025-09-07 14:18:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:40.346598
+2025-09-07 14:18:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 7 records match 'irri,' with OR logic
+2025-09-07 14:18:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:41.222169
+2025-09-07 14:18:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 8 records match 'irri,pwd' with OR logic
+2025-09-07 14:18:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:41.487331
+2025-09-07 14:18:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 8 records match 'irri,pwd' with OR logic
+2025-09-07 14:18:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:48.824496
+2025-09-07 14:18:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 8 records match 'irri,pwd' with OR logic
+2025-09-07 14:18:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'una' with AND logic
+2025-09-07 14:18:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:18:51.475063
+2025-09-07 14:18:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 8 records match 'irri,pwd' with OR logic
+2025-09-07 14:19:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:19:04.393801
+2025-09-07 14:19:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 8 records match 'irri,pwd' with OR logic
+2025-09-07 14:19:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 3 records match 'ch' with AND logic
+2025-09-07 14:19:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:19:05.229701
+2025-09-07 14:19:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 8 records match 'irri,pwd' with OR logic
+2025-09-07 14:19:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'check' with AND logic
+2025-09-07 14:19:26 - ui.search_dashboard_tab.SearchDashboardTab - ERROR - Error saving search: 'dict' object has no attribute 'append'
+2025-09-07 14:19:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-07 14:19:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:19:42.065864
+2025-09-07 14:19:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: all
+2025-09-07 14:19:45 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: today
+2025-09-07 14:19:45 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (today) with status (all): 0 records
+2025-09-07 14:19:47 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_3_days
+2025-09-07 14:19:47 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_3_days) with status (all): 27 records
+2025-09-07 14:19:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_7_days
+2025-09-07 14:19:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_7_days) with status (all): 34 records
+2025-09-07 14:20:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-07 14:20:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 14:20:02.677826
+2025-09-07 14:20:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied custom date range filter: 2025-09-07 00:00:00 to 2025-09-12 23:59:00, 33 records matching
+2025-09-07 14:20:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied custom date range filter: 2025-09-07 00:00:00 to 2025-09-12 10:59:00, 29 records matching
+2025-09-07 14:21:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied custom date range filter: 2025-09-07 00:00:00 to 2025-09-10 10:59:00, 16 records matching

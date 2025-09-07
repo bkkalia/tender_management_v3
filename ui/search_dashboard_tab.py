@@ -462,7 +462,7 @@ class SearchDashboardTab(ttk.Frame):
         separator = ttk.Separator(parent, orient="horizontal")
         separator.pack(fill=tk.X, padx=SPACING['small'], pady=(0, SPACING['small']))
 
-   
+    def _create_search_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
         """Create redesigned search and filter widgets with better visual layout."""
         # Main container for all search components
         search_container = ttk.Frame(parent)
@@ -540,7 +540,7 @@ class SearchDashboardTab(ttk.Frame):
         style.configure("Success.TLabelframe", borderwidth=2, relief="solid")
         style.configure("Success.TLabelframe.Label", foreground="#4caf50", font=('TkDefaultFont', 10, 'bold'))
 
-    
+    def _create_date_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
         """Create redesigned date filter widgets in four horizontal sections."""
         # Main date filter container with 4 sections
         date_container = ttk.Frame(parent)
@@ -922,282 +922,6 @@ class SearchDashboardTab(ttk.Frame):
             self.logger.error(f"Error applying date range filter: {e}")
             messagebox.showerror("Filter Error", f"Error filtering by date: {str(e)}")
 
-    
-
-    def _create_search_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
-        """Create redesigned search and filter widgets with better visual layout."""
-        # Main container for all search components
-        search_container = ttk.Frame(parent)
-        search_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
-        
-        # Top Row: Side-by-side Department and Global Search with colored borders
-        search_row_frame = ttk.Frame(search_container)
-        search_row_frame.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['medium']))
-        
-        # Left: Department Search Section
-        dept_section = ttk.LabelFrame(search_row_frame, text="Department Search", 
-                                     style="Primary.TLabelframe", padding=SPACING['medium'])
-        dept_section.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, SPACING['small']))
-        
-        # Department input with increased height
-        dept_input_frame = ttk.Frame(dept_section)
-        dept_input_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
-        
-        # Custom style for colored border
-        style = ttk.Style()
-        style.configure("Department.TEntry", fieldbackground="#E8F4FD", relief="solid", borderwidth=2)
-        
-        self.dept_entry = ttk.Entry(dept_input_frame, textvariable=self.dept_filter_var, 
-                                   style="Department.TEntry", font=('TkDefaultFont', 11))
-        self.dept_entry.pack(fill=tk.X, ipady=8)  # Increased height
-        self.dept_entry.bind("<KeyRelease>", self._on_live_search_key)
-        
-        # Department operator buttons
-        dept_op_frame = ttk.Frame(dept_section)
-        dept_op_frame.pack(fill=tk.X, pady=(SPACING['small'], 0))
-        
-        ttk.Label(dept_op_frame, text="Match:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT, padx=(0, SPACING['small']))
-        
-        ttk.Radiobutton(dept_op_frame, text="Any (OR)", variable=self.dept_operator_var, 
-                       value="OR", command=self._on_live_search_key).pack(side=tk.LEFT, padx=(0, SPACING['small']))
-        ttk.Radiobutton(dept_op_frame, text="All (AND)", variable=self.dept_operator_var, 
-                       value="AND", command=self._on_live_search_key).pack(side=tk.LEFT)
-        
-        ttk.Label(dept_op_frame, text="(use commas to separate terms)", 
-                 font=('TkDefaultFont', 8), foreground='gray').pack(side=tk.RIGHT)
-        
-        # Right: Global Search Section
-        global_section = ttk.LabelFrame(search_row_frame, text="Global Search", 
-                                       style="Success.TLabelframe", padding=SPACING['medium'])
-        global_section.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(SPACING['small'], 0))
-        
-        # Global search input with increased height
-        global_input_frame = ttk.Frame(global_section)
-        global_input_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
-        
-        style.configure("Global.TEntry", fieldbackground="#E8F8E8", relief="solid", borderwidth=2)
-        
-        self.global_entry = ttk.Entry(global_input_frame, textvariable=self.global_search_var, 
-                                     style="Global.TEntry", font=('TkDefaultFont', 11))
-        self.global_entry.pack(fill=tk.X, ipady=8)  # Increased height
-        self.global_entry.bind("<KeyRelease>", self._on_live_search_key)
-        
-        # Global search operator buttons
-        global_op_frame = ttk.Frame(global_section)
-        global_op_frame.pack(fill=tk.X, pady=(SPACING['small'], 0))
-        
-        ttk.Label(global_op_frame, text="Match:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT, padx=(0, SPACING['small']))
-        
-        ttk.Radiobutton(global_op_frame, text="Any (OR)", variable=self.global_operator_var, 
-                       value="OR", command=self._on_live_search_key).pack(side=tk.LEFT, padx=(0, SPACING['small']))
-        ttk.Radiobutton(global_op_frame, text="All (AND)", variable=self.global_operator_var, 
-                       value="AND", command=self._on_live_search_key).pack(side=tk.LEFT)
-        
-        ttk.Label(global_op_frame, text="(use commas to separate terms)", 
-                 font=('TkDefaultFont', 8), foreground='gray').pack(side=tk.RIGHT)
-        
-        # Configure custom LabelFrame styles
-        style.configure("Primary.TLabelframe", borderwidth=2, relief="solid")
-        style.configure("Primary.TLabelframe.Label", foreground="#1976d2", font=('TkDefaultFont', 10, 'bold'))
-        style.configure("Success.TLabelframe", borderwidth=2, relief="solid")
-        style.configure("Success.TLabelframe.Label", foreground="#4caf50", font=('TkDefaultFont', 10, 'bold'))
-
-    def _create_date_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
-        """Create redesigned date filter widgets in four horizontal sections."""
-        # Main date filter container with 4 sections
-        date_container = ttk.Frame(parent)
-        date_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
-        
-        # Configure grid with four equal columns
-        date_container.grid_columnconfigure(0, weight=1)
-        date_container.grid_columnconfigure(1, weight=1) 
-        date_container.grid_columnconfigure(2, weight=1)
-        date_container.grid_columnconfigure(3, weight=1)
-        
-        # Section 1: Status Filter (Far Left)
-        status_section = ttk.LabelFrame(date_container, text="📊 Status Filter", 
-                                       padding=SPACING['medium'])
-        status_section.grid(row=0, column=0, sticky="nsew", padx=(0, SPACING['small']))
-        
-        # Status dropdown with better styling
-        status_label = ttk.Label(status_section, text="Show tenders:", font=('TkDefaultFont', 10))
-        status_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
-        
-        status_options = [
-            ("All Records", "all"),
-            ("Live Tenders", "live"), 
-            ("Expired Tenders", "expired")
-        ]
-        
-        for text, value in status_options:
-            radio_btn = ttk.Radiobutton(status_section, text=text, variable=self.status_filter_var,
-                                       value=value, command=lambda v=value: self._apply_status_filter(v))
-            radio_btn.pack(anchor=tk.W, pady=2)
-        
-        # Section 2: Time Range Filter with Reset Button (Center Left)
-        time_section = ttk.LabelFrame(date_container, text="📅 Time Range Filter", 
-                                     padding=SPACING['medium'])
-        time_section.grid(row=0, column=1, sticky="nsew", padx=SPACING['small'])
-        
-        # Quick filter buttons in a grid
-        quick_label = ttk.Label(time_section, text="Quick filters:", font=('TkDefaultFont', 10))
-        quick_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
-        
-        button_grid = ttk.Frame(time_section)
-        button_grid.pack(fill=tk.X)
-        
-        time_presets = [
-            ("Today", "today"),
-            ("Next 3 Days", "next_3_days"),
-            ("Next 7 Days", "next_7_days"), 
-            ("Next 30 Days", "next_30_days")
-        ]
-        
-        for i, (text, preset_key) in enumerate(time_presets):
-            row = i // 2
-            col = i % 2
-            btn = create_action_button(button_grid, text, 
-                                      lambda p=preset_key: self._apply_time_filter(p),
-                                      width=12, button_type='info_outline')
-            btn.grid(row=row, column=col, padx=2, pady=2, sticky="ew")
-            self.date_filter_buttons[preset_key] = btn
-        
-        button_grid.grid_columnconfigure(0, weight=1)
-        button_grid.grid_columnconfigure(1, weight=1)
-        
-        # Reset button in time range section
-        reset_btn = create_action_button(time_section, "🔄 Reset All Filters", self._reset_filters, 
-                                        button_type='danger', width=15)
-        reset_btn.pack(fill=tk.X, pady=(SPACING['medium'], 0))
-        
-        # Section 3: Custom Date Range (Center Right)
-        custom_section = ttk.LabelFrame(date_container, text="🗓️ Custom Date Range", 
-                                       padding=SPACING['medium'])
-        custom_section.grid(row=0, column=2, sticky="nsew", padx=SPACING['small'])
-        
-        # Custom Date Range functionality
-        custom_label = ttk.Label(custom_section, text="Date Range:", font=('TkDefaultFont', 10, 'bold'))
-        custom_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
-        
-        if HAS_TKCALENDAR and DateEntry is not None:
-            # Date picker row
-            date_row = ttk.Frame(custom_section)
-            date_row.pack(fill=tk.X, pady=(0, SPACING['small']))
-            
-            ttk.Label(date_row, text="From:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT)
-            self.start_date_picker = DateEntry(date_row, width=10, 
-                                              background=COLORS.get('primary', 'blue'),
-                                              foreground='white', borderwidth=1,
-                                              date_pattern='yyyy-mm-dd')
-            self.start_date_picker.pack(side=tk.LEFT, padx=(2, 8))
-            
-            ttk.Label(date_row, text="To:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT)
-            self.end_date_picker = DateEntry(date_row, width=10,
-                                            background=COLORS.get('primary', 'blue'),
-                                            foreground='white', borderwidth=1,
-                                            date_pattern='yyyy-mm-dd')
-            self.end_date_picker.pack(side=tk.LEFT, padx=2)
-            
-            # Time row
-            time_row = ttk.Frame(custom_section)
-            time_row.pack(fill=tk.X, pady=(0, SPACING['small']))
-            
-            ttk.Label(time_row, text="Time:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT)
-            
-            # Start time
-            ttk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.start_hour_var, 
-                       format="%02.0f").pack(side=tk.LEFT, padx=1)
-            ttk.Label(time_row, text=":").pack(side=tk.LEFT)
-            ttk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.start_min_var, 
-                       format="%02.0f").pack(side=tk.LEFT, padx=(0, 5))
-            
-            ttk.Label(time_row, text="to").pack(side=tk.LEFT, padx=3)
-            
-            # End time
-            ttk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.end_hour_var, 
-                       format="%02.0f").pack(side=tk.LEFT, padx=1)
-            ttk.Label(time_row, text=":").pack(side=tk.LEFT)
-            ttk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.end_min_var, 
-                       format="%02.0f").pack(side=tk.LEFT)
-            
-            # GO button
-            go_btn = create_action_button(custom_section, "Apply Custom Range", 
-                                         self._apply_custom_date_filter,
-                                         button_type='primary', width=15)
-            go_btn.pack(fill=tk.X, pady=SPACING['small'])
-        else:
-            # Fallback text entries
-            date_row = ttk.Frame(custom_section)
-            date_row.pack(fill=tk.X, pady=(0, SPACING['small']))
-            
-            ttk.Label(date_row, text="From (YYYY-MM-DD):").pack(anchor=tk.W)
-            self.start_date_entry = ttk.Entry(date_row, textvariable=self.custom_date_start_var, width=12)
-            self.start_date_entry.pack(fill=tk.X, pady=1)
-            
-            ttk.Label(date_row, text="To (YYYY-MM-DD):").pack(anchor=tk.W, pady=(5, 0))
-            self.end_date_entry = ttk.Entry(date_row, textvariable=self.custom_date_end_var, width=12)
-            self.end_date_entry.pack(fill=tk.X, pady=1)
-            
-            go_btn = create_action_button(custom_section, "Apply Custom Range", 
-                                         self._apply_custom_date_filter_text,
-                                         button_type='primary', width=15)
-            go_btn.pack(fill=tk.X, pady=SPACING['small'])
-        
-        # Section 4: Saved Searches (Far Right) - Enhanced with more options
-        saved_section = ttk.LabelFrame(date_container, text="💾 Saved Searches", 
-                                      padding=SPACING['medium'])
-        saved_section.grid(row=0, column=3, sticky="nsew", padx=(SPACING['small'], 0))
-        
-        # Saved Searches functionality
-        saved_label = ttk.Label(saved_section, text="Saved Searches:", font=('TkDefaultFont', 10, 'bold'))
-        saved_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
-        
-        self.saved_searches_combo = ttk.Combobox(saved_section, textvariable=self.saved_search_var, 
-                                                width=18, state="readonly")
-        self.saved_searches_combo.pack(fill=tk.X, pady=(0, SPACING['small']))
-        self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
-        
-        # Main saved search buttons
-        saved_btn_frame = ttk.Frame(saved_section)
-        saved_btn_frame.pack(fill=tk.X)
-        
-        load_btn = create_action_button(saved_btn_frame, "Load", self._load_saved_search, 
-                                       width=8, button_type='info_outline')
-        load_btn.pack(fill=tk.X, pady=(0, 2))
-        
-        save_btn = create_action_button(saved_btn_frame, "Save", self._save_current_search, 
-                                       width=8, button_type='success_outline')
-        save_btn.pack(fill=tk.X, pady=2)
-        
-        delete_btn = create_action_button(saved_btn_frame, "Delete", self._delete_saved_search, 
-                                         width=8, button_type='danger_outline')
-        delete_btn.pack(fill=tk.X, pady=(2, 0))
-        
-        # Separator
-        ttk.Separator(saved_section, orient='horizontal').pack(fill=tk.X, pady=SPACING['small'])
-        
-        # Additional management buttons
-        mgmt_btn_frame = ttk.Frame(saved_section)
-        mgmt_btn_frame.pack(fill=tk.X)
-        
-        export_btn = create_action_button(mgmt_btn_frame, "Export", self._export_saved_searches, 
-                                         width=8, button_type='secondary')
-        export_btn.pack(fill=tk.X, pady=(0, 1))
-        
-        import_btn = create_action_button(mgmt_btn_frame, "Import", self._import_saved_searches, 
-                                         width=8, button_type='secondary')
-        import_btn.pack(fill=tk.X, pady=1)
-        
-        clean_btn = create_action_button(mgmt_btn_frame, "Clean", self._clean_corrupted_searches, 
-                                        width=8, button_type='warning')
-        clean_btn.pack(fill=tk.X, pady=(1, 0))
-        
-        # Update saved searches list
-        self._update_saved_searches_list()
-        
-        # Apply default Live filter
-        self._apply_status_filter("live")
-
     def _on_live_search_key(self, event=None):
         """Handle key press in search fields with debouncing to avoid excessive filtering."""
         if hasattr(self, '_filter_after_id') and self._filter_after_id:
@@ -1246,254 +970,6 @@ class SearchDashboardTab(ttk.Frame):
         self._refresh_tree_data()
         self.update_dashboard()
 
-    def _apply_department_filter_to_df(self, df, dept_filter):
-        """Apply department filter to a dataframe."""
-        if df is None or df.empty or not dept_filter:
-            return df
-            
-        # Parse comma-separated terms
-        terms = [t.strip() for t in dept_filter.split(',') if t.strip()]
-        if not terms:
-            return df
-            
-        # Find department columns - ensure df.columns exists and is iterable
-        if not hasattr(df, 'columns') or df.columns is None:
-            return df
-            
-        dept_cols = [c for c in df.columns
-                     if any(kw in c.lower() for kw in ['department', 'dept', 'agency', 'organisation', 'ministry'])]
-        
-        if not dept_cols:
-            self.logger.warning("No department columns found for filtering")
-            return df
-            
-        operator = getattr(self, 'dept_operator_var', tk.StringVar(value="OR")).get()
-        
-        # Build the filter mask
-        overall_mask = None
-        
-        for term in terms:
-            term_mask = None
-            # Search across all department columns for this term
-            for col in dept_cols:
-                try:
-                    col_mask = df[col].astype(str).str.contains(term, case=False, na=False, regex=False)
-                    term_mask = col_mask if term_mask is None else (term_mask | col_mask)
-                except Exception as e:
-                    self.logger.error(f"Error filtering department column {col}: {e}")
-                    continue
-            
-            if term_mask is not None:
-                if overall_mask is None:
-                    overall_mask = term_mask
-                elif operator == "AND":
-                    overall_mask = overall_mask & term_mask
-                else:  # OR
-                    overall_mask = overall_mask | term_mask
-        
-        if overall_mask is not None:
-            try:
-                df = df[overall_mask]
-                self.logger.info(f"Department filter applied: {len(df)} records match '{dept_filter}' with {operator} logic")
-            except Exception as e:
-                self.logger.error(f"Error applying department filter: {e}")
-        
-        return df
-
-    def _apply_global_search_to_df(self, df, global_search):
-        """Apply global search filter to a dataframe."""
-        if df is None or df.empty or not global_search:
-            return df
-            
-        # Parse comma-separated terms
-        terms = [t.strip() for t in global_search.split(',') if t.strip()]
-        if not terms:
-            return df
-            
-        # Ensure df.columns exists and is iterable
-        if not hasattr(df, 'columns') or df.columns is None:
-            return df
-            
-        operator = getattr(self, 'global_operator_var', tk.StringVar(value="AND")).get()
-        
-        # Build the filter mask
-        overall_mask = None
-        
-        for term in terms:
-            term_mask = None
-            # Search across ALL columns for this term
-            for col in df.columns:
-                try:
-                    col_mask = df[col].astype(str).str.contains(term, case=False, na=False, regex=False)
-                    term_mask = col_mask if term_mask is None else (term_mask | col_mask)
-                except Exception as e:
-                    self.logger.error(f"Error searching column {col}: {e}")
-                    continue
-            
-            if term_mask is not None:
-                if overall_mask is None:
-                    overall_mask = term_mask
-                elif operator == "AND":
-                    overall_mask = overall_mask & term_mask
-                else:  # OR
-                    overall_mask = overall_mask | term_mask
-        
-        if overall_mask is not None:
-            try:
-                df = df[overall_mask]
-                self.logger.info(f"Global search applied: {len(df)} records match '{global_search}' with {operator} logic")
-            except Exception as e:
-                self.logger.error(f"Error applying global search filter: {e}")
-        
-        return df
-
-    def _apply_live_filter_to_df(self, df):
-        """Apply live tenders filter to a dataframe."""
-        if df is None or df.empty:
-            return df
-            
-        # Ensure df.columns exists and is iterable
-        if not hasattr(df, 'columns') or df.columns is None:
-            return df
-            
-        # Find date columns for closing dates
-        date_cols = [col for col in df.columns 
-                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
-        
-        if date_cols:
-            date_col = date_cols[0]
-            
-            # Convert to datetime if needed
-            if not pd.api.types.is_datetime64_dtype(df[date_col]):
-                df = df.copy()  # Avoid modifying original
-                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-            
-            # Filter for dates/times in the future (live tenders)
-            current_datetime = pd.Timestamp.now()
-            mask = df[date_col] > current_datetime
-            df = df[mask]
-            
-            self.logger.info(f"Live tenders filter: {len(df)} records closing after {current_datetime}")
-        else:
-            # Fallback: look for status column
-            status_cols = [col for col in df.columns if 'status' in col.lower()]
-            if status_cols:
-                status_col = status_cols[0]
-                mask = df[status_col].astype(str).str.lower().str.contains('active|live|open', na=False, regex=True)
-                df = df[mask]
-                self.logger.info(f"Live tenders filter (status-based): {len(df)} records")
-        
-        return df
-
-    def _apply_expired_filter_to_df(self, df):
-        """Apply expired tenders filter to a dataframe."""
-        if df is None or df.empty:
-            return df
-            
-        # Ensure df.columns exists and is iterable
-        if not hasattr(df, 'columns') or df.columns is None:
-            return df
-            
-        # Find date columns for closing dates
-        date_cols = [col for col in df.columns 
-                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
-        
-        if date_cols:
-            date_col = date_cols[0]
-            
-            # Convert to datetime if needed
-            if not pd.api.types.is_datetime64_dtype(df[date_col]):
-                df = df.copy()  # Avoid modifying original
-                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-            
-            # Filter for dates/times in the past (expired tenders)
-            current_datetime = pd.Timestamp.now()
-            mask = df[date_col] < current_datetime
-            df = df[mask]
-            
-            self.logger.info(f"Expired tenders filter: {len(df)} records closed before {current_datetime}")
-        else:
-            # Fallback: look for status column
-            status_cols = [col for col in df.columns if 'status' in col.lower()]
-            if status_cols:
-                status_col = status_cols[0]
-                mask = ~df[status_col].astype(str).str.lower().str.contains('active|live|open', na=False, regex=True)
-                df = df[mask]
-                self.logger.info(f"Expired tenders filter (status-based): {len(df)} records")
-        
-        return df
-
-    def _apply_time_range_to_df(self, df, time_range, current_status):
-        """Apply time range filter to a dataframe."""
-        if df is None or df.empty or not time_range:
-            return df
-            
-        # Ensure df.columns exists and is iterable
-        if not hasattr(df, 'columns') or df.columns is None:
-            return df
-            
-        # Find date columns
-        date_cols = [col for col in df.columns 
-                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
-        
-        if not date_cols:
-            return df
-        
-        date_col = date_cols[0]
-        
-        # Convert to datetime if needed
-        if not pd.api.types.is_datetime64_dtype(df[date_col]):
-            df = df.copy()
-            df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-        
-        # Calculate date ranges using current datetime for precise filtering
-        current_datetime = pd.Timestamp.now()
-        today_start = current_datetime.normalize()  # Start of today (00:00:00)
-        today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)  # End of today (23:59:59)
-        
-        if time_range == "today":
-            if current_status == "expired":
-                mask = (df[date_col] >= today_start) & (df[date_col] < current_datetime)
-            elif current_status == "live":
-                mask = (df[date_col] >= current_datetime) & (df[date_col] <= today_end)
-            else:  # "all"
-                mask = (df[date_col] >= today_start) & (df[date_col] <= today_end)
-        elif time_range == "next_3_days":
-            end_3_days = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
-            if current_status == "expired":
-                start_3_days_ago = today_start - pd.Timedelta(days=3)
-                mask = (df[date_col] >= start_3_days_ago) & (df[date_col] < current_datetime)
-            elif current_status == "live":
-                mask = (df[date_col] >= current_datetime) & (df[date_col] <= end_3_days)
-            else:  # "all"
-                mask = (df[date_col] >= today_start) & (df[date_col] <= end_3_days)
-        elif time_range == "next_7_days":
-            end_7_days = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
-            if current_status == "expired":
-                start_7_days_ago = today_start - pd.Timedelta(days=7)
-                mask = (df[date_col] >= start_7_days_ago) & (df[date_col] < current_datetime)
-            elif current_status == "live":
-                mask = (df[date_col] >= current_datetime) & (df[date_col] <= end_7_days)
-            else:  # "all"
-                mask = (df[date_col] >= today_start) & (df[date_col] <= end_7_days)
-        elif time_range == "next_30_days":
-            end_30_days = today_start + pd.Timedelta(days=30, hours=23, minutes=59, seconds=59)
-            if current_status == "expired":
-                start_30_days_ago = today_start - pd.Timedelta(days=30)
-                mask = (df[date_col] >= start_30_days_ago) & (df[date_col] < current_datetime)
-            elif current_status == "live":
-                mask = (df[date_col] >= current_datetime) & (df[date_col] <= end_30_days)
-            else:  # "all"
-                mask = (df[date_col] >= today_start) & (df[date_col] <= end_30_days)
-        else:
-            return df
-        
-        # Apply the date range filter
-        df = df[mask]
-        self.logger.info(f"Time range filter ({time_range}) with status ({current_status}): {len(df)} records")
-        
-        return df
-
     def _apply_time_filter(self, preset):
         """Apply a time-based filter preset."""
         self.logger.info(f"Applying time filter: {preset}")
@@ -1525,291 +1001,6 @@ class SearchDashboardTab(ttk.Frame):
         
         # Apply the filter
         self._apply_filters()
-
-    def _load_saved_search(self, event=None):
-        """Load a saved search configuration."""
-        search_name = self.saved_search_var.get()
-        if not search_name:
-            return
-        
-        try:
-            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
-            
-            if search_name not in saved_searches_data:
-                messagebox.showinfo("Not Found", f"Search '{search_name}' not found.")
-                return
-            
-            search_config = saved_searches_data[search_name]
-            
-            # Only load text search terms - ignore complex filter data
-            if 'dept_filter' in search_config:
-                self.dept_filter_var.set(search_config['dept_filter'])
-            if 'global_search' in search_config:
-                self.global_search_var.set(search_config['global_search'])
-            if 'dept_operator' in search_config:
-                self.dept_operator_var.set(search_config['dept_operator'])
-            if 'global_operator' in search_config:
-                self.global_operator_var.set(search_config['global_operator'])
-            
-            # Apply the search filters
-            self._apply_filters()
-            
-            messagebox.showinfo("Search Loaded", f"Search terms for '{search_name}' loaded successfully.")
-            self.logger.info(f"Loaded search configuration: {search_name}")
-            
-        except Exception as e:
-            self.logger.error(f"Error loading saved search: {e}")
-            messagebox.showerror("Load Error", f"Error loading search '{search_name}'.\nThis search may be corrupted and should be deleted.")
-
-    def _save_current_search(self):
-        """Save the current search configuration - only text search terms."""
-        # Check if there are any search terms to save
-        dept_search = self.dept_filter_var.get().strip()
-        global_search = self.global_search_var.get().strip()
-        
-        if not dept_search and not global_search:
-            messagebox.showinfo("Nothing to Save", "Please enter some search terms before saving.")
-            return
-        
-        # Ask for a name for the search
-        search_name = tkinter.simpledialog.askstring(
-            "Save Search", 
-            "Enter a name for this search:",
-            parent=self
-        )
-        
-        if not search_name or not search_name.strip():
-            return  # User canceled or entered empty name
-        
-        search_name = search_name.strip()
-        
-        # Create simplified search configuration - only text terms
-        search_config = {
-            'dept_filter': dept_search,
-            'global_search': global_search,
-            'dept_operator': self.dept_operator_var.get(),
-            'global_operator': self.global_operator_var.get(),
-            'saved_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        }
-        
-        try:
-            # Get existing saved searches
-            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
-            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-            
-            # Check if name already exists
-            if search_name in saved_searches_data:
-                if not messagebox.askyesno("Overwrite Search", 
-                                         f"A search named '{search_name}' already exists. Overwrite it?"):
-                    return
-            # Add this search to the saved searches
-            saved_searches_data[search_name] = search_config
-            
-            # Update the list of saved search names if needed
-            if search_name not in saved_searches_list:
-                saved_searches_list.append(search_name)
-            
-            # Update the config
-            self.main_app.global_config.set("saved_searches_data", saved_searches_data)
-            self.main_app.global_config.set("saved_searches", saved_searches_list)
-            
-            # Save the config
-            self.main_app.global_config.save_config()
-            
-            # Update the UI
-            self._update_saved_searches_list()
-            self.saved_search_var.set(search_name)
-            
-            messagebox.showinfo("Search Saved", f"Search '{search_name}' saved successfully.")
-            self.logger.info(f"Saved search configuration: {search_name}")
-            
-        except Exception as e:
-            self.logger.error(f"Error saving search: {e}")
-            messagebox.showerror("Save Error", f"Failed to save search: {str(e)}")
-
-    def _delete_saved_search(self):
-        """Delete a saved search configuration with better error handling."""
-        search_name = self.saved_search_var.get()
-        
-        if not search_name:
-            messagebox.showinfo("No Selection", "Please select a saved search to delete.")
-            return
-        
-        # Confirm deletion
-        if not messagebox.askyesno("Confirm Delete", 
-                                 f"Are you sure you want to delete the saved search '{search_name}'?"):
-            return
-        
-        try:
-            # Get saved searches from config
-            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
-            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-            
-            # Remove the search
-            if search_name in saved_searches_data:
-                del saved_searches_data[search_name]
-            
-            if search_name in saved_searches_list:
-                saved_searches_list.remove(search_name)
-            
-            # Update the config
-            self.main_app.global_config.set("saved_searches_data", saved_searches_data)
-            self.main_app.global_config.set("saved_searches", saved_searches_list)
-            
-            # Save the config
-            self.main_app.global_config.save_config()
-            
-            # Update the UI
-            self._update_saved_searches_list()
-            self.saved_search_var.set("")
-            
-            messagebox.showinfo("Search Deleted", f"Search '{search_name}' deleted successfully.")
-            self.logger.info(f"Deleted search configuration: {search_name}")
-            
-        except Exception as e:
-            self.logger.error(f"Error deleting saved search: {e}")
-            messagebox.showerror("Delete Error", f"Failed to delete search: {str(e)}")
-
-    def _export_saved_searches(self):
-        """Export all saved searches to a JSON file."""
-        try:
-            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
-            
-            if not saved_searches_data:
-                messagebox.showinfo("No Searches", "No saved searches to export.")
-                return
-            
-            # Ask for export file location
-            filename = filedialog.asksaveasfilename(
-                title="Export Saved Searches",
-                defaultextension=".json",
-                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
-            )
-            
-            if not filename:
-                return
-             
-            # Export to Excel
-            import json
-            with open(filename, 'w', encoding='utf-8') as f:
-                json.dump(saved_searches_data, f, indent=2, ensure_ascii=False)
-            
-            messagebox.showinfo("Export Complete", f"Saved searches exported to:\n{filename}")
-            self.logger.info(f"Exported saved searches to: {filename}")
-            
-        except Exception as e:
-            self.logger.error(f"Error exporting saved searches: {e}")
-            messagebox.showerror("Export Error", f"Failed to export searches: {str(e)}")
-
-    def _import_saved_searches(self):
-        """Import saved searches from a JSON file."""
-        try:
-            # Ask for import file
-            filename = filedialog.askopenfilename(
-                title="Import Saved Searches",
-                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
-            )
-            
-            if not filename:
-                return
-            
-            import json
-            with open(filename, 'r', encoding='utf-8') as f:
-                imported_searches = json.load(f)
-            
-            if not isinstance(imported_searches, dict):
-                messagebox.showerror("Invalid File", "Invalid saved searches file format.")
-                return
-            
-            # Get current saved searches
-            current_searches = self.main_app.global_config.get("saved_searches_data", {})
-            current_list = self.main_app.global_config.get("saved_searches", [])
-            
-            # Count new searches
-            new_count = 0
-            overwritten_count = 0
-            
-            for search_name, search_config in imported_searches.items():
-                if search_name in current_searches:
-                    overwritten_count += 1
-                else:
-                    new_count += 1
-                
-                current_searches[search_name] = search_config
-                if search_name not in current_list:
-                    current_list.append(search_name)
-            
-            # Update config
-            self.main_app.global_config.set("saved_searches_data", current_searches)
-            self.main_app.global_config.set("saved_searches", current_list)
-            self.main_app.global_config.save_config()
-            
-            # Update UI
-            self._update_saved_searches_list()
-            
-            message = f"Import complete!\n\nNew searches: {new_count}\nOverwritten: {overwritten_count}"
-            messagebox.showinfo("Import Complete", message)
-            self.logger.info(f"Imported saved searches from: {filename}")
-            
-        except Exception as e:
-            self.logger.error(f"Error importing saved searches: {e}")
-            messagebox.showerror("Import Error", f"Failed to import searches: {str(e)}")
-
-    def _clean_corrupted_searches(self):
-        """Clean up corrupted saved searches."""
-        try:
-            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
-            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-            
-            cleaned_data = {}
-            cleaned_list = []
-            removed_count = 0
-            
-            for search_name in saved_searches_list[:]:  # Copy the list to modify during iteration
-                if search_name in saved_searches_data:
-                    search_config = saved_searches_data[search_name]
-                    
-                    # Check if it's a valid, simple search config
-                    if (isinstance(search_config, dict) and 
-                        ('dept_filter' in search_config or 'global_search' in search_config)):
-                        # Keep valid searches
-                        cleaned_data[search_name] = {
-                            'dept_filter': search_config.get('dept_filter', ''),
-                            'global_search': search_config.get('global_search', ''),
-                            'dept_operator': search_config.get('dept_operator', 'OR'),
-                            'global_operator': search_config.get('global_operator', 'AND'),
-                            'saved_date': search_config.get('saved_date', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-                        }
-                        cleaned_list.append(search_name)
-                    else:
-                        # Remove corrupted searches
-                        removed_count += 1
-                        self.logger.warning(f"Removed corrupted search: {search_name}")
-                else:
-                    # Remove references to non-existent searches
-                    removed_count += 1
-                    self.logger.warning(f"Removed reference to missing search: {search_name}")
-            
-            # Update config with cleaned data
-            self.main_app.global_config.set("saved_searches_data", cleaned_data)
-            self.main_app.global_config.set("saved_searches", cleaned_list)
-            self.main_app.global_config.save_config()
-            
-            # Update UI
-            self._update_saved_searches_list()
-            self.saved_search_var.set("")
-            
-            if removed_count > 0:
-                messagebox.showinfo("Cleanup Complete", 
-                                  f"Removed {removed_count} corrupted saved search(es).")
-            else:
-                messagebox.showinfo("No Issues Found", "All saved searches are valid.")
-            
-            self.logger.info(f"Cleaned saved searches, removed {removed_count} corrupted entries")
-            
-        except Exception as e:
-            self.logger.error(f"Error cleaning saved searches: {e}")
-            messagebox.showerror("Cleanup Error", f"Failed to clean searches: {str(e)}")
 
     def _setup_treeview_bindings(self):
         """Bind treeview events."""
@@ -2182,3 +1373,536 @@ class SearchDashboardTab(ttk.Frame):
         except Exception as e:
             self.logger.error(f"Error applying custom date filter: {e}")
             messagebox.showerror("Date Filter Error", f"Error applying date filter: {str(e)}")
+
+    def _apply_department_filter_to_df(self, df, dept_filter):
+        """Apply department filter to a dataframe."""
+        if df is None or df.empty or not dept_filter:
+            return df
+            
+        # Parse comma-separated terms
+        terms = [t.strip() for t in dept_filter.split(',') if t.strip()]
+        if not terms:
+            return df
+            
+        # Find department columns - ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        dept_cols = [c for c in df.columns
+                     if any(kw in c.lower() for kw in ['department', 'dept', 'agency', 'organisation', 'ministry'])]
+        
+        if not dept_cols:
+            self.logger.warning("No department columns found for filtering")
+            return df
+            
+        operator = getattr(self, 'dept_operator_var', tk.StringVar(value="OR")).get()
+        
+        # Build the filter mask
+        overall_mask = None
+        
+        for term in terms:
+            term_mask = None
+            # Search across all department columns for this term
+            for col in dept_cols:
+                try:
+                    col_mask = df[col].astype(str).str.contains(term, case=False, na=False, regex=False)
+                    term_mask = col_mask if term_mask is None else (term_mask | col_mask)
+                except Exception as e:
+                    self.logger.error(f"Error filtering department column {col}: {e}")
+                    continue
+            
+            if term_mask is not None:
+                if overall_mask is None:
+                    overall_mask = term_mask
+                elif operator == "AND":
+                    overall_mask = overall_mask & term_mask
+                else:  # OR
+                    overall_mask = overall_mask | term_mask
+        
+        if overall_mask is not None:
+            try:
+                df = df[overall_mask]
+                self.logger.info(f"Department filter applied: {len(df)} records match '{dept_filter}' with {operator} logic")
+            except Exception as e:
+                self.logger.error(f"Error applying department filter: {e}")
+        
+        return df
+
+    def _apply_global_search_to_df(self, df, global_search):
+        """Apply global search filter to a dataframe."""
+        if df is None or df.empty or not global_search:
+            return df
+            
+        # Parse comma-separated terms
+        terms = [t.strip() for t in global_search.split(',') if t.strip()]
+        if not terms:
+            return df
+            
+        # Ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        operator = getattr(self, 'global_operator_var', tk.StringVar(value="AND")).get()
+        
+        # Build the filter mask
+        overall_mask = None
+        
+        for term in terms:
+            term_mask = None
+            # Search across ALL columns for this term
+            for col in df.columns:
+                try:
+                    col_mask = df[col].astype(str).str.contains(term, case=False, na=False, regex=False)
+                    term_mask = col_mask if term_mask is None else (term_mask | col_mask)
+                except Exception as e:
+                    self.logger.error(f"Error searching column {col}: {e}")
+                    continue
+            
+            if term_mask is not None:
+                if overall_mask is None:
+                    overall_mask = term_mask
+                elif operator == "AND":
+                    overall_mask = overall_mask & term_mask
+                else:  # OR
+                    overall_mask = overall_mask | term_mask
+        
+        if overall_mask is not None:
+            try:
+                df = df[overall_mask]
+                self.logger.info(f"Global search applied: {len(df)} records match '{global_search}' with {operator} logic")
+            except Exception as e:
+                self.logger.error(f"Error applying global search filter: {e}")
+        
+        return df
+
+    def _apply_live_filter_to_df(self, df):
+        """Apply live tenders filter to a dataframe."""
+        if df is None or df.empty:
+            return df
+            
+        # Ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        # Find date columns for closing dates
+        date_cols = [col for col in df.columns 
+                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+        
+        if date_cols:
+            date_col = date_cols[0]
+            
+            # Convert to datetime if needed
+            if not pd.api.types.is_datetime64_dtype(df[date_col]):
+                df = df.copy()  # Avoid modifying original
+                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+            
+            # Filter for dates/times in the future (live tenders)
+            current_datetime = pd.Timestamp.now()
+            mask = df[date_col] > current_datetime
+            df = df[mask]
+            
+            self.logger.info(f"Live tenders filter: {len(df)} records closing after {current_datetime}")
+        else:
+            # Fallback: look for status column
+            status_cols = [col for col in df.columns if 'status' in col.lower()]
+            if status_cols:
+                status_col = status_cols[0]
+                mask = df[status_col].astype(str).str.lower().str.contains('active|live|open', na=False, regex=True)
+                df = df[mask]
+                self.logger.info(f"Live tenders filter (status-based): {len(df)} records")
+        
+        return df
+
+    def _apply_expired_filter_to_df(self, df):
+        """Apply expired tenders filter to a dataframe."""
+        if df is None or df.empty:
+            return df
+            
+        # Ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        # Find date columns for closing dates
+        date_cols = [col for col in df.columns 
+                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+        
+        if date_cols:
+            date_col = date_cols[0]
+            
+            # Convert to datetime if needed
+            if not pd.api.types.is_datetime64_dtype(df[date_col]):
+                df = df.copy()  # Avoid modifying original
+                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+            
+            # Filter for dates/times in the past (expired tenders)
+            current_datetime = pd.Timestamp.now()
+            mask = df[date_col] < current_datetime
+            df = df[mask]
+            
+            self.logger.info(f"Expired tenders filter: {len(df)} records closed before {current_datetime}")
+        else:
+            # Fallback: look for status column
+            status_cols = [col for col in df.columns if 'status' in col.lower()]
+            if status_cols:
+                status_col = status_cols[0]
+                mask = ~df[status_col].astype(str).str.lower().str.contains('active|live|open', na=False, regex=True)
+                df = df[mask]
+                self.logger.info(f"Expired tenders filter (status-based): {len(df)} records")
+        
+        return df
+
+    def _apply_time_range_to_df(self, df, time_range, current_status):
+        """Apply time range filter to a dataframe."""
+        if df is None or df.empty or not time_range:
+            return df
+            
+        # Ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        # Find date columns
+        date_cols = [col for col in df.columns 
+                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+        
+        if not date_cols:
+            return df
+        
+        date_col = date_cols[0]
+        
+        # Convert to datetime if needed
+        if not pd.api.types.is_datetime64_dtype(df[date_col]):
+            df = df.copy()
+            df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+        
+        # Calculate date ranges using current datetime for precise filtering
+        current_datetime = pd.Timestamp.now()
+        today_start = current_datetime.normalize()  # Start of today (00:00:00)
+        today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)  # End of today (23:59:59)
+        
+        if time_range == "today":
+            if current_status == "expired":
+                mask = (df[date_col] >= today_start) & (df[date_col] < current_datetime)
+            elif current_status == "live":
+                mask = (df[date_col] >= current_datetime) & (df[date_col] <= today_end)
+            else:  # "all"
+                mask = (df[date_col] >= today_start) & (df[date_col] <= today_end)
+        elif time_range == "next_3_days":
+            end_3_days = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
+            if current_status == "expired":
+                start_3_days_ago = today_start - pd.Timedelta(days=3)
+                mask = (df[date_col] >= start_3_days_ago) & (df[date_col] < current_datetime)
+            elif current_status == "live":
+                mask = (df[date_col] >= current_datetime) & (df[date_col] <= end_3_days)
+            else:  # "all"
+                mask = (df[date_col] >= today_start) & (df[date_col] <= end_3_days)
+        elif time_range == "next_7_days":
+            end_7_days = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
+            if current_status == "expired":
+                start_7_days_ago = today_start - pd.Timedelta(days=7)
+                mask = (df[date_col] >= start_7_days_ago) & (df[date_col] < current_datetime)
+            elif current_status == "live":
+                mask = (df[date_col] >= current_datetime) & (df[date_col] <= end_7_days)
+            else:  # "all"
+                mask = (df[date_col] >= today_start) & (df[date_col] <= end_7_days)
+        elif time_range == "next_30_days":
+            end_30_days = today_start + pd.Timedelta(days=30, hours=23, minutes=59, seconds=59)
+            if current_status == "expired":
+                start_30_days_ago = today_start - pd.Timedelta(days=30)
+                mask = (df[date_col] >= start_30_days_ago) & (df[date_col] < current_datetime)
+            elif current_status == "live":
+                mask = (df[date_col] >= current_datetime) & (df[date_col] <= end_30_days)
+            else:  # "all"
+                mask = (df[date_col] >= today_start) & (df[date_col] <= end_30_days)
+        else:
+            return df
+        
+        # Apply the date range filter
+        df = df[mask]
+        self.logger.info(f"Time range filter ({time_range}) with status ({current_status}): {len(df)} records")
+        
+        return df
+
+    def _load_saved_search(self, event=None):
+        """Load a saved search configuration."""
+        search_name = self.saved_search_var.get()
+        if not search_name:
+            return
+        
+        try:
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            
+            if search_name not in saved_searches_data:
+                messagebox.showinfo("Not Found", f"Search '{search_name}' not found.")
+                return
+            
+            search_config = saved_searches_data[search_name]
+            
+            # Only load text search terms - ignore complex filter data
+            if 'dept_filter' in search_config:
+                self.dept_filter_var.set(search_config['dept_filter'])
+            if 'global_search' in search_config:
+                self.global_search_var.set(search_config['global_search'])
+            if 'dept_operator' in search_config:
+                self.dept_operator_var.set(search_config['dept_operator'])
+            if 'global_operator' in search_config:
+                self.global_operator_var.set(search_config['global_operator'])
+            
+            # Apply the search filters
+            self._apply_filters()
+            
+            messagebox.showinfo("Search Loaded", f"Search terms for '{search_name}' loaded successfully.")
+            self.logger.info(f"Loaded search configuration: {search_name}")
+            
+        except Exception as e:
+            self.logger.error(f"Error loading saved search: {e}")
+            messagebox.showerror("Load Error", f"Error loading search '{search_name}'.\nThis search may be corrupted and should be deleted.")
+
+    def _save_current_search(self):
+        """Save the current search configuration - only text search terms."""
+        # Check if there are any search terms to save
+        dept_search = self.dept_filter_var.get().strip()
+        global_search = self.global_search_var.get().strip()
+        
+        if not dept_search and not global_search:
+            messagebox.showinfo("Nothing to Save", "Please enter some search terms before saving.")
+            return
+        
+        # Ask for a name for the search
+        search_name = tkinter.simpledialog.askstring(
+            "Save Search", 
+            "Enter a name for this search:",
+            parent=self
+        )
+        
+        if not search_name or not search_name.strip():
+            return  # User canceled or entered empty name
+        
+        search_name = search_name.strip()
+        
+        # Create simplified search configuration - only text terms
+        search_config = {
+            'dept_filter': dept_search,
+            'global_search': global_search,
+            'dept_operator': self.dept_operator_var.get(),
+            'global_operator': self.global_operator_var.get(),
+            'saved_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        try:
+            # Get existing saved searches
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+            
+            # Check if name already exists
+            if search_name in saved_searches_data:
+                if not messagebox.askyesno("Overwrite Search", 
+                                         f"A search named '{search_name}' already exists. Overwrite it?"):
+                    return
+            # Add this search to the saved searches
+            saved_searches_data[search_name] = search_config
+            
+            # Update the list of saved search names if needed
+            if search_name not in saved_searches_list:
+                saved_searches_list.append(search_name)
+            
+            # Update the config
+            self.main_app.global_config.set("saved_searches_data", saved_searches_data)
+            self.main_app.global_config.set("saved_searches", saved_searches_list)
+            
+            # Save the config
+            self.main_app.global_config.save_config()
+            
+            # Update the UI
+            self._update_saved_searches_list()
+            self.saved_search_var.set(search_name)
+            
+            messagebox.showinfo("Search Saved", f"Search '{search_name}' saved successfully.")
+            self.logger.info(f"Saved search configuration: {search_name}")
+            
+        except Exception as e:
+            self.logger.error(f"Error saving search: {e}")
+            messagebox.showerror("Save Error", f"Failed to save search: {str(e)}")
+
+    def _delete_saved_search(self):
+        """Delete a saved search configuration with better error handling."""
+        search_name = self.saved_search_var.get()
+        
+        if not search_name:
+            messagebox.showinfo("No Selection", "Please select a saved search to delete.")
+            return
+        
+        # Confirm deletion
+        if not messagebox.askyesno("Confirm Delete", 
+                                 f"Are you sure you want to delete the saved search '{search_name}'?"):
+            return
+        
+        try:
+            # Get saved searches from config
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+            
+            # Remove the search
+            if search_name in saved_searches_data:
+                del saved_searches_data[search_name]
+            
+            if search_name in saved_searches_list:
+                saved_searches_list.remove(search_name)
+            
+            # Update the config
+            self.main_app.global_config.set("saved_searches_data", saved_searches_data)
+            self.main_app.global_config.set("saved_searches", saved_searches_list)
+            
+            # Save the config
+            self.main_app.global_config.save_config()
+            
+            # Update the UI
+            self._update_saved_searches_list()
+            self.saved_search_var.set("")
+            
+            messagebox.showinfo("Search Deleted", f"Search '{search_name}' deleted successfully.")
+            self.logger.info(f"Deleted search configuration: {search_name}")
+            
+        except Exception as e:
+            self.logger.error(f"Error deleting saved search: {e}")
+            messagebox.showerror("Delete Error", f"Failed to delete search: {str(e)}")
+
+    def _export_saved_searches(self):
+        """Export all saved searches to a JSON file."""
+        try:
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            
+            if not saved_searches_data:
+                messagebox.showinfo("No Searches", "No saved searches to export.")
+                return
+            
+            # Ask for export file location
+            filename = filedialog.asksaveasfilename(
+                title="Export Saved Searches",
+                defaultextension=".json",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+            
+            if not filename:
+                return
+             
+            # Export to JSON
+            import json
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(saved_searches_data, f, indent=2, ensure_ascii=False)
+            
+            messagebox.showinfo("Export Complete", f"Saved searches exported to:\n{filename}")
+            self.logger.info(f"Exported saved searches to: {filename}")
+            
+        except Exception as e:
+            self.logger.error(f"Error exporting saved searches: {e}")
+            messagebox.showerror("Export Error", f"Failed to export searches: {str(e)}")
+
+    def _import_saved_searches(self):
+        """Import saved searches from a JSON file."""
+        try:
+            # Ask for import file
+            filename = filedialog.askopenfilename(
+                title="Import Saved Searches",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+            
+            if not filename:
+                return
+            
+            import json
+            with open(filename, 'r', encoding='utf-8') as f:
+                imported_searches = json.load(f)
+            
+            if not isinstance(imported_searches, dict):
+                messagebox.showerror("Invalid File", "Invalid saved searches file format.")
+                return
+            
+            # Get current saved searches
+            current_searches = self.main_app.global_config.get("saved_searches_data", {})
+            current_list = self.main_app.global_config.get("saved_searches", [])
+            
+            # Count new searches
+            new_count = 0
+            overwritten_count = 0
+            
+            for search_name, search_config in imported_searches.items():
+                if search_name in current_searches:
+                    overwritten_count += 1
+                else:
+                    new_count += 1
+                
+                current_searches[search_name] = search_config
+                if search_name not in current_list:
+                    current_list.append(search_name)
+            
+            # Update config
+            self.main_app.global_config.set("saved_searches_data", current_searches)
+            self.main_app.global_config.set("saved_searches", current_list)
+            self.main_app.global_config.save_config()
+            
+            # Update UI
+            self._update_saved_searches_list()
+            
+            message = f"Import complete!\n\nNew searches: {new_count}\nOverwritten: {overwritten_count}"
+            messagebox.showinfo("Import Complete", message)
+            self.logger.info(f"Imported saved searches from: {filename}")
+            
+        except Exception as e:
+            self.logger.error(f"Error importing saved searches: {e}")
+            messagebox.showerror("Import Error", f"Failed to import searches: {str(e)}")
+
+    def _clean_corrupted_searches(self):
+        """Clean up corrupted saved searches."""
+        try:
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+            
+            cleaned_data = {}
+            cleaned_list = []
+            removed_count = 0
+            
+            for search_name in saved_searches_list[:]:  # Copy the list to modify during iteration
+                if search_name in saved_searches_data:
+                    search_config = saved_searches_data[search_name]
+                    
+                    # Check if it's a valid, simple search config
+                    if (isinstance(search_config, dict) and 
+                        ('dept_filter' in search_config or 'global_search' in search_config)):
+                        # Keep valid searches
+                        cleaned_data[search_name] = {
+                            'dept_filter': search_config.get('dept_filter', ''),
+                            'global_search': search_config.get('global_search', ''),
+                            'dept_operator': search_config.get('dept_operator', 'OR'),
+                            'global_operator': search_config.get('global_operator', 'AND'),
+                            'saved_date': search_config.get('saved_date', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                        }
+                        cleaned_list.append(search_name)
+                    else:
+                        # Remove corrupted searches
+                        removed_count += 1
+                        self.logger.warning(f"Removed corrupted search: {search_name}")
+                else:
+                    # Remove references to non-existent searches
+                    removed_count += 1
+                    self.logger.warning(f"Removed reference to missing search: {search_name}")
+            
+            # Update config with cleaned data
+            self.main_app.global_config.set("saved_searches_data", cleaned_data)
+            self.main_app.global_config.set("saved_searches", cleaned_list)
+            self.main_app.global_config.save_config()
+            
+            # Update UI
+            self._update_saved_searches_list()
+            self.saved_search_var.set("")
+            
+            if removed_count > 0:
+                messagebox.showinfo("Cleanup Complete", 
+                                  f"Removed {removed_count} corrupted saved search(es).")
+            else:
+                messagebox.showinfo("No Issues Found", "All saved searches are valid.")
+            
+            self.logger.info(f"Cleaned saved searches, removed {removed_count} corrupted entries")
+            
+        except Exception as e:
+            self.logger.error(f"Error cleaning saved searches: {e}")
+            messagebox.showerror("Cleanup Error", f"Failed to clean searches: {str(e)}")
