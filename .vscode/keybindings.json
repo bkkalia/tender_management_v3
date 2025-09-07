@@ -1,0 +1,17 @@
+[
+    {
+        "key": "ctrl+shift+c ctrl+a",
+        "command": "workbench.action.chat.open",
+        "args": "CLINE MODE: Analyze current file completely. Show duplicates and dependencies. No fixes yet."
+    },
+    {
+        "key": "ctrl+shift+c ctrl+f", 
+        "command": "workbench.action.chat.open",
+        "args": "CLINE MODE: Fix the error at current cursor position surgically. Touch only what's broken."
+    },
+    {
+        "key": "ctrl+shift+c ctrl+s",
+        "command": "workbench.action.chat.open", 
+        "args": "STOP. Status check only. How many errors remain?"
+    }
+]

@@ -393,829 +393,6 @@ class SearchDashboardTab(ttk.Frame):
             messagebox.showerror("Error", f"An error occurred while loading data: {str(e)}")
             self.results_count_var.set("Error loading data")
 
-    def _refresh_tree_data(self):
-        """Refresh the treeview with current filtered data."""
-        if self.tree is None:
-            return
-
-        # Clear existing data
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-
-        # Check if data exists
-        if (not hasattr(self.data_processor, 'filtered_data') or
-            self.data_processor.filtered_data is None or
-            self.data_processor.filtered_data.empty):
-            self.results_count_var.set("No data to display")
-            return
-
-        df = self.data_processor.filtered_data
-
-        # Configure columns
-        cols = df.columns.tolist()
-        self.tree["columns"] = cols
-
-        for col in cols:
-            width = 100
-            if any(kw in col.lower() for kw in ['title', 'description', 'summary']):
-                width = 300
-            elif any(kw in col.lower() for kw in ['department', 'ministry', 'agency']):
-                width = 200
-            elif any(kw in col.lower() for kw in ['date', 'time']):
-                width = 120
-            self.tree.column(col, width=width, minwidth=50)
-            self.tree.heading(col, text=col)
-
-        # Insert data rows - limit for performance
-        max_rows = 1000
-        display_df = df.head(max_rows) if len(df) > max_rows else df
-        for _, row in display_df.iterrows():
-            values = [str(val) if pd.notna(val) else "" for val in row]
-            self.tree.insert("", "end", values=values)
-
-        total_records = len(df)
-        if total_records > max_rows:
-            self.results_count_var.set(f"Showing first {max_rows} of {total_records} records (limit for performance)")
-        else:
-            self.results_count_var.set(f"Showing all {total_records} records")
-
-    def _on_live_search_key(self, event=None):
-        """Handle key press in search fields with debouncing to avoid excessive filtering."""
-        if hasattr(self, '_filter_after_id') and self._filter_after_id:
-            self.after_cancel(self._filter_after_id)
-        self._filter_after_id = self.after(self.filter_delay_ms, self._apply_filters)
-
-    def _apply_filters(self):
-        """Apply all filters to the dataset."""
-        if (not hasattr(self.data_processor, 'raw_data') or
-            self.data_processor.raw_data is None or
-            self.data_processor.raw_data.empty):
-            return
-
-        # Start with raw data
-        df = self.data_processor.raw_data.copy()
-        
-        # Apply status filter first (live/expired/all)
-        current_status = getattr(self, 'status_filter_var', tk.StringVar()).get()
-        if current_status == "live":
-            df = self._apply_live_filter_to_df(df)
-        elif current_status == "expired":
-            df = self._apply_expired_filter_to_df(df)
-        # For "all", no status filtering needed
-
-        # Apply department filter
-        dept_filter = self.dept_filter_var.get().strip()
-        if dept_filter:
-            df = self._apply_department_filter_to_df(df, dept_filter)
-
-        # Apply global search filter
-        global_search = self.global_search_var.get().strip()
-        if global_search:
-            df = self._apply_global_search_to_df(df, global_search)
-
-        # Apply any time range filters if active
-        if hasattr(self, 'current_date_filter') and self.current_date_filter:
-            time_range = self.current_date_filter.get('time_range', '')
-            if time_range:
-                df = self._apply_time_range_to_df(df, time_range, current_status)
-
-        # Update filtered data
-        self.data_processor.filtered_data = df
-        
-        # Refresh display
-        self._refresh_tree_data()
-        self.update_dashboard()
-
-    def _apply_department_filter_to_df(self, df, dept_filter):
-        """Apply department filter to a dataframe."""
-        if df.empty or not dept_filter:
-            return df
-            
-        # Parse comma-separated terms
-        terms = [t.strip() for t in dept_filter.split(',') if t.strip()]
-        if not terms:
-            return df
-            
-        # Find department columns
-        dept_cols = [c for c in df.columns
-                     if any(kw in c.lower() for kw in ['department', 'dept', 'agency', 'organisation', 'ministry'])]
-        
-        if not dept_cols:
-            self.logger.warning("No department columns found for filtering")
-            return df
-            
-        operator = getattr(self, 'dept_operator_var', tk.StringVar(value="OR")).get()
-        
-        # Build the filter mask
-        overall_mask = None
-        
-        for term in terms:
-            term_mask = None
-            # Search across all department columns for this term
-            for col in dept_cols:
-                try:
-                    col_mask = df[col].astype(str).str.contains(term, case=False, na=False, regex=False)
-                    term_mask = col_mask if term_mask is None else (term_mask | col_mask)
-                except Exception as e:
-                    self.logger.error(f"Error filtering department column {col}: {e}")
-                    continue
-            
-            if term_mask is not None:
-                if overall_mask is None:
-                    overall_mask = term_mask
-                elif operator == "AND":
-                    overall_mask = overall_mask & term_mask
-                else:  # OR
-                    overall_mask = overall_mask | term_mask
-        
-        if overall_mask is not None:
-            df = df[overall_mask]
-            self.logger.info(f"Department filter applied: {len(df)} records match '{dept_filter}' with {operator} logic")
-        
-        return df
-
-    def _apply_global_search_to_df(self, df, global_search):
-        """Apply global search filter to a dataframe."""
-        if df.empty or not global_search:
-            return df
-            
-        # Parse comma-separated terms
-        terms = [t.strip() for t in global_search.split(',') if t.strip()]
-        if not terms:
-            return df
-            
-        operator = getattr(self, 'global_operator_var', tk.StringVar(value="AND")).get()
-        
-        # Build the filter mask
-        overall_mask = None
-        
-        for term in terms:
-            term_mask = None
-            # Search across ALL columns for this term
-            for col in df.columns:
-                try:
-                    col_mask = df[col].astype(str).str.contains(term, case=False, na=False, regex=False)
-                    term_mask = col_mask if term_mask is None else (term_mask | col_mask)
-                except Exception as e:
-                    self.logger.error(f"Error searching column {col}: {e}")
-                    continue
-            
-            if term_mask is not None:
-                if overall_mask is None:
-                    overall_mask = term_mask
-                elif operator == "AND":
-                    overall_mask = overall_mask & term_mask
-                else:  # OR
-                    overall_mask = overall_mask | term_mask
-        
-        if overall_mask is not None:
-            df = df[overall_mask]
-            self.logger.info(f"Global search applied: {len(df)} records match '{global_search}' with {operator} logic")
-        
-        return df
-
-    def _apply_live_filter_to_df(self, df):
-        """Apply live tenders filter to a dataframe."""
-        if df.empty:
-            return df
-            
-        # Find date columns for closing dates
-        date_cols = [col for col in df.columns 
-                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
-        
-        if date_cols:
-            date_col = date_cols[0]
-            
-            # Convert to datetime if needed
-            if not pd.api.types.is_datetime64_dtype(df[date_col]):
-                df = df.copy()  # Avoid modifying original
-                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-            
-            # Filter for dates/times in the future (live tenders)
-            current_datetime = pd.Timestamp.now()
-            mask = df[date_col] > current_datetime
-            df = df[mask]
-            
-            self.logger.info(f"Live tenders filter: {len(df)} records closing after {current_datetime}")
-        else:
-            # Fallback: look for status column
-            status_cols = [col for col in df.columns if 'status' in col.lower()]
-            if status_cols:
-                status_col = status_cols[0]
-                mask = df[status_col].astype(str).str.lower().str.contains('active|live|open', na=False, regex=True)
-                df = df[mask]
-                self.logger.info(f"Live tenders filter (status-based): {len(df)} records")
-        
-        return df
-
-    def _apply_expired_filter_to_df(self, df):
-        """Apply expired tenders filter to a dataframe."""
-        if df.empty:
-            return df
-            
-        # Find date columns for closing dates
-        date_cols = [col for col in df.columns 
-                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
-        
-        if date_cols:
-            date_col = date_cols[0]
-            
-            # Convert to datetime if needed
-            if not pd.api.types.is_datetime64_dtype(df[date_col]):
-                df = df.copy()  # Avoid modifying original
-                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-            
-            # Filter for dates/times in the past (expired tenders)
-            current_datetime = pd.Timestamp.now()
-            mask = df[date_col] < current_datetime
-            df = df[mask]
-            
-            self.logger.info(f"Expired tenders filter: {len(df)} records closed before {current_datetime}")
-        else:
-            # Fallback: look for status column
-            status_cols = [col for col in df.columns if 'status' in col.lower()]
-            if status_cols:
-                status_col = status_cols[0]
-                mask = ~df[status_col].astype(str).str.lower().str.contains('active|live|open', na=False, regex=True)
-                df = df[mask]
-                self.logger.info(f"Expired tenders filter (status-based): {len(df)} records")
-        
-        return df
-
-    def _apply_time_range_to_df(self, df, time_range, current_status):
-        """Apply time range filter to a dataframe."""
-        if df.empty or not time_range:
-            return df
-            
-        # Find date columns
-        date_cols = [col for col in df.columns 
-                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
-        
-        if not date_cols:
-            return df
-        
-        date_col = date_cols[0]
-        
-        # Convert to datetime if needed
-        if not pd.api.types.is_datetime64_dtype(df[date_col]):
-            df = df.copy()
-            df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-        
-        # Calculate date ranges using current datetime for precise filtering
-        current_datetime = pd.Timestamp.now()
-        today_start = current_datetime.normalize()  # Start of today (00:00:00)
-        today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)  # End of today (23:59:59)
-        
-        if time_range == "today":
-            if current_status == "expired":
-                # For expired + today: show tenders that closed/expired today (before current time)
-                mask = (
-                    (df[date_col] >= today_start) & 
-                    (df[date_col] < current_datetime)
-                )
-            elif current_status == "live":
-                # For live + today: show tenders closing today (after current time)
-                mask = (
-                    (df[date_col] >= current_datetime) & 
-                    (df[date_col] <= today_end)
-                )
-            else:  # "all"
-                # For all + today: show all tenders with closing date today
-                mask = (
-                    (df[date_col] >= today_start) & 
-                    (df[date_col] <= today_end)
-                )
-        elif time_range == "next_3_days":
-            end_3_days = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
-            if current_status == "expired":
-                start_3_days_ago = today_start - pd.Timedelta(days=3)
-                mask = (
-                    (df[date_col] >= start_3_days_ago) & 
-                    (df[date_col] < current_datetime)
-                )
-            elif current_status == "live":
-                mask = (
-                    (df[date_col] >= current_datetime) & 
-                    (df[date_col] <= end_3_days)
-                )
-            else:  # "all"
-                mask = (
-                    (df[date_col] >= today_start) & 
-                    (df[date_col] <= end_3_days)
-                )
-        elif time_range == "next_7_days":
-            end_7_days = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
-            if current_status == "expired":
-                start_7_days_ago = today_start - pd.Timedelta(days=7)
-                mask = (
-                    (df[date_col] >= start_7_days_ago) & 
-                    (df[date_col] < current_datetime)
-                )
-            elif current_status == "live":
-                mask = (
-                    (df[date_col] >= current_datetime) & 
-                    (df[date_col] <= end_7_days)
-                )
-            else:  # "all"
-                mask = (
-                    (df[date_col] >= today_start) & 
-                    (df[date_col] <= end_7_days)
-                )
-        elif time_range == "next_30_days":
-            end_30_days = today_start + pd.Timedelta(days=30, hours=23, minutes=59, seconds=59)
-            if current_status == "expired":
-                start_30_days_ago = today_start - pd.Timedelta(days=30)
-                mask = (
-                    (df[date_col] >= start_30_days_ago) & 
-                    (df[date_col] < current_datetime)
-                )
-            elif current_status == "live":
-                mask = (
-                    (df[date_col] >= current_datetime) & 
-                    (df[date_col] <= end_30_days)
-                )
-            else:  # "all"
-                mask = (
-                    (df[date_col] >= today_start) & 
-                    (df[date_col] <= end_30_days)
-                )
-        else:
-            return df
-        
-        # Apply the date range filter
-        df = df[mask]
-        self.logger.info(f"Time range filter ({time_range}) with status ({current_status}): {len(df)} records")
-        
-        return df
-
-    def _apply_time_filter(self, preset):
-        """Apply a time-based filter preset."""
-        self.logger.info(f"Applying time filter: {preset}")
-        
-        # Get current status
-        current_status = self.status_filter_var.get()
-        
-        # Set filter state
-        self.active_date_filter = f"{current_status}_{preset}"
-        self.current_date_filter = {
-            'type': 'combined',
-            'status': current_status,
-            'time_range': preset
-        }
-        
-        # Update UI - reset all time filter buttons
-        self._clear_time_filter_selection()
-        
-        # Highlight the selected time filter button
-        if preset in self.date_filter_buttons:
-            btn = self.date_filter_buttons[preset]
-            if isinstance(btn, ttk.Button):
-                if hasattr(btn, 'state'):
-                    btn.state(['pressed'])
-            elif isinstance(btn, tk.Button):
-                if hasattr(btn, 'configure'):
-                    btn['background'] = "#006400"
-                    btn['foreground'] = "white"
-        
-        # Apply the filter
-        self._apply_filters()
-
-    def _load_saved_search(self, event=None):
-        """Load a saved search configuration."""
-        search_name = self.saved_search_var.get()
-        if not search_name:
-            return
-        
-        saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
-        
-        if search_name not in saved_searches_data:
-            messagebox.showinfo("Not Found", f"Search '{search_name}' not found.")
-            return
-        
-        search_config = saved_searches_data[search_name]
-        
-        try:
-            if 'dept_filter' in search_config:
-                self.dept_filter_var.set(search_config['dept_filter'])
-            if 'global_search' in search_config:
-                self.global_search_var.set(search_config['global_search'])
-            if 'dept_operator' in search_config:
-                self.dept_operator_var.set(search_config['dept_operator'])
-            if 'global_operator' in search_config:
-                self.global_operator_var.set(search_config['global_operator'])
-            if 'status_filter' in search_config:
-                self.status_filter_var.set(search_config['status_filter'])
-            
-            if 'current_date_filter' in search_config:
-                self.current_date_filter = search_config['current_date_filter'].copy()
-            if 'active_date_filter' in search_config:
-                self.active_date_filter = search_config['active_date_filter']
-            
-            if 'status_filter' in search_config:
-                self._apply_status_filter(search_config['status_filter'])
-            
-            self._apply_filters()
-            messagebox.showinfo("Search Loaded", f"Search '{search_name}' loaded successfully.")
-            
-        except Exception as e:
-            self.logger.error(f"Error loading saved search: {e}")
-            messagebox.showerror("Load Error", f"Error loading search '{search_name}':\n{str(e)}")
-
-    def _save_current_search(self):
-        """Save the current search configuration."""
-        search_name = tkinter.simpledialog.askstring(
-            "Save Search", 
-            "Enter a name for this search:",
-            parent=self
-        )
-        
-        if not search_name:
-            return
-        
-        search_config = {
-            'dept_filter': self.dept_filter_var.get(),
-            'global_search': self.global_search_var.get(),
-            'dept_operator': self.dept_operator_var.get(),
-            'global_operator': self.global_operator_var.get(),
-            'status_filter': self.status_filter_var.get(),
-            'current_date_filter': self.current_date_filter.copy() if hasattr(self, 'current_date_filter') else {},
-            'active_date_filter': getattr(self, 'active_date_filter', 'live')
-        }
-        
-        saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
-        saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-        
-        saved_searches_data[search_name] = search_config
-        
-        if search_name not in saved_searches_list:
-            saved_searches_list.append(search_name)
-        
-        self.main_app.global_config.set("saved_searches_data", saved_searches_data)
-        self.main_app.global_config.set("saved_searches", saved_searches_list)
-        self.main_app.global_config.save_config()
-        
-        self._update_saved_searches_list()
-        self.saved_search_var.set(search_name)
-        
-        messagebox.showinfo("Search Saved", f"Search '{search_name}' saved successfully.")
-
-    def _delete_saved_search(self):
-        """Delete a saved search configuration."""
-        search_name = self.saved_search_var.get()
-        
-        if not search_name:
-            messagebox.showinfo("No Selection", "Please select a saved search to delete.")
-            return
-        
-        if not messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete the saved search '{search_name}'?"):
-            return
-        
-        saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
-        saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-        
-        if search_name in saved_searches_data:
-            del saved_searches_data[search_name]
-        if search_name in saved_searches_list:
-            saved_searches_list.remove(search_name)
-        
-        self.main_app.global_config.set("saved_searches_data", saved_searches_data)
-        self.main_app.global_config.set("saved_searches", saved_searches_list)
-        self.main_app.global_config.save_config()
-        
-        self._update_saved_searches_list()
-        self.saved_search_var.set("")
-        
-        messagebox.showinfo("Search Deleted", f"Search '{search_name}' deleted successfully.")
-
-    def _on_calendar_date_selected(self, event=None):
-        """Handle date selection in the calendar widgets."""
-        try:
-            if HAS_TKCALENDAR and hasattr(self, 'start_date_picker') and hasattr(self, 'end_date_picker'):
-                start_date = self.start_date_picker.get_date()
-                end_date = self.end_date_picker.get_date()
-                
-                if end_date < start_date:
-                    self.end_date_picker.set_date(start_date)
-        except Exception as e:
-            self.logger.error(f"Error in calendar date selection: {e}")
-
-    def _apply_custom_date_filter(self):
-        """Apply a custom date filter using the calendar date pickers."""
-        try:
-            start_date = self.start_date_picker.get_date()
-            end_date = self.end_date_picker.get_date()
-            
-            try:
-                start_hour = int(self.start_hour_var.get())
-                start_min = int(self.start_min_var.get())
-                end_hour = int(self.end_hour_var.get())
-                end_min = int(self.end_min_var.get())
-            except ValueError:
-                start_hour, start_min = 0, 0
-                end_hour, end_min = 23, 59
-            
-            start_datetime = datetime.combine(start_date, time(start_hour, start_min))
-            end_datetime = datetime.combine(end_date, time(end_hour, end_min))
-            
-            self._apply_custom_date_range_filter(start_datetime, end_datetime)
-            
-        except Exception as e:
-            self.logger.error(f"Error applying custom date filter: {e}")
-            messagebox.showerror("Date Filter Error", f"Error applying date filter: {str(e)}")
-
-    def _apply_custom_date_filter_text(self):
-        """Apply a custom date filter using text entry fields."""
-        try:
-            start_date_str = self.custom_date_start_var.get().strip()
-            end_date_str = self.custom_date_end_var.get().strip()
-            
-            if not start_date_str or not end_date_str:
-                messagebox.showwarning("Missing Dates", "Please enter both start and end dates.")
-                return
-            
-            try:
-                start_hour = int(self.start_hour_var.get())
-                start_min = int(self.start_min_var.get())
-                end_hour = int(self.end_hour_var.get())
-                end_min = int(self.end_min_var.get())
-            except ValueError:
-                start_hour, start_min = 0, 0
-                end_hour, end_min = 23, 59
-            
-            try:
-                start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
-                end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
-            except ValueError:
-                messagebox.showerror("Invalid Date Format", "Please use YYYY-MM-DD format for dates.")
-                return
-            
-            start_datetime = datetime.combine(start_date, time(start_hour, start_min))
-            end_datetime = datetime.combine(end_date, time(end_hour, end_min))
-            
-            self._apply_custom_date_range_filter(start_datetime, end_datetime)
-            
-        except Exception as e:
-            self.logger.error(f"Error applying custom date filter: {e}")
-            messagebox.showerror("Date Filter Error", f"Error applying date filter: {str(e)}")
-
-    def _apply_custom_date_range_filter(self, start_datetime, end_datetime):
-        """Apply a date range filter to the data."""
-        if not hasattr(self.data_processor, 'filtered_data') or self.data_processor.filtered_data.empty:
-            messagebox.showinfo("No Data", "No data available to filter.")
-            return
-        
-        self.current_date_filter = {
-            'type': 'custom_date_range',
-            'start_date': start_datetime,
-            'end_date': end_datetime
-        }
-        
-        self._clear_time_filter_selection()
-        
-        self.data_processor.filtered_data = self.data_processor.raw_data.copy()
-        
-        date_cols = [col for col in self.data_processor.filtered_data.columns 
-                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
-        
-        if not date_cols:
-            messagebox.showinfo("Date Column Not Found", "Could not find a suitable date column to filter.")
-            return
-        
-        date_col = date_cols[0]
-        
-        try:
-            if not pd.api.types.is_datetime64_dtype(self.data_processor.filtered_data[date_col]):
-                self.data_processor.filtered_data[date_col] = pd.to_datetime(
-                    self.data_processor.filtered_data[date_col], errors='coerce')
-        except Exception as e:
-            self.logger.error(f"Error converting date column: {e}")
-            messagebox.showerror("Date Conversion Error", f"Could not convert dates: {str(e)}")
-            return
-        
-        try:
-            start_ts = pd.Timestamp(start_datetime)
-            end_ts = pd.Timestamp(end_datetime)
-            
-            mask = (
-                (self.data_processor.filtered_data[date_col] >= start_ts) & 
-                (self.data_processor.filtered_data[date_col] <= end_ts)
-            )
-            
-            self.data_processor.filtered_data = self.data_processor.filtered_data[mask]
-            
-            self._refresh_tree_data()
-            self.update_dashboard()
-            
-            record_count = len(self.data_processor.filtered_data)
-            self.logger.info(f"Applied custom date range filter: {start_datetime} to {end_datetime}, {record_count} records matching")
-            
-        except Exception as e:
-            self.logger.error(f"Error applying date range filter: {e}")
-            messagebox.showerror("Filter Error", f"Error filtering by date: {str(e)}")
-
-    def _add_folder(self):
-        """Add a folder to the list."""
-        folder = filedialog.askdirectory(title="Select Data Folder")
-        if folder and folder not in self.loaded_files:
-            self.loaded_files.append(folder)
-        self._update_selected_folders_display()
-
-    def _add_remote_url(self):
-        """Add a remote URL data source."""
-        dialog = RemoteUrlDialog(self, self.remote_loader)
-        self.wait_window(dialog)
-        
-        if dialog.result:
-            url, username, password = dialog.result
-            if username and password:
-                url_with_auth = f"{url}||{username}||{password}"
-            else:
-                url_with_auth = url
-            
-            if url_with_auth not in self.remote_urls:
-                self.remote_urls.append(url_with_auth)
-                self._update_selected_folders_display()
-                messagebox.showinfo("URL Added", f"Remote URL added successfully:\n{url}")
-
-    def _clear_folders(self):
-        """Clear selected folders and remote URLs."""
-        self.loaded_files = []
-        self.remote_urls = []
-        if hasattr(self, 'remote_loader'):
-            self.remote_loader.cleanup_temp_files()
-        self._update_selected_folders_display()
-
-    def _update_selected_folders_display(self):
-        """Update label with selected folders and remote URLs."""
-        sources = []
-        
-        if self.loaded_files:
-            sources.extend([f"📁 {folder}" for folder in self.loaded_files])
-        
-        if self.remote_urls:
-            for url_entry in self.remote_urls:
-                url = url_entry.split('||')[0]
-                sources.append(f"🌐 {url}")
-        
-        if sources:
-            text = "\n".join(sources)
-        else:
-            text = "No data sources selected."
-        
-        self.selected_folders_var.set(text)
-
-    def _toggle_data_folders_panel(self):
-        """Toggle visibility of data folders panel."""
-        if getattr(self, 'data_folders_frame_visible', False):
-            self.data_folders_content.pack_forget()
-            self.toggle_button.config(text="►")
-        else:
-            self.data_folders_content.pack(side=tk.TOP, fill=tk.X)
-            self.toggle_button.config(text="▼")
-        self.data_folders_frame_visible = not getattr(self, 'data_folders_frame_visible', False)
-
-    def _show_data_visualization(self):
-        """Placeholder for charts."""
-        messagebox.showinfo("Charts", "Chart functionality is under development.")
-
-    def _setup_treeview_bindings(self):
-        """Bind treeview events."""
-        if hasattr(self, 'tree') and self.tree:
-            self.tree.bind("<Double-1>", self._on_row_double_click)
-            self.tree.bind("<Button-3>", self._show_context_menu)
-
-    def _apply_status_filter(self, status):
-        """Apply status-based filter (all, live, expired)."""
-        self.logger.info(f"Applying status filter: {status}")
-        
-        self.active_date_filter = status
-        self.current_date_filter = {
-            'type': status
-        }
-        
-        # Apply the filters
-        self._apply_filters()
-
-    def update_dashboard(self):
-        """Update the dashboard metrics."""
-        if not hasattr(self, 'dashboard_labels'):
-            return
-        
-        try:
-            # Default values
-            metrics = {
-                "total_tenders": 0,
-                "live_tenders": 0,
-                "expired_tenders": 0,
-                "filtered_tenders": 0,
-                "match_percentage": "0%",
-                "unique_departments": 0,
-                "closing_today": 0,
-                "closing_next_3_days": 0,
-                "closing_next_7_days": 0,
-                "data_sources": 0
-            }
-            
-            # Calculate metrics if data is available
-            if hasattr(self.data_processor, 'raw_data') and self.data_processor.raw_data is not None and not self.data_processor.raw_data.empty:
-                raw_data = self.data_processor.raw_data
-                
-                # Basic counts
-                metrics["total_tenders"] = len(raw_data)
-                
-                # Find status column
-                status_cols = [col for col in raw_data.columns if 'status' in col.lower()]
-                if status_cols:
-                    status_col = status_cols[0]
-                    live_mask = raw_data[status_col].astype(str).str.lower().str.contains('active|live|open', na=False)
-                    metrics["live_tenders"] = int(live_mask.sum())
-                    metrics["expired_tenders"] = len(raw_data) - metrics["live_tenders"]
-                
-                # Department metrics
-                dept_cols = [col for col in raw_data.columns 
-                           if any(kw in col.lower() for kw in ['department', 'dept', 'agency', 'organisation'])]
-                if dept_cols and len(dept_cols) > 0:
-                    metrics["unique_departments"] = raw_data[dept_cols[0]].nunique()
-                
-                # Date-based metrics
-                date_cols = [col for col in raw_data.columns 
-                           if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline'])]
-                if date_cols and len(date_cols) > 0:
-                    date_col = date_cols[0]
-                    
-                    # Convert to datetime if needed
-                    if not pd.api.types.is_datetime64_dtype(raw_data[date_col]):
-                        try:
-                            date_series = pd.to_datetime(raw_data[date_col], errors='coerce')
-                            
-                            # Calculate date-based metrics safely
-                            if date_series is not None:
-                                today = pd.Timestamp.today().normalize()
-                                
-                                # Handle NaT values by filtering them out
-                                valid_dates = date_series.dropna()
-                                
-                                # Calculate closing today
-                                today_mask = (valid_dates.dt.normalize() == today)
-                                metrics["closing_today"] = int(today_mask.sum())
-                                
-                                # Calculate next 3 days safely
-                                next_3_days_mask = ((valid_dates.dt.normalize() > today) & 
-                                                  (valid_dates.dt.normalize() <= today + pd.Timedelta(days=3)))
-                                metrics["closing_next_3_days"] = int(next_3_days_mask.sum())
-                                
-                                # Calculate next 7 days safely
-                                next_7_days_mask = ((valid_dates.dt.normalize() > today) & 
-                                                  (valid_dates.dt.normalize() <= today + pd.Timedelta(days=7)))
-                                metrics["closing_next_7_days"] = int(next_7_days_mask.sum())
-                        except Exception as e:
-                            self.logger.error(f"Error calculating date metrics: {e}")
-                    else:
-                        # Already a datetime column
-                        date_series = raw_data[date_col]
-                        today = pd.Timestamp.today().normalize()
-                        
-                        # Handle NaT values by filtering them out
-                        valid_dates = date_series.dropna()
-                        
-                        # Calculate date metrics
-                        today_mask = (valid_dates.dt.normalize() == today)
-                        metrics["closing_today"] = int(today_mask.sum())
-                        
-                        next_3_days_mask = ((valid_dates.dt.normalize() > today) & 
-                                          (valid_dates.dt.normalize() <= today + pd.Timedelta(days=3)))
-                        metrics["closing_next_3_days"] = int(next_3_days_mask.sum())
-                        
-                        next_7_days_mask = ((valid_dates.dt.normalize() > today) & 
-                                          (valid_dates.dt.normalize() <= today + pd.Timedelta(days=7)))
-                        metrics["closing_next_7_days"] = int(next_7_days_mask.sum())
-                
-                # Source metrics
-                source_cols = [col for col in raw_data.columns 
-                             if any(kw in col.lower() for kw in ['source', 'portal', 'origin'])]
-                if source_cols and len(source_cols) > 0:
-                    metrics["data_sources"] = raw_data[source_cols[0]].nunique()
-                elif 'Source File' in raw_data.columns:
-                    # Count number of unique source files
-                    metrics["data_sources"] = raw_data['Source File'].nunique()
-            
-            # Filtered data metrics
-            if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None and not self.data_processor.filtered_data.empty:
-                filtered_data = self.data_processor.filtered_data
-                metrics["filtered_tenders"] = len(filtered_data)
-                
-                # Calculate match percentage
-                if metrics["total_tenders"] > 0:
-                    match_pct = (len(filtered_data) / metrics["total_tenders"]) * 100
-                    metrics["match_percentage"] = f"{match_pct:.1f}%"
-        
-            # Update dashboard labels
-            for key, value in metrics.items():
-                if key in self.dashboard_labels:
-                    self.dashboard_labels[key].configure(text=str(value))
-        
-        except Exception as e:
-            self.logger.error(f"Error updating dashboard: {e}", exc_info=True)
 
     def _create_dashboard_widgets(self, parent):
         """Create dashboard widgets in a single row with solid color backgrounds."""
@@ -1284,6 +461,468 @@ class SearchDashboardTab(ttk.Frame):
         # Bottom separator line
         separator = ttk.Separator(parent, orient="horizontal")
         separator.pack(fill=tk.X, padx=SPACING['small'], pady=(0, SPACING['small']))
+
+   
+        """Create redesigned search and filter widgets with better visual layout."""
+        # Main container for all search components
+        search_container = ttk.Frame(parent)
+        search_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
+        
+        # Top Row: Side-by-side Department and Global Search with colored borders
+        search_row_frame = ttk.Frame(search_container)
+        search_row_frame.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['medium']))
+        
+        # Left: Department Search Section
+        dept_section = ttk.LabelFrame(search_row_frame, text="Department Search", 
+                                     style="Primary.TLabelframe", padding=SPACING['medium'])
+        dept_section.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, SPACING['small']))
+        
+        # Department input with increased height
+        dept_input_frame = ttk.Frame(dept_section)
+        dept_input_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
+        
+        # Custom style for colored border
+        style = ttk.Style()
+        style.configure("Department.TEntry", fieldbackground="#E8F4FD", relief="solid", borderwidth=2)
+        
+        self.dept_entry = ttk.Entry(dept_input_frame, textvariable=self.dept_filter_var, 
+                                   style="Department.TEntry", font=('TkDefaultFont', 11))
+        self.dept_entry.pack(fill=tk.X, ipady=8)  # Increased height
+        self.dept_entry.bind("<KeyRelease>", self._on_live_search_key)
+        
+        # Department operator buttons
+        dept_op_frame = ttk.Frame(dept_section)
+        dept_op_frame.pack(fill=tk.X, pady=(SPACING['small'], 0))
+        
+        ttk.Label(dept_op_frame, text="Match:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        
+        ttk.Radiobutton(dept_op_frame, text="Any (OR)", variable=self.dept_operator_var, 
+                       value="OR", command=self._on_live_search_key).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        ttk.Radiobutton(dept_op_frame, text="All (AND)", variable=self.dept_operator_var, 
+                       value="AND", command=self._on_live_search_key).pack(side=tk.LEFT)
+        
+        ttk.Label(dept_op_frame, text="(use commas to separate terms)", 
+                 font=('TkDefaultFont', 8), foreground='gray').pack(side=tk.RIGHT)
+        
+        # Right: Global Search Section
+        global_section = ttk.LabelFrame(search_row_frame, text="Global Search", 
+                                       style="Success.TLabelframe", padding=SPACING['medium'])
+        global_section.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(SPACING['small'], 0))
+        
+        # Global search input with increased height
+        global_input_frame = ttk.Frame(global_section)
+        global_input_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
+        
+        style.configure("Global.TEntry", fieldbackground="#E8F8E8", relief="solid", borderwidth=2)
+        
+        self.global_entry = ttk.Entry(global_input_frame, textvariable=self.global_search_var, 
+                                     style="Global.TEntry", font=('TkDefaultFont', 11))
+        self.global_entry.pack(fill=tk.X, ipady=8)  # Increased height
+        self.global_entry.bind("<KeyRelease>", self._on_live_search_key)
+        
+        # Global search operator buttons
+        global_op_frame = ttk.Frame(global_section)
+        global_op_frame.pack(fill=tk.X, pady=(SPACING['small'], 0))
+        
+        ttk.Label(global_op_frame, text="Match:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        
+        ttk.Radiobutton(global_op_frame, text="Any (OR)", variable=self.global_operator_var, 
+                       value="OR", command=self._on_live_search_key).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        ttk.Radiobutton(global_op_frame, text="All (AND)", variable=self.global_operator_var, 
+                       value="AND", command=self._on_live_search_key).pack(side=tk.LEFT)
+        
+        ttk.Label(global_op_frame, text="(use commas to separate terms)", 
+                 font=('TkDefaultFont', 8), foreground='gray').pack(side=tk.RIGHT)
+        
+        # Configure custom LabelFrame styles
+        style.configure("Primary.TLabelframe", borderwidth=2, relief="solid")
+        style.configure("Primary.TLabelframe.Label", foreground="#1976d2", font=('TkDefaultFont', 10, 'bold'))
+        style.configure("Success.TLabelframe", borderwidth=2, relief="solid")
+        style.configure("Success.TLabelframe.Label", foreground="#4caf50", font=('TkDefaultFont', 10, 'bold'))
+
+    
+        """Create redesigned date filter widgets in four horizontal sections."""
+        # Main date filter container with 4 sections
+        date_container = ttk.Frame(parent)
+        date_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
+        
+        # Configure grid with four equal columns
+        date_container.grid_columnconfigure(0, weight=1)
+        date_container.grid_columnconfigure(1, weight=1) 
+        date_container.grid_columnconfigure(2, weight=1)
+        date_container.grid_columnconfigure(3, weight=1)
+        
+        # Section 1: Status Filter (Far Left)
+        status_section = ttk.LabelFrame(date_container, text="📊 Status Filter", 
+                                       padding=SPACING['medium'])
+        status_section.grid(row=0, column=0, sticky="nsew", padx=(0, SPACING['small']))
+        
+        # Status dropdown with better styling
+        status_label = ttk.Label(status_section, text="Show tenders:", font=('TkDefaultFont', 10))
+        status_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
+        
+        status_options = [
+            ("All Records", "all"),
+            ("Live Tenders", "live"), 
+            ("Expired Tenders", "expired")
+        ]
+        
+        for text, value in status_options:
+            radio_btn = ttk.Radiobutton(status_section, text=text, variable=self.status_filter_var,
+                                       value=value, command=lambda v=value: self._apply_status_filter(v))
+            radio_btn.pack(anchor=tk.W, pady=2)
+        
+        # Section 2: Time Range Filter with Reset Button (Center Left)
+        time_section = ttk.LabelFrame(date_container, text="📅 Time Range Filter", 
+                                     padding=SPACING['medium'])
+        time_section.grid(row=0, column=1, sticky="nsew", padx=SPACING['small'])
+        
+        # Quick filter buttons in a grid
+        quick_label = ttk.Label(time_section, text="Quick filters:", font=('TkDefaultFont', 10))
+        quick_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
+        
+        button_grid = ttk.Frame(time_section)
+        button_grid.pack(fill=tk.X)
+        
+        time_presets = [
+            ("Today", "today"),
+            ("Next 3 Days", "next_3_days"),
+            ("Next 7 Days", "next_7_days"), 
+            ("Next 30 Days", "next_30_days")
+        ]
+        
+        for i, (text, preset_key) in enumerate(time_presets):
+            row = i // 2
+            col = i % 2
+            btn = create_action_button(button_grid, text, 
+                                      lambda p=preset_key: self._apply_time_filter(p),
+                                      width=12, button_type='info_outline')
+            btn.grid(row=row, column=col, padx=2, pady=2, sticky="ew")
+            self.date_filter_buttons[preset_key] = btn
+        
+        button_grid.grid_columnconfigure(0, weight=1)
+        button_grid.grid_columnconfigure(1, weight=1)
+        
+        # Reset button in time range section
+        reset_btn = create_action_button(time_section, "🔄 Reset All Filters", self._reset_filters, 
+                                        button_type='danger', width=15)
+        reset_btn.pack(fill=tk.X, pady=(SPACING['medium'], 0))
+        
+        # Section 3: Custom Date Range (Center Right)
+        custom_section = ttk.LabelFrame(date_container, text="🗓️ Custom Date Range", 
+                                       padding=SPACING['medium'])
+        custom_section.grid(row=0, column=2, sticky="nsew", padx=SPACING['small'])
+        
+        # Custom Date Range functionality
+        custom_label = ttk.Label(custom_section, text="Date Range:", font=('TkDefaultFont', 10, 'bold'))
+        custom_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
+        
+        if HAS_TKCALENDAR and DateEntry is not None:
+            # Date picker row
+            date_row = ttk.Frame(custom_section)
+            date_row.pack(fill=tk.X, pady=(0, SPACING['small']))
+            
+            ttk.Label(date_row, text="From:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT)
+            self.start_date_picker = DateEntry(date_row, width=10, 
+                                              background=COLORS.get('primary', 'blue'),
+                                              foreground='white', borderwidth=1,
+                                              date_pattern='yyyy-mm-dd')
+            self.start_date_picker.pack(side=tk.LEFT, padx=(2, 8))
+            
+            ttk.Label(date_row, text="To:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT)
+            self.end_date_picker = DateEntry(date_row, width=10,
+                                            background=COLORS.get('primary', 'blue'),
+                                            foreground='white', borderwidth=1,
+                                            date_pattern='yyyy-mm-dd')
+            self.end_date_picker.pack(side=tk.LEFT, padx=2)
+            
+            # Time row
+            time_row = ttk.Frame(custom_section)
+            time_row.pack(fill=tk.X, pady=(0, SPACING['small']))
+            
+            ttk.Label(time_row, text="Time:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT)
+            
+            # Start time
+            ttk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.start_hour_var, 
+                       format="%02.0f").pack(side=tk.LEFT, padx=1)
+            ttk.Label(time_row, text=":").pack(side=tk.LEFT)
+            ttk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.start_min_var, 
+                       format="%02.0f").pack(side=tk.LEFT, padx=(0, 5))
+            
+            ttk.Label(time_row, text="to").pack(side=tk.LEFT, padx=3)
+            
+            # End time
+            ttk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.end_hour_var, 
+                       format="%02.0f").pack(side=tk.LEFT, padx=1)
+            ttk.Label(time_row, text=":").pack(side=tk.LEFT)
+            ttk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.end_min_var, 
+                       format="%02.0f").pack(side=tk.LEFT)
+            
+            # GO button
+            go_btn = create_action_button(custom_section, "Apply Custom Range", 
+                                         self._apply_custom_date_filter,
+                                         button_type='primary', width=15)
+            go_btn.pack(fill=tk.X, pady=SPACING['small'])
+        else:
+            # Fallback text entries
+            date_row = ttk.Frame(custom_section)
+            date_row.pack(fill=tk.X, pady=(0, SPACING['small']))
+            
+            ttk.Label(date_row, text="From (YYYY-MM-DD):").pack(anchor=tk.W)
+            self.start_date_entry = ttk.Entry(date_row, textvariable=self.custom_date_start_var, width=12)
+            self.start_date_entry.pack(fill=tk.X, pady=1)
+            
+            ttk.Label(date_row, text="To (YYYY-MM-DD):").pack(anchor=tk.W, pady=(5, 0))
+            self.end_date_entry = ttk.Entry(date_row, textvariable=self.custom_date_end_var, width=12)
+            self.end_date_entry.pack(fill=tk.X, pady=1)
+            
+            go_btn = create_action_button(custom_section, "Apply Custom Range", 
+                                         self._apply_custom_date_filter_text,
+                                         button_type='primary', width=15)
+            go_btn.pack(fill=tk.X, pady=SPACING['small'])
+        
+        # Section 4: Saved Searches (Far Right) - Enhanced with more options
+        saved_section = ttk.LabelFrame(date_container, text="💾 Saved Searches", 
+                                      padding=SPACING['medium'])
+        saved_section.grid(row=0, column=3, sticky="nsew", padx=(SPACING['small'], 0))
+        
+        # Saved Searches functionality
+        saved_label = ttk.Label(saved_section, text="Saved Searches:", font=('TkDefaultFont', 10, 'bold'))
+        saved_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
+        
+        self.saved_searches_combo = ttk.Combobox(saved_section, textvariable=self.saved_search_var, 
+                                                width=18, state="readonly")
+        self.saved_searches_combo.pack(fill=tk.X, pady=(0, SPACING['small']))
+        self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
+        
+        # Main saved search buttons
+        saved_btn_frame = ttk.Frame(saved_section)
+        saved_btn_frame.pack(fill=tk.X)
+        
+        load_btn = create_action_button(saved_btn_frame, "Load", self._load_saved_search, 
+                                       width=8, button_type='info_outline')
+        load_btn.pack(fill=tk.X, pady=(0, 2))
+        
+        save_btn = create_action_button(saved_btn_frame, "Save", self._save_current_search, 
+                                       width=8, button_type='success_outline')
+        save_btn.pack(fill=tk.X, pady=2)
+        
+        delete_btn = create_action_button(saved_btn_frame, "Delete", self._delete_saved_search, 
+                                         width=8, button_type='danger_outline')
+        delete_btn.pack(fill=tk.X, pady=(2, 0))
+        
+        # Separator
+        ttk.Separator(saved_section, orient='horizontal').pack(fill=tk.X, pady=SPACING['small'])
+        
+        # Additional management buttons
+        mgmt_btn_frame = ttk.Frame(saved_section)
+        mgmt_btn_frame.pack(fill=tk.X)
+        
+        export_btn = create_action_button(mgmt_btn_frame, "Export", self._export_saved_searches, 
+                                         width=8, button_type='secondary')
+        export_btn.pack(fill=tk.X, pady=(0, 1))
+        
+        import_btn = create_action_button(mgmt_btn_frame, "Import", self._import_saved_searches, 
+                                         width=8, button_type='secondary')
+        import_btn.pack(fill=tk.X, pady=1)
+        
+        clean_btn = create_action_button(mgmt_btn_frame, "Clean", self._clean_corrupted_searches, 
+                                        width=8, button_type='warning')
+        clean_btn.pack(fill=tk.X, pady=(1, 0))
+        
+        # Update saved searches list
+        self._update_saved_searches_list()
+        
+        # Apply default Live filter
+        self._apply_status_filter("live")
+
+    def _refresh_tree_data(self):
+        """Refresh the treeview with current filtered data."""
+        if self.tree is None:
+            return
+
+        # Clear existing data - add null check for get_children()
+        try:
+            children = self.tree.get_children()
+            if children:  # Only iterate if children exist
+                for item in children:
+                    self.tree.delete(item)
+        except Exception as e:
+            self.logger.error(f"Error clearing tree data: {e}")
+            return
+
+        # Check if data exists
+        if (not hasattr(self.data_processor, 'filtered_data') or
+            self.data_processor.filtered_data is None or
+            self.data_processor.filtered_data.empty):
+            self.results_count_var.set("No data to display")
+            return
+
+        df = self.data_processor.filtered_data
+
+        # Configure columns - add safety check
+        try:
+            cols = df.columns.tolist() if hasattr(df, 'columns') and df.columns is not None else []
+            if not cols:
+                self.results_count_var.set("No columns to display")
+                return
+                
+            self.tree["columns"] = cols
+
+            for col in cols:
+                width = 100
+                if any(kw in col.lower() for kw in ['title', 'description', 'summary']):
+                    width = 300
+                elif any(kw in col.lower() for kw in ['department', 'ministry', 'agency']):
+                    width = 200
+                elif any(kw in col.lower() for kw in ['date', 'time']):
+                    width = 120
+                self.tree.column(col, width=width, minwidth=50)
+                self.tree.heading(col, text=col)
+
+            # Insert data rows - limit for performance
+            max_rows = 1000
+            display_df = df.head(max_rows) if len(df) > max_rows else df
+            
+            for _, row in display_df.iterrows():
+                try:
+                    values = [str(val) if pd.notna(val) else "" for val in row]
+                    self.tree.insert("", "end", values=values)
+                except Exception as e:
+                    self.logger.error(f"Error inserting row: {e}")
+                    continue
+
+            total_records = len(df)
+            if total_records > max_rows:
+                self.results_count_var.set(f"Showing first {max_rows} of {total_records} records (limit for performance)")
+            else:
+                self.results_count_var.set(f"Showing all {total_records} records")
+                
+        except Exception as e:
+            self.logger.error(f"Error refreshing tree data: {e}")
+            self.results_count_var.set("Error displaying data")
+
+    def update_dashboard(self):
+        """Update the dashboard metrics."""
+        if not hasattr(self, 'dashboard_labels') or not self.dashboard_labels:
+            return
+        
+        try:
+            # Default values
+            metrics = {
+                "total_tenders": 0,
+                "live_tenders": 0,
+                "expired_tenders": 0,
+                "filtered_tenders": 0,
+                "match_percentage": "0%",
+                "unique_departments": 0,
+                "closing_today": 0,
+                "closing_next_3_days": 0,
+                "closing_next_7_days": 0,
+                "data_sources": 0
+            }
+            
+            # Calculate metrics if data is available
+            if (hasattr(self.data_processor, 'raw_data') and 
+                self.data_processor.raw_data is not None and 
+                not self.data_processor.raw_data.empty):
+                
+                raw_data = self.data_processor.raw_data
+                metrics["total_tenders"] = len(raw_data)
+                
+                # Safe column access
+                if hasattr(raw_data, 'columns') and raw_data.columns is not None:
+                    # Department metrics
+                    dept_cols = [col for col in raw_data.columns 
+                               if any(kw in col.lower() for kw in ['department', 'dept', 'agency', 'organisation'])]
+                    if dept_cols:
+                        try:
+                            metrics["unique_departments"] = raw_data[dept_cols[0]].nunique()
+                        except Exception:
+                            metrics["unique_departments"] = 0
+            # Filtered data metrics
+            if (hasattr(self.data_processor, 'filtered_data') and 
+                self.data_processor.filtered_data is not None and 
+                not self.data_processor.filtered_data.empty):
+                
+                filtered_data = self.data_processor.filtered_data
+                metrics["filtered_tenders"] = len(filtered_data)
+                
+                # Calculate match percentage
+                if metrics["total_tenders"] > 0:
+                    match_pct = (len(filtered_data) / metrics["total_tenders"]) * 100
+                    metrics["match_percentage"] = f"{match_pct:.1f}%"
+            
+            # Data sources count
+            metrics["data_sources"] = len(self.loaded_files) + len(self.remote_urls)
+            
+            # Update dashboard labels safely
+            for key, value in metrics.items():
+                if key in self.dashboard_labels and self.dashboard_labels[key] is not None:
+                    try:
+                        self.dashboard_labels[key].configure(text=str(value))
+                    except Exception as e:
+                        self.logger.error(f"Error updating dashboard label {key}: {e}")
+        
+        except Exception as e:
+            self.logger.error(f"Error updating dashboard: {e}")
+
+    def _apply_custom_date_range_filter(self, start_datetime, end_datetime):
+        """Apply a date range filter to the data."""
+        if not hasattr(self.data_processor, 'filtered_data') or self.data_processor.filtered_data.empty:
+            messagebox.showinfo("No Data", "No data available to filter.")
+            return
+        
+        self.current_date_filter = {
+            'type': 'custom_date_range',
+            'start_date': start_datetime,
+            'end_date': end_datetime
+        }
+        
+        self._clear_time_filter_selection()
+        
+        self.data_processor.filtered_data = self.data_processor.raw_data.copy()
+        
+        date_cols = [col for col in self.data_processor.filtered_data.columns 
+                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+        
+        if not date_cols:
+            messagebox.showinfo("Date Column Not Found", "Could not find a suitable date column to filter.")
+            return
+        
+        date_col = date_cols[0]
+        
+        try:
+            if not pd.api.types.is_datetime64_dtype(self.data_processor.filtered_data[date_col]):
+                self.data_processor.filtered_data[date_col] = pd.to_datetime(
+                    self.data_processor.filtered_data[date_col], errors='coerce')
+        except Exception as e:
+            self.logger.error(f"Error converting date column: {e}")
+            messagebox.showerror("Date Conversion Error", f"Could not convert dates: {str(e)}")
+            return
+        
+        try:
+            start_ts = pd.Timestamp(start_datetime)
+            end_ts = pd.Timestamp(end_datetime)
+            
+            mask = (
+                (self.data_processor.filtered_data[date_col] >= start_ts) & 
+                (self.data_processor.filtered_data[date_col] <= end_ts)
+            )
+            
+            self.data_processor.filtered_data = self.data_processor.filtered_data[mask]
+            
+            self._refresh_tree_data()
+            self.update_dashboard()
+            
+            record_count = len(self.data_processor.filtered_data)
+            self.logger.info(f"Applied custom date range filter: {start_datetime} to {end_datetime}, {record_count} records matching")
+            
+        except Exception as e:
+            self.logger.error(f"Error applying date range filter: {e}")
+            messagebox.showerror("Filter Error", f"Error filtering by date: {str(e)}")
+
+    
 
     def _create_search_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
         """Create redesigned search and filter widgets with better visual layout."""
@@ -1504,7 +1143,7 @@ class SearchDashboardTab(ttk.Frame):
                                          button_type='primary', width=15)
             go_btn.pack(fill=tk.X, pady=SPACING['small'])
         
-        # Section 4: Saved Searches (Far Right)
+        # Section 4: Saved Searches (Far Right) - Enhanced with more options
         saved_section = ttk.LabelFrame(date_container, text="💾 Saved Searches", 
                                       padding=SPACING['medium'])
         saved_section.grid(row=0, column=3, sticky="nsew", padx=(SPACING['small'], 0))
@@ -1518,7 +1157,7 @@ class SearchDashboardTab(ttk.Frame):
         self.saved_searches_combo.pack(fill=tk.X, pady=(0, SPACING['small']))
         self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
         
-        # Saved search buttons in vertical layout for better fit
+        # Main saved search buttons
         saved_btn_frame = ttk.Frame(saved_section)
         saved_btn_frame.pack(fill=tk.X)
         
@@ -1534,162 +1173,933 @@ class SearchDashboardTab(ttk.Frame):
                                          width=8, button_type='danger_outline')
         delete_btn.pack(fill=tk.X, pady=(2, 0))
         
+        # Separator
+        ttk.Separator(saved_section, orient='horizontal').pack(fill=tk.X, pady=SPACING['small'])
+        
+        # Additional management buttons
+        mgmt_btn_frame = ttk.Frame(saved_section)
+        mgmt_btn_frame.pack(fill=tk.X)
+        
+        export_btn = create_action_button(mgmt_btn_frame, "Export", self._export_saved_searches, 
+                                         width=8, button_type='secondary')
+        export_btn.pack(fill=tk.X, pady=(0, 1))
+        
+        import_btn = create_action_button(mgmt_btn_frame, "Import", self._import_saved_searches, 
+                                         width=8, button_type='secondary')
+        import_btn.pack(fill=tk.X, pady=1)
+        
+        clean_btn = create_action_button(mgmt_btn_frame, "Clean", self._clean_corrupted_searches, 
+                                        width=8, button_type='warning')
+        clean_btn.pack(fill=tk.X, pady=(1, 0))
+        
         # Update saved searches list
         self._update_saved_searches_list()
         
         # Apply default Live filter
         self._apply_status_filter("live")
 
-    def _create_tender_data_widgets(self, parent):
-        """Create the widgets for displaying and interacting with tender data."""
-        # Container frame for all tender data elements
-        tender_container = ttk.Frame(parent)
-        tender_container.pack(fill=tk.BOTH, expand=True, padx=SPACING['small'], pady=SPACING['small'])
+    def _on_live_search_key(self, event=None):
+        """Handle key press in search fields with debouncing to avoid excessive filtering."""
+        if hasattr(self, '_filter_after_id') and self._filter_after_id:
+            self.after_cancel(self._filter_after_id)
+        self._filter_after_id = self.after(self.filter_delay_ms, self._apply_filters)
+
+    def _apply_filters(self):
+        """Apply all filters to the dataset."""
+        if (not hasattr(self.data_processor, 'raw_data') or
+            self.data_processor.raw_data is None or
+            self.data_processor.raw_data.empty):
+            return
+
+        # Start with raw data
+        df = self.data_processor.raw_data.copy()
         
-        # Create top controls frame
-        controls_frame = ttk.Frame(tender_container)
-        controls_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
+        # Apply status filter first (live/expired/all)
+        current_status = getattr(self, 'status_filter_var', tk.StringVar()).get()
+        if current_status == "live":
+            df = self._apply_live_filter_to_df(df)
+        elif current_status == "expired":
+            df = self._apply_expired_filter_to_df(df)
+        # For "all", no status filtering needed
+
+        # Apply department filter
+        dept_filter = self.dept_filter_var.get().strip()
+        if dept_filter:
+            df = self._apply_department_filter_to_df(df, dept_filter)
+
+        # Apply global search filter
+        global_search = self.global_search_var.get().strip()
+        if global_search:
+            df = self._apply_global_search_to_df(df, global_search)
+
+        # Apply any time range filters if active
+        if hasattr(self, 'current_date_filter') and self.current_date_filter:
+            time_range = self.current_date_filter.get('time_range', '')
+            if time_range:
+                df = self._apply_time_range_to_df(df, time_range, current_status)
+
+        # Update filtered data - ensure df is not None before assignment
+        if df is not None:
+            self.data_processor.filtered_data = df
         
-        # Info label showing record count
-        count_label = ttk.Label(controls_frame, textvariable=self.results_count_var)
-        count_label.pack(side=tk.LEFT)
+        # Refresh display
+        self._refresh_tree_data()
+        self.update_dashboard()
+
+    def _apply_department_filter_to_df(self, df, dept_filter):
+        """Apply department filter to a dataframe."""
+        if df is None or df.empty or not dept_filter:
+            return df
+            
+        # Parse comma-separated terms
+        terms = [t.strip() for t in dept_filter.split(',') if t.strip()]
+        if not terms:
+            return df
+            
+        # Find department columns - ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        dept_cols = [c for c in df.columns
+                     if any(kw in c.lower() for kw in ['department', 'dept', 'agency', 'organisation', 'ministry'])]
         
-        # Export buttons on the right
-        buttons_frame = ttk.Frame(controls_frame)
-        buttons_frame.pack(side=tk.RIGHT)
+        if not dept_cols:
+            self.logger.warning("No department columns found for filtering")
+            return df
+            
+        operator = getattr(self, 'dept_operator_var', tk.StringVar(value="OR")).get()
         
-        # Export to Excel button
-        export_excel_btn = create_action_button(
-            buttons_frame, "Export Excel", self._export_to_excel,
-            button_type='success_outline', width=12
+        # Build the filter mask
+        overall_mask = None
+        
+        for term in terms:
+            term_mask = None
+            # Search across all department columns for this term
+            for col in dept_cols:
+                try:
+                    col_mask = df[col].astype(str).str.contains(term, case=False, na=False, regex=False)
+                    term_mask = col_mask if term_mask is None else (term_mask | col_mask)
+                except Exception as e:
+                    self.logger.error(f"Error filtering department column {col}: {e}")
+                    continue
+            
+            if term_mask is not None:
+                if overall_mask is None:
+                    overall_mask = term_mask
+                elif operator == "AND":
+                    overall_mask = overall_mask & term_mask
+                else:  # OR
+                    overall_mask = overall_mask | term_mask
+        
+        if overall_mask is not None:
+            try:
+                df = df[overall_mask]
+                self.logger.info(f"Department filter applied: {len(df)} records match '{dept_filter}' with {operator} logic")
+            except Exception as e:
+                self.logger.error(f"Error applying department filter: {e}")
+        
+        return df
+
+    def _apply_global_search_to_df(self, df, global_search):
+        """Apply global search filter to a dataframe."""
+        if df is None or df.empty or not global_search:
+            return df
+            
+        # Parse comma-separated terms
+        terms = [t.strip() for t in global_search.split(',') if t.strip()]
+        if not terms:
+            return df
+            
+        # Ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        operator = getattr(self, 'global_operator_var', tk.StringVar(value="AND")).get()
+        
+        # Build the filter mask
+        overall_mask = None
+        
+        for term in terms:
+            term_mask = None
+            # Search across ALL columns for this term
+            for col in df.columns:
+                try:
+                    col_mask = df[col].astype(str).str.contains(term, case=False, na=False, regex=False)
+                    term_mask = col_mask if term_mask is None else (term_mask | col_mask)
+                except Exception as e:
+                    self.logger.error(f"Error searching column {col}: {e}")
+                    continue
+            
+            if term_mask is not None:
+                if overall_mask is None:
+                    overall_mask = term_mask
+                elif operator == "AND":
+                    overall_mask = overall_mask & term_mask
+                else:  # OR
+                    overall_mask = overall_mask | term_mask
+        
+        if overall_mask is not None:
+            try:
+                df = df[overall_mask]
+                self.logger.info(f"Global search applied: {len(df)} records match '{global_search}' with {operator} logic")
+            except Exception as e:
+                self.logger.error(f"Error applying global search filter: {e}")
+        
+        return df
+
+    def _apply_live_filter_to_df(self, df):
+        """Apply live tenders filter to a dataframe."""
+        if df is None or df.empty:
+            return df
+            
+        # Ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        # Find date columns for closing dates
+        date_cols = [col for col in df.columns 
+                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+        
+        if date_cols:
+            date_col = date_cols[0]
+            
+            # Convert to datetime if needed
+            if not pd.api.types.is_datetime64_dtype(df[date_col]):
+                df = df.copy()  # Avoid modifying original
+                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+            
+            # Filter for dates/times in the future (live tenders)
+            current_datetime = pd.Timestamp.now()
+            mask = df[date_col] > current_datetime
+            df = df[mask]
+            
+            self.logger.info(f"Live tenders filter: {len(df)} records closing after {current_datetime}")
+        else:
+            # Fallback: look for status column
+            status_cols = [col for col in df.columns if 'status' in col.lower()]
+            if status_cols:
+                status_col = status_cols[0]
+                mask = df[status_col].astype(str).str.lower().str.contains('active|live|open', na=False, regex=True)
+                df = df[mask]
+                self.logger.info(f"Live tenders filter (status-based): {len(df)} records")
+        
+        return df
+
+    def _apply_expired_filter_to_df(self, df):
+        """Apply expired tenders filter to a dataframe."""
+        if df is None or df.empty:
+            return df
+            
+        # Ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        # Find date columns for closing dates
+        date_cols = [col for col in df.columns 
+                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+        
+        if date_cols:
+            date_col = date_cols[0]
+            
+            # Convert to datetime if needed
+            if not pd.api.types.is_datetime64_dtype(df[date_col]):
+                df = df.copy()  # Avoid modifying original
+                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+            
+            # Filter for dates/times in the past (expired tenders)
+            current_datetime = pd.Timestamp.now()
+            mask = df[date_col] < current_datetime
+            df = df[mask]
+            
+            self.logger.info(f"Expired tenders filter: {len(df)} records closed before {current_datetime}")
+        else:
+            # Fallback: look for status column
+            status_cols = [col for col in df.columns if 'status' in col.lower()]
+            if status_cols:
+                status_col = status_cols[0]
+                mask = ~df[status_col].astype(str).str.lower().str.contains('active|live|open', na=False, regex=True)
+                df = df[mask]
+                self.logger.info(f"Expired tenders filter (status-based): {len(df)} records")
+        
+        return df
+
+    def _apply_time_range_to_df(self, df, time_range, current_status):
+        """Apply time range filter to a dataframe."""
+        if df is None or df.empty or not time_range:
+            return df
+            
+        # Ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        # Find date columns
+        date_cols = [col for col in df.columns 
+                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+        
+        if not date_cols:
+            return df
+        
+        date_col = date_cols[0]
+        
+        # Convert to datetime if needed
+        if not pd.api.types.is_datetime64_dtype(df[date_col]):
+            df = df.copy()
+            df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+        
+        # Calculate date ranges using current datetime for precise filtering
+        current_datetime = pd.Timestamp.now()
+        today_start = current_datetime.normalize()  # Start of today (00:00:00)
+        today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)  # End of today (23:59:59)
+        
+        if time_range == "today":
+            if current_status == "expired":
+                mask = (df[date_col] >= today_start) & (df[date_col] < current_datetime)
+            elif current_status == "live":
+                mask = (df[date_col] >= current_datetime) & (df[date_col] <= today_end)
+            else:  # "all"
+                mask = (df[date_col] >= today_start) & (df[date_col] <= today_end)
+        elif time_range == "next_3_days":
+            end_3_days = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
+            if current_status == "expired":
+                start_3_days_ago = today_start - pd.Timedelta(days=3)
+                mask = (df[date_col] >= start_3_days_ago) & (df[date_col] < current_datetime)
+            elif current_status == "live":
+                mask = (df[date_col] >= current_datetime) & (df[date_col] <= end_3_days)
+            else:  # "all"
+                mask = (df[date_col] >= today_start) & (df[date_col] <= end_3_days)
+        elif time_range == "next_7_days":
+            end_7_days = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
+            if current_status == "expired":
+                start_7_days_ago = today_start - pd.Timedelta(days=7)
+                mask = (df[date_col] >= start_7_days_ago) & (df[date_col] < current_datetime)
+            elif current_status == "live":
+                mask = (df[date_col] >= current_datetime) & (df[date_col] <= end_7_days)
+            else:  # "all"
+                mask = (df[date_col] >= today_start) & (df[date_col] <= end_7_days)
+        elif time_range == "next_30_days":
+            end_30_days = today_start + pd.Timedelta(days=30, hours=23, minutes=59, seconds=59)
+            if current_status == "expired":
+                start_30_days_ago = today_start - pd.Timedelta(days=30)
+                mask = (df[date_col] >= start_30_days_ago) & (df[date_col] < current_datetime)
+            elif current_status == "live":
+                mask = (df[date_col] >= current_datetime) & (df[date_col] <= end_30_days)
+            else:  # "all"
+                mask = (df[date_col] >= today_start) & (df[date_col] <= end_30_days)
+        else:
+            return df
+        
+        # Apply the date range filter
+        df = df[mask]
+        self.logger.info(f"Time range filter ({time_range}) with status ({current_status}): {len(df)} records")
+        
+        return df
+
+    def _apply_time_filter(self, preset):
+        """Apply a time-based filter preset."""
+        self.logger.info(f"Applying time filter: {preset}")
+        
+        # Get current status
+        current_status = self.status_filter_var.get()
+        
+        # Set filter state
+        self.active_date_filter = f"{current_status}_{preset}"
+        self.current_date_filter = {
+            'type': 'combined',
+            'status': current_status,
+            'time_range': preset
+        }
+        
+        # Update UI - reset all time filter buttons
+        self._clear_time_filter_selection()
+        
+        # Highlight the selected time filter button
+        if preset in self.date_filter_buttons:
+            btn = self.date_filter_buttons[preset]
+            if isinstance(btn, ttk.Button):
+                if hasattr(btn, 'state'):
+                    btn.state(['pressed'])
+            elif isinstance(btn, tk.Button):
+                if hasattr(btn, 'configure'):
+                    btn['background'] = "#006400"
+                    btn['foreground'] = "white"
+        
+        # Apply the filter
+        self._apply_filters()
+
+    def _load_saved_search(self, event=None):
+        """Load a saved search configuration."""
+        search_name = self.saved_search_var.get()
+        if not search_name:
+            return
+        
+        try:
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            
+            if search_name not in saved_searches_data:
+                messagebox.showinfo("Not Found", f"Search '{search_name}' not found.")
+                return
+            
+            search_config = saved_searches_data[search_name]
+            
+            # Only load text search terms - ignore complex filter data
+            if 'dept_filter' in search_config:
+                self.dept_filter_var.set(search_config['dept_filter'])
+            if 'global_search' in search_config:
+                self.global_search_var.set(search_config['global_search'])
+            if 'dept_operator' in search_config:
+                self.dept_operator_var.set(search_config['dept_operator'])
+            if 'global_operator' in search_config:
+                self.global_operator_var.set(search_config['global_operator'])
+            
+            # Apply the search filters
+            self._apply_filters()
+            
+            messagebox.showinfo("Search Loaded", f"Search terms for '{search_name}' loaded successfully.")
+            self.logger.info(f"Loaded search configuration: {search_name}")
+            
+        except Exception as e:
+            self.logger.error(f"Error loading saved search: {e}")
+            messagebox.showerror("Load Error", f"Error loading search '{search_name}'.\nThis search may be corrupted and should be deleted.")
+
+    def _save_current_search(self):
+        """Save the current search configuration - only text search terms."""
+        # Check if there are any search terms to save
+        dept_search = self.dept_filter_var.get().strip()
+        global_search = self.global_search_var.get().strip()
+        
+        if not dept_search and not global_search:
+            messagebox.showinfo("Nothing to Save", "Please enter some search terms before saving.")
+            return
+        
+        # Ask for a name for the search
+        search_name = tkinter.simpledialog.askstring(
+            "Save Search", 
+            "Enter a name for this search:",
+            parent=self
         )
-        if export_excel_btn:
-            export_excel_btn.pack(side=tk.LEFT, padx=2)
         
-        # Export to CSV button
-        export_csv_btn = create_action_button(
-            buttons_frame, "Export CSV", self._export_to_csv,
-            button_type='info_outline', width=12
-        )
-        if export_csv_btn:
-            export_csv_btn.pack(side=tk.LEFT, padx=2)
+        if not search_name or not search_name.strip():
+            return  # User canceled or entered empty name
         
-        # Create the treeview for tender data
-        tree_frame = ttk.Frame(tender_container)
-        tree_frame.pack(fill=tk.BOTH, expand=True)
+        search_name = search_name.strip()
         
-        # Create treeview with columns for tender data
-        self.tree = ttk.Treeview(tree_frame, show="headings", style="Custom.Treeview")
-        vsb = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
-        hsb = ttk.Scrollbar(tree_frame, orient="horizontal", command=self.tree.xview)
-        self.tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+        # Create simplified search configuration - only text terms
+        search_config = {
+            'dept_filter': dept_search,
+            'global_search': global_search,
+            'dept_operator': self.dept_operator_var.get(),
+            'global_operator': self.global_operator_var.get(),
+            'saved_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
         
-        # Grid layout for tree and scrollbars
-        self.tree.grid(row=0, column=0, sticky="nsew")
-        vsb.grid(row=0, column=1, sticky="ns")
-        hsb.grid(row=1, column=0, sticky="ew")
+        try:
+            # Get existing saved searches
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+            
+            # Check if name already exists
+            if search_name in saved_searches_data:
+                if not messagebox.askyesno("Overwrite Search", 
+                                         f"A search named '{search_name}' already exists. Overwrite it?"):
+                    return
+            # Add this search to the saved searches
+            saved_searches_data[search_name] = search_config
+            
+            # Update the list of saved search names if needed
+            if search_name not in saved_searches_list:
+                saved_searches_list.append(search_name)
+            
+            # Update the config
+            self.main_app.global_config.set("saved_searches_data", saved_searches_data)
+            self.main_app.global_config.set("saved_searches", saved_searches_list)
+            
+            # Save the config
+            self.main_app.global_config.save_config()
+            
+            # Update the UI
+            self._update_saved_searches_list()
+            self.saved_search_var.set(search_name)
+            
+            messagebox.showinfo("Search Saved", f"Search '{search_name}' saved successfully.")
+            self.logger.info(f"Saved search configuration: {search_name}")
+            
+        except Exception as e:
+            self.logger.error(f"Error saving search: {e}")
+            messagebox.showerror("Save Error", f"Failed to save search: {str(e)}")
+
+    def _delete_saved_search(self):
+        """Delete a saved search configuration with better error handling."""
+        search_name = self.saved_search_var.get()
         
-        # Configure grid weights
-        tree_frame.grid_rowconfigure(0, weight=1)
-        tree_frame.grid_columnconfigure(0, weight=1)
+        if not search_name:
+            messagebox.showinfo("No Selection", "Please select a saved search to delete.")
+            return
         
-        # Style the treeview
-        style = ttk.Style()
-        style.configure("Custom.Treeview", 
-                   font=FONTS.get('body', ('TkDefaultFont', 10)), 
-                   rowheight=24)
-        style.map("Custom.Treeview", 
-             background=[('selected', COLORS.get('primary', '#1976d2'))])
+        # Confirm deletion
+        if not messagebox.askyesno("Confirm Delete", 
+                                 f"Are you sure you want to delete the saved search '{search_name}'?"):
+            return
+        
+        try:
+            # Get saved searches from config
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+            
+            # Remove the search
+            if search_name in saved_searches_data:
+                del saved_searches_data[search_name]
+            
+            if search_name in saved_searches_list:
+                saved_searches_list.remove(search_name)
+            
+            # Update the config
+            self.main_app.global_config.set("saved_searches_data", saved_searches_data)
+            self.main_app.global_config.set("saved_searches", saved_searches_list)
+            
+            # Save the config
+            self.main_app.global_config.save_config()
+            
+            # Update the UI
+            self._update_saved_searches_list()
+            self.saved_search_var.set("")
+            
+            messagebox.showinfo("Search Deleted", f"Search '{search_name}' deleted successfully.")
+            self.logger.info(f"Deleted search configuration: {search_name}")
+            
+        except Exception as e:
+            self.logger.error(f"Error deleting saved search: {e}")
+            messagebox.showerror("Delete Error", f"Failed to delete search: {str(e)}")
+
+    def _export_saved_searches(self):
+        """Export all saved searches to a JSON file."""
+        try:
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            
+            if not saved_searches_data:
+                messagebox.showinfo("No Searches", "No saved searches to export.")
+                return
+            
+            # Ask for export file location
+            filename = filedialog.asksaveasfilename(
+                title="Export Saved Searches",
+                defaultextension=".json",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+            
+            if not filename:
+                return
+             
+            # Export to Excel
+            import json
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(saved_searches_data, f, indent=2, ensure_ascii=False)
+            
+            messagebox.showinfo("Export Complete", f"Saved searches exported to:\n{filename}")
+            self.logger.info(f"Exported saved searches to: {filename}")
+            
+        except Exception as e:
+            self.logger.error(f"Error exporting saved searches: {e}")
+            messagebox.showerror("Export Error", f"Failed to export searches: {str(e)}")
+
+    def _import_saved_searches(self):
+        """Import saved searches from a JSON file."""
+        try:
+            # Ask for import file
+            filename = filedialog.askopenfilename(
+                title="Import Saved Searches",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+            
+            if not filename:
+                return
+            
+            import json
+            with open(filename, 'r', encoding='utf-8') as f:
+                imported_searches = json.load(f)
+            
+            if not isinstance(imported_searches, dict):
+                messagebox.showerror("Invalid File", "Invalid saved searches file format.")
+                return
+            
+            # Get current saved searches
+            current_searches = self.main_app.global_config.get("saved_searches_data", {})
+            current_list = self.main_app.global_config.get("saved_searches", [])
+            
+            # Count new searches
+            new_count = 0
+            overwritten_count = 0
+            
+            for search_name, search_config in imported_searches.items():
+                if search_name in current_searches:
+                    overwritten_count += 1
+                else:
+                    new_count += 1
+                
+                current_searches[search_name] = search_config
+                if search_name not in current_list:
+                    current_list.append(search_name)
+            
+            # Update config
+            self.main_app.global_config.set("saved_searches_data", current_searches)
+            self.main_app.global_config.set("saved_searches", current_list)
+            self.main_app.global_config.save_config()
+            
+            # Update UI
+            self._update_saved_searches_list()
+            
+            message = f"Import complete!\n\nNew searches: {new_count}\nOverwritten: {overwritten_count}"
+            messagebox.showinfo("Import Complete", message)
+            self.logger.info(f"Imported saved searches from: {filename}")
+            
+        except Exception as e:
+            self.logger.error(f"Error importing saved searches: {e}")
+            messagebox.showerror("Import Error", f"Failed to import searches: {str(e)}")
+
+    def _clean_corrupted_searches(self):
+        """Clean up corrupted saved searches."""
+        try:
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+            
+            cleaned_data = {}
+            cleaned_list = []
+            removed_count = 0
+            
+            for search_name in saved_searches_list[:]:  # Copy the list to modify during iteration
+                if search_name in saved_searches_data:
+                    search_config = saved_searches_data[search_name]
+                    
+                    # Check if it's a valid, simple search config
+                    if (isinstance(search_config, dict) and 
+                        ('dept_filter' in search_config or 'global_search' in search_config)):
+                        # Keep valid searches
+                        cleaned_data[search_name] = {
+                            'dept_filter': search_config.get('dept_filter', ''),
+                            'global_search': search_config.get('global_search', ''),
+                            'dept_operator': search_config.get('dept_operator', 'OR'),
+                            'global_operator': search_config.get('global_operator', 'AND'),
+                            'saved_date': search_config.get('saved_date', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                        }
+                        cleaned_list.append(search_name)
+                    else:
+                        # Remove corrupted searches
+                        removed_count += 1
+                        self.logger.warning(f"Removed corrupted search: {search_name}")
+                else:
+                    # Remove references to non-existent searches
+                    removed_count += 1
+                    self.logger.warning(f"Removed reference to missing search: {search_name}")
+            
+            # Update config with cleaned data
+            self.main_app.global_config.set("saved_searches_data", cleaned_data)
+            self.main_app.global_config.set("saved_searches", cleaned_list)
+            self.main_app.global_config.save_config()
+            
+            # Update UI
+            self._update_saved_searches_list()
+            self.saved_search_var.set("")
+            
+            if removed_count > 0:
+                messagebox.showinfo("Cleanup Complete", 
+                                  f"Removed {removed_count} corrupted saved search(es).")
+            else:
+                messagebox.showinfo("No Issues Found", "All saved searches are valid.")
+            
+            self.logger.info(f"Cleaned saved searches, removed {removed_count} corrupted entries")
+            
+        except Exception as e:
+            self.logger.error(f"Error cleaning saved searches: {e}")
+            messagebox.showerror("Cleanup Error", f"Failed to clean searches: {str(e)}")
+
+    def _setup_treeview_bindings(self):
+        """Bind treeview events."""
+        if hasattr(self, 'tree') and self.tree:
+            self.tree.bind("<Double-1>", self._on_row_double_click)
+            self.tree.bind("<Button-3>", self._show_context_menu)
+
+    def _create_context_menu(self):
+        """Create context menu for treeview."""
+        menu = tk.Menu(self, tearoff=0)
+        menu.add_command(label="Copy Row", command=lambda: self._copy_row(self.tree.selection()[0]) if self.tree and self.tree.selection() else None)
+        menu.add_command(label="Show Details", command=lambda: self._show_row_details(self.tree.selection()[0]) if self.tree and self.tree.selection() else None)
+        return menu
 
     def _export_to_excel(self):
-        """Export filtered data to Excel."""
-        if not hasattr(self.data_processor, 'filtered_data') or self.data_processor.filtered_data.empty:
-            messagebox.showinfo("No Data", "No data available to export.")
+        """Export the current filtered data to Excel."""
+        if not hasattr(self, 'data_processor') or self.data_processor is None:
+            messagebox.showerror("Export Error", "No data available to export.")
             return
-        filename = filedialog.asksaveasfilename(
-            defaultextension=".xlsx",
-            filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
-            title="Export to Excel"
-        )
-        if not filename:
-            return
+        
         try:
-            self.data_processor.filtered_data.to_excel(filename, index=False)
-            messagebox.showinfo("Export Complete", f"Data exported to {filename}")
+            # Get the filtered data
+            df = self.data_processor.filtered_data
+            
+            if df is None or df.empty:
+                messagebox.showerror("Export Error", "No data available to export.")
+                return
+            
+            # Ask for file save location
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".xlsx",
+                filetypes=[("Excel Files", "*.xlsx"), ("All Files", "*.*")],
+                title="Export to Excel"
+            )
+            
+            if not file_path:
+                return  # User canceled
+            
+            # Export to Excel
+            df.to_excel(file_path, index=False)
+            
+            messagebox.showinfo("Export Successful", f"Data exported to Excel successfully:\n{file_path}")
+            self.logger.info(f"Data exported to Excel: {file_path}")
+            
         except Exception as e:
-            self.logger.error(f"Excel export error: {e}")
-            messagebox.showerror("Export Error", f"Failed to export: {e}")
+            self.logger.error(f"Error exporting to Excel: {e}")
+            messagebox.showerror("Export Error", f"Failed to export to Excel: {str(e)}")
 
     def _export_to_csv(self):
-        """Export filtered data to CSV."""
-        if not hasattr(self.data_processor, 'filtered_data') or self.data_processor.filtered_data.empty:
-            messagebox.showinfo("No Data", "No data available to export.")
+        """Export the current filtered data to CSV."""
+        if not hasattr(self, 'data_processor') or self.data_processor is None:
+            messagebox.showerror("Export Error", "No data available to export.")
             return
-        filename = filedialog.asksaveasfilename(
-            defaultextension=".csv",
-            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
-            title="Export to CSV"
-        )
-        if not filename:
-            return
+        
         try:
-            self.data_processor.filtered_data.to_csv(filename, index=False)
-            messagebox.showinfo("Export Complete", f"Data exported to {filename}")
+            # Get the filtered data
+            df = self.data_processor.filtered_data
+            
+            if df is None or df.empty:
+                messagebox.showerror("Export Error", "No data available to export.")
+                return
+            
+            # Ask for file save location
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")],
+                title="Export to CSV"
+            )
+            
+            if not file_path:
+                return  # User canceled
+            
+            # Export to CSV
+            df.to_csv(file_path, index=False, encoding='utf-8')
+            
+            messagebox.showinfo("Export Successful", f"Data exported to CSV successfully:\n{file_path}")
+            self.logger.info(f"Data exported to CSV: {file_path}")
+            
         except Exception as e:
-            self.logger.error(f"CSV export error: {e}")
-            messagebox.showerror("Export Error", f"Failed to export: {e}")
+            self.logger.error(f"Error exporting to CSV: {e}")
+            messagebox.showerror("Export Error", f"Failed to export to CSV: {str(e)}")
 
     def _on_row_double_click(self, event):
-        """Open URL if present or show details dialog."""
-        if self.tree is None:
-            return
-        item = self.tree.identify_row(event.y)
-        if not item:
-            return
-        values = self.tree.item(item, 'values')
-        if not values:
-            return
-        for val in values:
-            if isinstance(val, str) and (val.startswith('http') or val.startswith('www')):
-                webbrowser.open_new_tab(val)
-                return
-        messagebox.showinfo("Tender Details", "Detailed view will be implemented in a future update.")
+        """Handle double-click on a treeview row to show details."""
+        try:
+            if self.tree and self.tree.selection():
+                item = self.tree.selection()[0]  # Get selected item
+                self._show_row_details(item)
+        except Exception as e:
+            self.logger.error(f"Error on row double click: {e}")
 
     def _show_context_menu(self, event):
-        """Right-click menu on tree rows."""
-        if self.tree is None:
-            return
-        item = self.tree.identify_row(event.y)
-        if not item:
-            return
-        self.tree.selection_set(item)
-        menu = tk.Menu(self, tearoff=0)
-        menu.add_command(label="Copy Row", command=lambda: self._copy_row(item))
-        menu.add_command(label="View Details", command=lambda: self._show_row_details(item))
-        menu.tk_popup(event.x_root, event.y_root)
+        """Show context menu on right-click in treeview."""
+        try:
+            if self.tree:
+                item = self.tree.identify_row(event.y)
+                if item:
+                    self.tree.selection_set(item)
+                    
+                    # Show the context menu
+                    menu = self._create_context_menu()
+                    menu.post(event.x_root, event.y_root)
+        except Exception as e:
+            self.logger.error(f"Error showing context menu: {e}")
 
     def _copy_row(self, item_id):
-        """Copy selected row values to clipboard."""
-        if self.tree is None:
-            return
-        values = self.tree.item(item_id, 'values')
-        if not values:
-            return
-        text = "\t".join(str(v) for v in values)
-        self.clipboard_clear()
-        self.clipboard_append(text)
-        messagebox.showinfo("Copied", "Row data copied to clipboard.")
+        """Copy the selected row's data to clipboard."""
+        try:
+            if self.tree:
+                values = self.tree.item(item_id, "values")
+                if values:
+                    # Create a tab-separated string
+                    data = "\t".join(str(v) for v in values)
+                    
+                    # Copy to clipboard
+                    self.clipboard_clear()
+                    self.clipboard_append(data)
+                    
+                    messagebox.showinfo("Copy Successful", "Row data copied to clipboard.")
+        except Exception as e:
+            self.logger.error(f"Error copying row data: {e}")
 
     def _show_row_details(self, item_id):
-        """Show a simple details dialog of the row."""
-        if self.tree is None:
+        """Show detailed information about the selected row in a new window."""
+        try:
+            if self.tree:
+                values = self.tree.item(item_id, "values")
+                if not values:
+                    return
+                
+                # Create a new top-level window
+                details_window = tk.Toplevel(self)
+                details_window.title("Row Details")
+                details_window.geometry("600x400")
+                
+                # Add a close button
+                close_button = ttk.Button(details_window, text="Close", command=details_window.destroy)
+                close_button.pack(side=tk.BOTTOM, pady=10)
+                
+                # Create a text widget to display the details
+                text = tk.Text(details_window, wrap=tk.WORD)
+                text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+                
+                # Insert the data into the text widget
+                for value in values:
+                    text.insert(tk.END, str(value) + "\n")
+                
+                # Make the text widget read-only
+                text.config(state=tk.DISABLED)
+                
+        except Exception as e:
+            self.logger.error(f"Error showing row details: {e}")
+
+    def _create_tender_data_widgets(self, tender_data_frame):
+        """Create the widgets for displaying and interacting with tender data."""
+        # Status bar at top
+        status_frame = ttk.Frame(tender_data_frame)
+        status_frame.pack(fill=tk.X, padx=SPACING['small'], pady=(SPACING['small'], 0))
+        
+        # Results count label
+        results_label = ttk.Label(status_frame, textvariable=self.results_count_var)
+        results_label.pack(side=tk.LEFT)
+        
+        # Export buttons
+        export_frame = ttk.Frame(status_frame)
+        export_frame.pack(side=tk.RIGHT)
+        
+        create_action_button(export_frame, "Export Excel", self._export_to_excel, 
+                           button_type='success_outline', width=12).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        create_action_button(export_frame, "Export CSV", self._export_to_csv, 
+                           button_type='info_outline', width=12).pack(side=tk.LEFT)
+        
+        # Create frame for treeview and scrollbars
+        tree_frame = ttk.Frame(tender_data_frame)
+        tree_frame.pack(fill=tk.BOTH, expand=True, padx=SPACING['small'], pady=SPACING['small'])
+        
+        # Treeview for displaying tender data
+        self.tree = ttk.Treeview(tree_frame, show="headings")
+        self.tree.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
+        
+        # Vertical scrollbar
+        vsb = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
+        vsb.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tree.configure(yscrollcommand=vsb.set)
+        
+        # Horizontal scrollbar frame
+        hsb_frame = ttk.Frame(tender_data_frame)
+        hsb_frame.pack(fill=tk.X, padx=SPACING['small'])
+        
+        hsb = ttk.Scrollbar(hsb_frame, orient="horizontal", command=self.tree.xview)
+        hsb.pack(fill=tk.X)
+        self.tree.configure(xscrollcommand=hsb.set)
+
+    def _apply_status_filter(self, status):
+        """Apply status-based filter (all, live, expired)."""
+        self.logger.info(f"Applying status filter: {status}")
+        
+        self.active_date_filter = status
+        self.current_date_filter = {
+            'type': status
+        }
+        
+        # Apply the filters
+        self._apply_filters()
+
+    def _toggle_data_folders_panel(self):
+        """Toggle visibility of data folders panel."""
+        if getattr(self, 'data_folders_frame_visible', False):
+            self.data_folders_content.pack_forget()
+            self.toggle_button.config(text="►")
+        else:
+            self.data_folders_content.pack(side=tk.TOP, fill=tk.X)
+            self.toggle_button.config(text="▼")
+        self.data_folders_frame_visible = not getattr(self, 'data_folders_frame_visible', False)
+
+    def _show_data_visualization(self):
+        """Placeholder for charts."""
+        messagebox.showinfo("Charts", "Chart functionality is under development.")
+
+    def _add_folder(self):
+        """Add a folder to the list."""
+        folder = filedialog.askdirectory(title="Select Data Folder")
+        if folder and folder not in self.loaded_files:
+            self.loaded_files.append(folder)
+        self._update_selected_folders_display()
+
+    def _add_remote_url(self):
+        """Add a remote URL data source."""
+        dialog = RemoteUrlDialog(self, self.remote_loader)
+        self.wait_window(dialog)
+        
+        if dialog.result:
+            url, username, password = dialog.result
+            if username and password:
+                url_with_auth = f"{url}||{username}||{password}"
+            else:
+                url_with_auth = url
+            
+            if url_with_auth not in self.remote_urls:
+                self.remote_urls.append(url_with_auth)
+                self._update_selected_folders_display()
+                messagebox.showinfo("URL Added", f"Remote URL added successfully:\n{url}")
+
+    def _clear_folders(self):
+        """Clear selected folders and remote URLs."""
+        self.loaded_files = []
+        self.remote_urls = []
+        if hasattr(self, 'remote_loader'):
+            self.remote_loader.cleanup_temp_files()
+        self._update_selected_folders_display()
+
+    def _update_selected_folders_display(self):
+        """Update label with selected folders and remote URLs."""
+        sources = []
+        
+        if self.loaded_files:
+            sources.extend([f"📁 {folder}" for folder in self.loaded_files])
+        
+        if self.remote_urls:
+            for url_entry in self.remote_urls:
+                url = url_entry.split('||')[0]
+                sources.append(f"🌐 {url}")
+        
+        if sources:
+            text = "\n".join(sources)
+        else:
+            text = "No data sources selected."
+        
+        self.selected_folders_var.set(text)
+
+    def _update_saved_searches_list(self):
+        """Update the saved searches dropdown list."""
+        if not hasattr(self, 'saved_searches_combo'):
             return
-        values = self.tree.item(item_id, 'values')
-        if not values:
-            return
-        columns = self.tree["columns"]
-        details = "\n".join(f"{col}: {val}" for col, val in zip(columns, values))
-        messagebox.showinfo("Tender Details", details)
+        
+        saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+        self.saved_searches_combo['values'] = saved_searches_list
+
+    def _clear_time_filter_selection(self):
+        """Clear the visual selection of time filter buttons."""
+        for key in ["today", "next_3_days", "next_7_days", "next_30_days"]:
+            if key in self.date_filter_buttons:
+                btn = self.date_filter_buttons[key]
+                if isinstance(btn, ttk.Button):
+                    if hasattr(btn, 'state'):
+                        btn.state(['!pressed'])
+                elif isinstance(btn, tk.Button):
+                    if hasattr(btn, 'configure'):
+                        btn['background'] = "#f0f0f0"
+                        btn['foreground'] = "black"
 
     def _reset_filters(self):
         """Reset all filters to their default state."""
@@ -1714,23 +2124,61 @@ class SearchDashboardTab(ttk.Frame):
         
         self._apply_status_filter("live")
 
-    def _clear_time_filter_selection(self):
-        """Clear the visual selection of time filter buttons."""
-        for key in ["today", "next_3_days", "next_7_days", "next_30_days"]:
-            if key in self.date_filter_buttons:
-                btn = self.date_filter_buttons[key]
-                if isinstance(btn, ttk.Button):
-                    if hasattr(btn, 'state'):
-                        btn.state(['!pressed'])
-                elif isinstance(btn, tk.Button):
-                    if hasattr(btn, 'configure'):
-                        btn['background'] = "#f0f0f0"
-                        btn['foreground'] = "black"
+    def _apply_custom_date_filter(self):
+        """Apply a custom date filter using the calendar date pickers."""
+        try:
+            start_date = self.start_date_picker.get_date()
+            end_date = self.end_date_picker.get_date()
+            
+            try:
+                start_hour = int(self.start_hour_var.get())
+                start_min = int(self.start_min_var.get())
+                end_hour = int(self.end_hour_var.get())
+                end_min = int(self.end_min_var.get())
+            except ValueError:
+                start_hour, start_min = 0, 0
+                end_hour, end_min = 23, 59
+            
+            start_datetime = datetime.combine(start_date, time(start_hour, start_min))
+            end_datetime = datetime.combine(end_date, time(end_hour, end_min))
+            
+            self._apply_custom_date_range_filter(start_datetime, end_datetime)
+            
+        except Exception as e:
+            self.logger.error(f"Error applying custom date filter: {e}")
+            messagebox.showerror("Date Filter Error", f"Error applying date filter: {str(e)}")
 
-    def _update_saved_searches_list(self):
-        """Update the saved searches dropdown list."""
-        if not hasattr(self, 'saved_searches_combo'):
-            return
-        
-        saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-        self.saved_searches_combo['values'] = saved_searches_list
+    def _apply_custom_date_filter_text(self):
+        """Apply a custom date filter using text entry fields."""
+        try:
+            start_date_str = self.custom_date_start_var.get().strip()
+            end_date_str = self.custom_date_end_var.get().strip()
+            
+            if not start_date_str or not end_date_str:
+                messagebox.showwarning("Missing Dates", "Please enter both start and end dates.")
+                return
+            
+            try:
+                start_hour = int(self.start_hour_var.get())
+                start_min = int(self.start_min_var.get())
+                end_hour = int(self.end_hour_var.get())
+                end_min = int(self.end_min_var.get())
+            except ValueError:
+                start_hour, start_min = 0, 0
+                end_hour, end_min = 23, 59
+            
+            try:
+                start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+                end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+            except ValueError:
+                messagebox.showerror("Invalid Date Format", "Please use YYYY-MM-DD format for dates.")
+                return
+            
+            start_datetime = datetime.combine(start_date, time(start_hour, start_min))
+            end_datetime = datetime.combine(end_date, time(end_hour, end_min))
+            
+            self._apply_custom_date_range_filter(start_datetime, end_datetime)
+            
+        except Exception as e:
+            self.logger.error(f"Error applying custom date filter: {e}")
+            messagebox.showerror("Date Filter Error", f"Error applying date filter: {str(e)}")
