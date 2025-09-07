@@ -541,25 +541,31 @@ class SearchDashboardTab(ttk.Frame):
         style.configure("Success.TLabelframe.Label", foreground="#4caf50", font=('TkDefaultFont', 10, 'bold'))
 
     def _create_date_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
-        """Create redesigned date filter widgets in four horizontal sections."""
-        # Main date filter container with 4 sections
+        """Create redesigned date filter widgets in four horizontal sections with responsive layout."""
+        # Main date filter container with responsive grid
         date_container = ttk.Frame(parent)
         date_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
         
-        # Configure grid with four equal columns
-        date_container.grid_columnconfigure(0, weight=1)
-        date_container.grid_columnconfigure(1, weight=1) 
-        date_container.grid_columnconfigure(2, weight=1)
-        date_container.grid_columnconfigure(3, weight=1)
+        # Configure grid with four equal columns and consistent spacing
+        for i in range(4):
+            date_container.grid_columnconfigure(i, weight=1, minsize=180)  # Minimum width for each section
+        date_container.grid_rowconfigure(0, weight=1)
         
-        # Section 1: Status Filter (Far Left)
+        # Calculate dynamic spacing based on container width
+        section_padding = SPACING['small']
+        internal_padding = (SPACING['small'], SPACING['medium'])
+        
+        # Section 1: Status Filter (Column 0) - CENTER ALIGNED
         status_section = ttk.LabelFrame(date_container, text="📊 Status Filter", 
-                                       padding=SPACING['medium'])
-        status_section.grid(row=0, column=0, sticky="nsew", padx=(0, SPACING['small']))
+                                       padding=internal_padding)
+        status_section.grid(row=0, column=0, sticky="nsew", padx=(0, section_padding//2))
         
-        # Status dropdown with better styling
-        status_label = ttk.Label(status_section, text="Show tenders:", font=('TkDefaultFont', 10))
-        status_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
+        # Status content with consistent height and center alignment
+        status_content = ttk.Frame(status_section)
+        status_content.pack(fill=tk.BOTH, expand=True)
+        
+        status_label = ttk.Label(status_content, text="Show tenders:", font=('TkDefaultFont', 9, 'bold'))
+        status_label.pack(anchor=tk.CENTER, pady=(0, SPACING['small']//2))  # Changed to CENTER
         
         status_options = [
             ("All Records", "all"),
@@ -568,27 +574,35 @@ class SearchDashboardTab(ttk.Frame):
         ]
         
         for text, value in status_options:
-            radio_btn = ttk.Radiobutton(status_section, text=text, variable=self.status_filter_var,
+            radio_btn = ttk.Radiobutton(status_content, text=text, variable=self.status_filter_var,
                                        value=value, command=lambda v=value: self._apply_status_filter(v))
-            radio_btn.pack(anchor=tk.W, pady=2)
+            radio_btn.pack(anchor=tk.CENTER, pady=1)  # Changed to CENTER
         
-        # Section 2: Time Range Filter with Reset Button (Center Left)
+        # Section 2: Time Range Filter (Column 1) - CENTER ALIGNED
         time_section = ttk.LabelFrame(date_container, text="📅 Time Range Filter", 
-                                     padding=SPACING['medium'])
-        time_section.grid(row=0, column=1, sticky="nsew", padx=SPACING['small'])
+                                     padding=internal_padding)
+        time_section.grid(row=0, column=1, sticky="nsew", padx=(section_padding//2, section_padding//2))
         
-        # Quick filter buttons in a grid
-        quick_label = ttk.Label(time_section, text="Quick filters:", font=('TkDefaultFont', 10))
-        quick_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
+        # Time content with consistent height and center alignment
+        time_content = ttk.Frame(time_section)
+        time_content.pack(fill=tk.BOTH, expand=True)
         
-        button_grid = ttk.Frame(time_section)
-        button_grid.pack(fill=tk.X)
+        quick_label = ttk.Label(time_content, text="Quick filters:", font=('TkDefaultFont', 9, 'bold'))
+        quick_label.pack(anchor=tk.CENTER, pady=(0, SPACING['small']//2))  # Changed to CENTER
+        
+        # Time filter buttons in compact 2x2 grid - centered
+        button_grid = ttk.Frame(time_content)
+        button_grid.pack(expand=True)  # Center the grid itself
+        
+        # Configure button grid for equal distribution
+        button_grid.grid_columnconfigure(0, weight=1)
+        button_grid.grid_columnconfigure(1, weight=1)
         
         time_presets = [
             ("Today", "today"),
-            ("Next 3 Days", "next_3_days"),
-            ("Next 7 Days", "next_7_days"), 
-            ("Next 30 Days", "next_30_days")
+            ("3 Days", "next_3_days"),
+            ("7 Days", "next_7_days"), 
+            ("30 Days", "next_30_days")
         ]
         
         for i, (text, preset_key) in enumerate(time_presets):
@@ -596,139 +610,143 @@ class SearchDashboardTab(ttk.Frame):
             col = i % 2
             btn = create_action_button(button_grid, text, 
                                       lambda p=preset_key: self._apply_time_filter(p),
-                                      width=12, button_type='info_outline')
-            btn.grid(row=row, column=col, padx=2, pady=2, sticky="ew")
-            self.date_filter_buttons[preset_key] = btn
+                                      width=8, button_type='info_outline')
+            if btn:
+                btn.grid(row=row, column=col, padx=1, pady=1, sticky="ew")
+                self.date_filter_buttons[preset_key] = btn
         
-        button_grid.grid_columnconfigure(0, weight=1)
-        button_grid.grid_columnconfigure(1, weight=1)
+        # Reset button below the grid - centered
+        reset_btn = create_action_button(time_content, "🔄 Reset", self._reset_filters, 
+                                        button_type='danger', width=12)
+        if reset_btn:
+            reset_btn.pack(pady=(SPACING['small']//2, 0))  # Removed fill=tk.X to center
         
-        # Reset button in time range section
-        reset_btn = create_action_button(time_section, "🔄 Reset All Filters", self._reset_filters, 
-                                        button_type='danger', width=15)
-        reset_btn.pack(fill=tk.X, pady=(SPACING['medium'], 0))
-        
-        # Section 3: Custom Date Range (Center Right)
+        # Section 3: Custom Date Range (Column 2) - CENTER ALIGNED
         custom_section = ttk.LabelFrame(date_container, text="🗓️ Custom Date Range", 
-                                       padding=SPACING['medium'])
-        custom_section.grid(row=0, column=2, sticky="nsew", padx=SPACING['small'])
+                                       padding=internal_padding)
+        custom_section.grid(row=0, column=2, sticky="nsew", padx=(section_padding//2, section_padding//2))
         
-        # Custom Date Range functionality
-        custom_label = ttk.Label(custom_section, text="Date Range:", font=('TkDefaultFont', 10, 'bold'))
-        custom_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
+        # Custom content with consistent height and center alignment
+        custom_content = ttk.Frame(custom_section)
+        custom_content.pack(fill=tk.BOTH, expand=True)
+        
+        custom_label = ttk.Label(custom_content, text="Date Range:", font=('TkDefaultFont', 9, 'bold'))
+        custom_label.pack(anchor=tk.CENTER, pady=(0, SPACING['small']//2))  # Changed to CENTER
         
         if HAS_TKCALENDAR and DateEntry is not None:
-            # Date picker row
-            date_row = ttk.Frame(custom_section)
-            date_row.pack(fill=tk.X, pady=(0, SPACING['small']))
+            # Date picker layout - centered and wider
+            date_row = ttk.Frame(custom_content)
+            date_row.pack(pady=(0, 2))  # Center horizontally
             
-            ttk.Label(date_row, text="From:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT)
-            self.start_date_picker = DateEntry(date_row, width=10, 
+            ttk.Label(date_row, text="From:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
+            self.start_date_picker = DateEntry(date_row, width=12,  # Increased from 8 to 12
                                               background=COLORS.get('primary', 'blue'),
                                               foreground='white', borderwidth=1,
                                               date_pattern='yyyy-mm-dd')
-            self.start_date_picker.pack(side=tk.LEFT, padx=(2, 8))
+            self.start_date_picker.pack(side=tk.LEFT, padx=(2, 6))
             
-            ttk.Label(date_row, text="To:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT)
-            self.end_date_picker = DateEntry(date_row, width=10,
+            ttk.Label(date_row, text="To:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
+            self.end_date_picker = DateEntry(date_row, width=12,  # Increased from 8 to 12
                                             background=COLORS.get('primary', 'blue'),
                                             foreground='white', borderwidth=1,
                                             date_pattern='yyyy-mm-dd')
             self.end_date_picker.pack(side=tk.LEFT, padx=2)
             
-            # Time row
-            time_row = ttk.Frame(custom_section)
-            time_row.pack(fill=tk.X, pady=(0, SPACING['small']))
+            # Time row - centered
+            time_row = ttk.Frame(custom_content)
+            time_row.pack(pady=(2, 2))  # Center horizontally
             
-            ttk.Label(time_row, text="Time:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT)
+            ttk.Label(time_row, text="Time:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
             
-            # Start time
-            ttk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.start_hour_var, 
+            # Start time - slightly bigger
+            ttk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.start_hour_var,  # Increased from 2 to 3
                        format="%02.0f").pack(side=tk.LEFT, padx=1)
-            ttk.Label(time_row, text=":").pack(side=tk.LEFT)
-            ttk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.start_min_var, 
-                       format="%02.0f").pack(side=tk.LEFT, padx=(0, 5))
+            ttk.Label(time_row, text=":", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
+            ttk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.start_min_var,  # Increased from 2 to 3
+                       format="%02.0f").pack(side=tk.LEFT, padx=(0, 3))
             
-            ttk.Label(time_row, text="to").pack(side=tk.LEFT, padx=3)
+            ttk.Label(time_row, text="to", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=1)
             
-            # End time
-            ttk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.end_hour_var, 
+            # End time - slightly bigger
+            ttk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.end_hour_var,  # Increased from 2 to 3
                        format="%02.0f").pack(side=tk.LEFT, padx=1)
-            ttk.Label(time_row, text=":").pack(side=tk.LEFT)
-            ttk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.end_min_var, 
+            ttk.Label(time_row, text=":", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
+            ttk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.end_min_var,  # Increased from 2 to 3
                        format="%02.0f").pack(side=tk.LEFT)
             
-            # GO button
-            go_btn = create_action_button(custom_section, "Apply Custom Range", 
+            # Apply button - centered
+            go_btn = create_action_button(custom_content, "Apply", 
                                          self._apply_custom_date_filter,
-                                         button_type='primary', width=15)
-            go_btn.pack(fill=tk.X, pady=SPACING['small'])
+                                         button_type='primary', width=10)
+            if go_btn:
+                go_btn.pack(pady=(SPACING['small']//2, 0))  # Removed fill=tk.X to center
         else:
-            # Fallback text entries
-            date_row = ttk.Frame(custom_section)
-            date_row.pack(fill=tk.X, pady=(0, SPACING['small']))
+            # Fallback text entries - also centered and wider
+            date_inputs = ttk.Frame(custom_content)
+            date_inputs.pack(pady=(0, 2))  # Center horizontally
             
-            ttk.Label(date_row, text="From (YYYY-MM-DD):").pack(anchor=tk.W)
-            self.start_date_entry = ttk.Entry(date_row, textvariable=self.custom_date_start_var, width=12)
-            self.start_date_entry.pack(fill=tk.X, pady=1)
+            ttk.Label(date_inputs, text="From:", font=('TkDefaultFont', 8)).pack(anchor=tk.CENTER)
+            self.start_date_entry = ttk.Entry(date_inputs, textvariable=self.custom_date_start_var, width=15)  # Increased from 12
+            self.start_date_entry.pack(pady=1)
             
-            ttk.Label(date_row, text="To (YYYY-MM-DD):").pack(anchor=tk.W, pady=(5, 0))
-            self.end_date_entry = ttk.Entry(date_row, textvariable=self.custom_date_end_var, width=12)
-            self.end_date_entry.pack(fill=tk.X, pady=1)
+            ttk.Label(date_inputs, text="To:", font=('TkDefaultFont', 8)).pack(anchor=tk.CENTER)
+            self.end_date_entry = ttk.Entry(date_inputs, textvariable=self.custom_date_end_var, width=15)  # Increased from 12
+            self.end_date_entry.pack(pady=1)
             
-            go_btn = create_action_button(custom_section, "Apply Custom Range", 
+            go_btn = create_action_button(custom_content, "Apply", 
                                          self._apply_custom_date_filter_text,
-                                         button_type='primary', width=15)
-            go_btn.pack(fill=tk.X, pady=SPACING['small'])
+                                         button_type='primary', width=10)
+            if go_btn:
+                go_btn.pack(pady=(SPACING['small']//2, 0))  # Removed fill=tk.X to center
         
-        # Section 4: Saved Searches (Far Right) - Enhanced with more options
+        # Section 4: Saved Searches (Column 3) - CENTER ALIGNED
         saved_section = ttk.LabelFrame(date_container, text="💾 Saved Searches", 
-                                      padding=SPACING['medium'])
-        saved_section.grid(row=0, column=3, sticky="nsew", padx=(SPACING['small'], 0))
+                                      padding=internal_padding)
+        saved_section.grid(row=0, column=3, sticky="nsew", padx=(section_padding//2, 0))
         
-        # Saved Searches functionality
-        saved_label = ttk.Label(saved_section, text="Saved Searches:", font=('TkDefaultFont', 10, 'bold'))
-        saved_label.pack(anchor=tk.W, pady=(0, SPACING['small']))
+        # Saved content with consistent height and center alignment
+        saved_content = ttk.Frame(saved_section)
+        saved_content.pack(fill=tk.BOTH, expand=True)
         
-        self.saved_searches_combo = ttk.Combobox(saved_section, textvariable=self.saved_search_var, 
-                                                width=18, state="readonly")
-        self.saved_searches_combo.pack(fill=tk.X, pady=(0, SPACING['small']))
+        saved_label = ttk.Label(saved_content, text="Searches:", font=('TkDefaultFont', 9, 'bold'))
+        saved_label.pack(anchor=tk.CENTER, pady=(0, SPACING['small']//2))  # Changed to CENTER
+        
+        # Combobox - centered
+        combo_frame = ttk.Frame(saved_content)
+        combo_frame.pack(pady=(0, SPACING['small']//2))  # Center horizontally
+        
+        self.saved_searches_combo = ttk.Combobox(combo_frame, textvariable=self.saved_search_var, 
+                                                width=14, state="readonly", font=('TkDefaultFont', 8))  # Increased from 12 to 14
+        self.saved_searches_combo.pack()
         self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
         
-        # Main saved search buttons
-        saved_btn_frame = ttk.Frame(saved_section)
-        saved_btn_frame.pack(fill=tk.X)
+        # 2x3 button grid - centered
+        buttons_container = ttk.Frame(saved_content)
+        buttons_container.pack(expand=True)  # Center the button grid
         
-        load_btn = create_action_button(saved_btn_frame, "Load", self._load_saved_search, 
-                                       width=8, button_type='info_outline')
-        load_btn.pack(fill=tk.X, pady=(0, 2))
+        # Configure button grid for equal distribution
+        for i in range(3):
+            buttons_container.grid_columnconfigure(i, weight=1)
         
-        save_btn = create_action_button(saved_btn_frame, "Save", self._save_current_search, 
-                                       width=8, button_type='success_outline')
-        save_btn.pack(fill=tk.X, pady=2)
+        # Button definitions with shorter labels for space
+        button_configs = [
+            # Row 0
+            ("Load", self._load_saved_search, 'info_outline'),
+            ("Save", self._save_current_search, 'success_outline'),
+            ("Del", self._delete_saved_search, 'danger_outline'),
+            # Row 1
+            ("Export", self._export_saved_searches, 'secondary'),
+            ("Import", self._import_saved_searches, 'secondary'),
+            ("Clean", self._clean_corrupted_searches, 'warning')
+        ]
         
-        delete_btn = create_action_button(saved_btn_frame, "Delete", self._delete_saved_search, 
-                                         width=8, button_type='danger_outline')
-        delete_btn.pack(fill=tk.X, pady=(2, 0))
-        
-        # Separator
-        ttk.Separator(saved_section, orient='horizontal').pack(fill=tk.X, pady=SPACING['small'])
-        
-        # Additional management buttons
-        mgmt_btn_frame = ttk.Frame(saved_section)
-        mgmt_btn_frame.pack(fill=tk.X)
-        
-        export_btn = create_action_button(mgmt_btn_frame, "Export", self._export_saved_searches, 
-                                         width=8, button_type='secondary')
-        export_btn.pack(fill=tk.X, pady=(0, 1))
-        
-        import_btn = create_action_button(mgmt_btn_frame, "Import", self._import_saved_searches, 
-                                         width=8, button_type='secondary')
-        import_btn.pack(fill=tk.X, pady=1)
-        
-        clean_btn = create_action_button(mgmt_btn_frame, "Clean", self._clean_corrupted_searches, 
-                                        width=8, button_type='warning')
-        clean_btn.pack(fill=tk.X, pady=(1, 0))
+        for i, (text, command, btn_type) in enumerate(button_configs):
+            row = i // 3
+            col = i % 3
+            btn = create_action_button(buttons_container, text, command, 
+                                     width=5, button_type=btn_type)
+            if btn:
+                btn.grid(row=row, column=col, padx=1, pady=1, sticky="ew")
         
         # Update saved searches list
         self._update_saved_searches_list()
@@ -1670,6 +1688,7 @@ class SearchDashboardTab(ttk.Frame):
         # Ask for a name for the search
         search_name = tkinter.simpledialog.askstring(
             "Save Search", 
+ 
             "Enter a name for this search:",
             parent=self
         )
