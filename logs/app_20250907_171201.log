@@ -16,3 +16,10 @@
 2025-09-07 17:13:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: today
 2025-09-07 17:13:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
 2025-09-07 17:13:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-07 17:17:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-07 17:17:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 17:17:35.555867
+2025-09-07 17:17:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-07 17:17:39.122519
+2025-09-07 17:17:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match '2025_DFHW_110825_1' with AND logic
+2025-09-07 17:17:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: expired
+2025-09-07 17:17:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Expired tenders filter: 9766 records closed before 2025-09-07 17:17:46.714298
+2025-09-07 17:17:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match '2025_DFHW_110825_1' with AND logic

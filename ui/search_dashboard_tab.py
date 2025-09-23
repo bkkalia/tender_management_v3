@@ -13,6 +13,17 @@ import time as time_module  # Renamed to avoid conflict with datetime.time
 import re
 import tkinter.simpledialog
 
+# Try to import PIL for image creation
+try:
+    from PIL import Image, ImageDraw, ImageTk
+    HAS_PIL = True
+except ImportError:
+    Image = None
+    ImageDraw = None
+    ImageTk = None
+    HAS_PIL = False
+    print("Warning: PIL not available. URL icons will use text representation.")
+
 # Handle optional imports
 try:
     from tkcalendar import DateEntry  # For calendar picker
@@ -185,9 +196,13 @@ class SearchDashboardTab(ttk.Frame):
 
         # Initialize remote data loader
         self.remote_loader = RemoteDataLoader()
-        
+
         # Add UI variables for remote sources
         self.remote_urls: List[str] = []
+
+        # URL handling attributes
+        self.url_columns: List[str] = []
+        self.link_icons: Dict[str, tk.PhotoImage] = {}
 
         self._create_widgets()
         self._setup_treeview_bindings()
@@ -555,17 +570,17 @@ class SearchDashboardTab(ttk.Frame):
         section_padding = SPACING['small']
         internal_padding = (SPACING['small'], SPACING['medium'])
         
-        # Section 1: Status Filter (Column 0) - CENTER ALIGNED
+        # Section 1: Status Filter (Column 0)
         status_section = ttk.LabelFrame(date_container, text="📊 Status Filter", 
                                        padding=internal_padding)
         status_section.grid(row=0, column=0, sticky="nsew", padx=(0, section_padding//2))
         
-        # Status content with consistent height and center alignment
+        # Status content with consistent height
         status_content = ttk.Frame(status_section)
         status_content.pack(fill=tk.BOTH, expand=True)
         
         status_label = ttk.Label(status_content, text="Show tenders:", font=('TkDefaultFont', 9, 'bold'))
-        status_label.pack(anchor=tk.CENTER, pady=(0, SPACING['small']//2))  # Changed to CENTER
+        status_label.pack(anchor=tk.W, pady=(0, SPACING['small']//2))
         
         status_options = [
             ("All Records", "all"),
@@ -576,23 +591,23 @@ class SearchDashboardTab(ttk.Frame):
         for text, value in status_options:
             radio_btn = ttk.Radiobutton(status_content, text=text, variable=self.status_filter_var,
                                        value=value, command=lambda v=value: self._apply_status_filter(v))
-            radio_btn.pack(anchor=tk.CENTER, pady=1)  # Changed to CENTER
+            radio_btn.pack(anchor=tk.W, pady=1)
         
-        # Section 2: Time Range Filter (Column 1) - CENTER ALIGNED
+        # Section 2: Time Range Filter (Column 1)
         time_section = ttk.LabelFrame(date_container, text="📅 Time Range Filter", 
                                      padding=internal_padding)
         time_section.grid(row=0, column=1, sticky="nsew", padx=(section_padding//2, section_padding//2))
         
-        # Time content with consistent height and center alignment
+        # Time content with consistent height
         time_content = ttk.Frame(time_section)
         time_content.pack(fill=tk.BOTH, expand=True)
         
         quick_label = ttk.Label(time_content, text="Quick filters:", font=('TkDefaultFont', 9, 'bold'))
-        quick_label.pack(anchor=tk.CENTER, pady=(0, SPACING['small']//2))  # Changed to CENTER
+        quick_label.pack(anchor=tk.W, pady=(0, SPACING['small']//2))
         
-        # Time filter buttons in compact 2x2 grid - centered
+        # Time filter buttons in compact 2x2 grid
         button_grid = ttk.Frame(time_content)
-        button_grid.pack(expand=True)  # Center the grid itself
+        button_grid.pack(fill=tk.X, expand=True)
         
         # Configure button grid for equal distribution
         button_grid.grid_columnconfigure(0, weight=1)
@@ -615,114 +630,111 @@ class SearchDashboardTab(ttk.Frame):
                 btn.grid(row=row, column=col, padx=1, pady=1, sticky="ew")
                 self.date_filter_buttons[preset_key] = btn
         
-        # Reset button below the grid - centered
+        # Reset button below the grid
         reset_btn = create_action_button(time_content, "🔄 Reset", self._reset_filters, 
                                         button_type='danger', width=12)
         if reset_btn:
-            reset_btn.pack(pady=(SPACING['small']//2, 0))  # Removed fill=tk.X to center
+            reset_btn.pack(fill=tk.X, pady=(SPACING['small']//2, 0))
         
-        # Section 3: Custom Date Range (Column 2) - CENTER ALIGNED
+        # Section 3: Custom Date Range (Column 2)
         custom_section = ttk.LabelFrame(date_container, text="🗓️ Custom Date Range", 
                                        padding=internal_padding)
         custom_section.grid(row=0, column=2, sticky="nsew", padx=(section_padding//2, section_padding//2))
         
-        # Custom content with consistent height and center alignment
+        # Custom content with consistent height
         custom_content = ttk.Frame(custom_section)
         custom_content.pack(fill=tk.BOTH, expand=True)
         
         custom_label = ttk.Label(custom_content, text="Date Range:", font=('TkDefaultFont', 9, 'bold'))
-        custom_label.pack(anchor=tk.CENTER, pady=(0, SPACING['small']//2))  # Changed to CENTER
+        custom_label.pack(anchor=tk.W, pady=(0, SPACING['small']//2))
         
         if HAS_TKCALENDAR and DateEntry is not None:
-            # Date picker layout - centered and wider
+            # Compact date picker layout
             date_row = ttk.Frame(custom_content)
-            date_row.pack(pady=(0, 2))  # Center horizontally
+            date_row.pack(fill=tk.X, pady=(0, 2))
             
             ttk.Label(date_row, text="From:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
-            self.start_date_picker = DateEntry(date_row, width=12,  # Increased from 8 to 12
+            self.start_date_picker = DateEntry(date_row, width=8,
                                               background=COLORS.get('primary', 'blue'),
                                               foreground='white', borderwidth=1,
                                               date_pattern='yyyy-mm-dd')
-            self.start_date_picker.pack(side=tk.LEFT, padx=(2, 6))
+            self.start_date_picker.pack(side=tk.LEFT, padx=(2, 4))
             
             ttk.Label(date_row, text="To:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
-            self.end_date_picker = DateEntry(date_row, width=12,  # Increased from 8 to 12
+            self.end_date_picker = DateEntry(date_row, width=8,
                                             background=COLORS.get('primary', 'blue'),
                                             foreground='white', borderwidth=1,
                                             date_pattern='yyyy-mm-dd')
             self.end_date_picker.pack(side=tk.LEFT, padx=2)
             
-            # Time row - centered
+            # Compact time row
             time_row = ttk.Frame(custom_content)
-            time_row.pack(pady=(2, 2))  # Center horizontally
+            time_row.pack(fill=tk.X, pady=(2, 2))
             
             ttk.Label(time_row, text="Time:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
             
-            # Start time - slightly bigger
-            ttk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.start_hour_var,  # Increased from 2 to 3
+            # Start time - more compact
+            ttk.Spinbox(time_row, from_=0, to=23, width=2, textvariable=self.start_hour_var, 
                        format="%02.0f").pack(side=tk.LEFT, padx=1)
             ttk.Label(time_row, text=":", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
-            ttk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.start_min_var,  # Increased from 2 to 3
+            ttk.Spinbox(time_row, from_=0, to=59, width=2, textvariable=self.start_min_var, 
                        format="%02.0f").pack(side=tk.LEFT, padx=(0, 3))
             
             ttk.Label(time_row, text="to", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=1)
             
-            # End time - slightly bigger
-            ttk.Spinbox(time_row, from_=0, to=23, width=3, textvariable=self.end_hour_var,  # Increased from 2 to 3
+            # End time - more compact
+            ttk.Spinbox(time_row, from_=0, to=23, width=2, textvariable=self.end_hour_var, 
                        format="%02.0f").pack(side=tk.LEFT, padx=1)
             ttk.Label(time_row, text=":", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
-            ttk.Spinbox(time_row, from_=0, to=59, width=3, textvariable=self.end_min_var,  # Increased from 2 to 3
+            ttk.Spinbox(time_row, from_=0, to=59, width=2, textvariable=self.end_min_var, 
                        format="%02.0f").pack(side=tk.LEFT)
             
-            # Apply button - centered
+            # Apply button
             go_btn = create_action_button(custom_content, "Apply", 
                                          self._apply_custom_date_filter,
                                          button_type='primary', width=10)
             if go_btn:
-                go_btn.pack(pady=(SPACING['small']//2, 0))  # Removed fill=tk.X to center
+                go_btn.pack(fill=tk.X, pady=(SPACING['small']//2, 0))
         else:
-            # Fallback text entries - also centered and wider
+            # Fallback text entries - also compact
             date_inputs = ttk.Frame(custom_content)
-            date_inputs.pack(pady=(0, 2))  # Center horizontally
+            date_inputs.pack(fill=tk.X, pady=(0, 2))
             
-            ttk.Label(date_inputs, text="From:", font=('TkDefaultFont', 8)).pack(anchor=tk.CENTER)
-            self.start_date_entry = ttk.Entry(date_inputs, textvariable=self.custom_date_start_var, width=15)  # Increased from 12
-            self.start_date_entry.pack(pady=1)
+            ttk.Label(date_inputs, text="From:", font=('TkDefaultFont', 8)).pack(anchor=tk.W)
+            self.start_date_entry = ttk.Entry(date_inputs, textvariable=self.custom_date_start_var, width=12)
+            self.start_date_entry.pack(fill=tk.X, pady=1)
             
-            ttk.Label(date_inputs, text="To:", font=('TkDefaultFont', 8)).pack(anchor=tk.CENTER)
-            self.end_date_entry = ttk.Entry(date_inputs, textvariable=self.custom_date_end_var, width=15)  # Increased from 12
-            self.end_date_entry.pack(pady=1)
+            ttk.Label(date_inputs, text="To:", font=('TkDefaultFont', 8)).pack(anchor=tk.W)
+            self.end_date_entry = ttk.Entry(date_inputs, textvariable=self.custom_date_end_var, width=12)
+            self.end_date_entry.pack(fill=tk.X, pady=1)
             
             go_btn = create_action_button(custom_content, "Apply", 
                                          self._apply_custom_date_filter_text,
                                          button_type='primary', width=10)
             if go_btn:
-                go_btn.pack(pady=(SPACING['small']//2, 0))  # Removed fill=tk.X to center
+                go_btn.pack(fill=tk.X, pady=(SPACING['small']//2, 0))
         
-        # Section 4: Saved Searches (Column 3) - CENTER ALIGNED
+        # Section 4: Saved Searches (Column 3)
         saved_section = ttk.LabelFrame(date_container, text="💾 Saved Searches", 
                                       padding=internal_padding)
         saved_section.grid(row=0, column=3, sticky="nsew", padx=(section_padding//2, 0))
         
-        # Saved content with consistent height and center alignment
+        # Saved content with consistent height
         saved_content = ttk.Frame(saved_section)
         saved_content.pack(fill=tk.BOTH, expand=True)
         
         saved_label = ttk.Label(saved_content, text="Searches:", font=('TkDefaultFont', 9, 'bold'))
-        saved_label.pack(anchor=tk.CENTER, pady=(0, SPACING['small']//2))  # Changed to CENTER
+        saved_label.pack(anchor=tk.W, pady=(0, SPACING['small']//2))
         
-        # Combobox - centered
-        combo_frame = ttk.Frame(saved_content)
-        combo_frame.pack(pady=(0, SPACING['small']//2))  # Center horizontally
-        
-        self.saved_searches_combo = ttk.Combobox(combo_frame, textvariable=self.saved_search_var, 
-                                                width=14, state="readonly", font=('TkDefaultFont', 8))  # Increased from 12 to 14
-        self.saved_searches_combo.pack()
+        # Compact combobox
+        self.saved_searches_combo = ttk.Combobox(saved_content, textvariable=self.saved_search_var, 
+                                                width=12, state="readonly", font=('TkDefaultFont', 8))
+        self.saved_searches_combo.pack(fill=tk.X, pady=(0, SPACING['small']//2))
         self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
         
-        # 2x3 button grid - centered
+        # Compact 2x3 button grid
         buttons_container = ttk.Frame(saved_content)
-        buttons_container.pack(expand=True)  # Center the button grid
+        buttons_container.pack(fill=tk.X, expand=True)
         
         # Configure button grid for equal distribution
         for i in range(3):
@@ -754,6 +766,49 @@ class SearchDashboardTab(ttk.Frame):
         # Apply default Live filter
         self._apply_status_filter("live")
 
+    def _create_link_icon(self):
+        """Create a link icon image for URL display."""
+        if not HAS_PIL or Image is None or ImageDraw is None or ImageTk is None:
+            # Return None if PIL is not available - will use text fallback
+            return None
+
+        try:
+            # Create a simple link icon (chain link)
+            size = (16, 16)
+            image = Image.new('RGBA', size, (255, 255, 255, 0))
+            draw = ImageDraw.Draw(image)
+
+            # Draw a simple chain link
+            # Left loop
+            draw.arc([2, 2, 10, 10], 45, 315, fill='#1976d2', width=2)
+            # Right loop
+            draw.arc([6, 6, 14, 14], 225, 135, fill='#1976d2', width=2)
+            # Connecting lines
+            draw.line([6, 4, 10, 8], fill='#1976d2', width=2)
+            draw.line([10, 4, 6, 8], fill='#1976d2', width=2)
+
+            # Convert to PhotoImage
+            return ImageTk.PhotoImage(image)
+        except Exception as e:
+            self.logger.error(f"Error creating link icon: {e}")
+            return None
+
+    def _detect_url_columns(self, df):
+        """Detect columns that contain URLs."""
+        if df is None or df.empty or not hasattr(df, 'columns'):
+            return []
+
+        url_columns = []
+        url_keywords = ['url', 'link', 'website', 'site', 'http', 'web']
+
+        for col in df.columns:
+            col_lower = str(col).lower()
+            if any(keyword in col_lower for keyword in url_keywords):
+                url_columns.append(col)
+
+        self.logger.info(f"Detected URL columns: {url_columns}")
+        return url_columns
+
     def _refresh_tree_data(self):
         """Refresh the treeview with current filtered data."""
         if self.tree is None:
@@ -778,18 +833,28 @@ class SearchDashboardTab(ttk.Frame):
 
         df = self.data_processor.filtered_data
 
+        # Detect URL columns
+        self.url_columns = self._detect_url_columns(df)
+
+        # Create link icon if needed
+        if self.url_columns and not hasattr(self, 'link_icon'):
+            self.link_icon = self._create_link_icon()
+
         # Configure columns - add safety check
         try:
             cols = df.columns.tolist() if hasattr(df, 'columns') and df.columns is not None else []
             if not cols:
                 self.results_count_var.set("No columns to display")
                 return
-                
+
             self.tree["columns"] = cols
 
             for col in cols:
                 width = 100
-                if any(kw in col.lower() for kw in ['title', 'description', 'summary']):
+                if col in self.url_columns:
+                    # URL columns can be narrower since we'll show an icon
+                    width = 80
+                elif any(kw in col.lower() for kw in ['title', 'description', 'summary']):
                     width = 300
                 elif any(kw in col.lower() for kw in ['department', 'ministry', 'agency']):
                     width = 200
@@ -801,11 +866,41 @@ class SearchDashboardTab(ttk.Frame):
             # Insert data rows - limit for performance
             max_rows = 1000
             display_df = df.head(max_rows) if len(df) > max_rows else df
-            
+
             for _, row in display_df.iterrows():
                 try:
-                    values = [str(val) if pd.notna(val) else "" for val in row]
-                    self.tree.insert("", "end", values=values)
+                    values = []
+                    tags = []
+
+                    for i, col in enumerate(cols):
+                        val = row[col]
+                        display_val = str(val) if pd.notna(val) else ""
+
+                        # Handle URL columns
+                        if col in self.url_columns and display_val:
+                            if display_val.startswith(('http://', 'https://', 'www.')):
+                                # Store URL in tags for double-click functionality
+                                tags.append(f"url_{i}_{val}")
+                                # Show chain link icon instead of text
+                                if hasattr(self, 'link_icon') and self.link_icon:
+                                    display_val = ""  # Empty text, will show icon
+                                    # Note: Tkinter Treeview doesn't directly support images in cells
+                                    # We'll use a text representation that looks like a link
+                                    display_val = "🔗"  # Chain link emoji as visual indicator
+                                else:
+                                    # Fallback: show shortened URL
+                                    if len(display_val) > 25:
+                                        display_val = display_val[:22] + "..."
+                            else:
+                                tags.append(f"url_{i}_{display_val}")
+
+                        values.append(display_val)
+
+                    # Insert row with tags
+                    item_id = self.tree.insert("", "end", values=values)
+                    if tags:
+                        self.tree.item(item_id, tags=tags)
+
                 except Exception as e:
                     self.logger.error(f"Error inserting row: {e}")
                     continue
@@ -815,7 +910,7 @@ class SearchDashboardTab(ttk.Frame):
                 self.results_count_var.set(f"Showing first {max_rows} of {total_records} records (limit for performance)")
             else:
                 self.results_count_var.set(f"Showing all {total_records} records")
-                
+
         except Exception as e:
             self.logger.error(f"Error refreshing tree data: {e}")
             self.results_count_var.set("Error displaying data")
@@ -1029,8 +1124,27 @@ class SearchDashboardTab(ttk.Frame):
     def _create_context_menu(self):
         """Create context menu for treeview."""
         menu = tk.Menu(self, tearoff=0)
-        menu.add_command(label="Copy Row", command=lambda: self._copy_row(self.tree.selection()[0]) if self.tree and self.tree.selection() else None)
-        menu.add_command(label="Show Details", command=lambda: self._show_row_details(self.tree.selection()[0]) if self.tree and self.tree.selection() else None)
+
+        # Get current selection
+        if not self.tree or not self.tree.selection():
+            return menu
+
+        item_id = self.tree.selection()[0]
+        values = self.tree.item(item_id, "values") or []
+
+        # Copy options
+        menu.add_command(label="Copy Row", command=lambda: self._copy_row(item_id))
+        menu.add_command(label="Copy Cell", command=lambda: self._copy_cell(item_id))
+        menu.add_separator()
+
+        # Show details
+        menu.add_command(label="Show Details", command=lambda: self._show_row_details(item_id))
+
+        # Add to calendar option (if applicable)
+        if self._can_add_to_calendar(values):
+            menu.add_separator()
+            menu.add_command(label="Add to Calendar", command=lambda: self._add_to_calendar(item_id))
+
         return menu
 
     def _export_to_excel(self):
@@ -1102,11 +1216,63 @@ class SearchDashboardTab(ttk.Frame):
             messagebox.showerror("Export Error", f"Failed to export to CSV: {str(e)}")
 
     def _on_row_double_click(self, event):
-        """Handle double-click on a treeview row to show details."""
+        """Handle double-click on a treeview row to show details or open URLs."""
         try:
-            if self.tree and self.tree.selection():
-                item = self.tree.selection()[0]  # Get selected item
+            if not self.tree:
+                return
+
+            # Get the clicked item and column
+            item = self.tree.identify_row(event.y)
+            if not item:
+                return
+
+            column = self.tree.identify_column(event.x)
+            if not column:
+                return
+
+            # Extract column index from column identifier (e.g., '#1' -> 0)
+            try:
+                col_index = int(column[1:]) - 1  # #1 -> 0, #2 -> 1, etc.
+            except (ValueError, IndexError):
+                col_index = -1
+
+            # Get column names to check if this is a URL column
+            columns = self.tree['columns']
+            if col_index >= 0 and col_index < len(columns):
+                col_name = columns[col_index]
+
+                # Check if this column is a URL column
+                if col_name in self.url_columns:
+                    # Get the tags for this item
+                    tags = self.tree.item(item, 'tags') or []
+
+                    # Look for URL tag for this column
+                    url = None
+                    for tag in tags:
+                        if isinstance(tag, str) and tag.startswith(f"url_{col_index}_"):
+                            url = tag[len(f"url_{col_index}_"):]
+                            break
+
+                    # If we found a URL, open it
+                    if url and url.startswith(('http://', 'https://', 'www.')):
+                        try:
+                            # Ensure it has http/https prefix
+                            if url.startswith('www.'):
+                                url = 'http://' + url
+
+                            webbrowser.open_new_tab(url)
+                            self.logger.info(f"Opened URL: {url}")
+                            return  # Don't show details window
+                        except Exception as e:
+                            self.logger.error(f"Failed to open URL {url}: {e}")
+                            messagebox.showerror("Open URL Failed", f"Could not open URL: {url}\nError: {e}")
+                            return
+
+            # Default behavior: show row details
+            if self.tree.selection():
+                item = self.tree.selection()[0]
                 self._show_row_details(item)
+
         except Exception as e:
             self.logger.error(f"Error on row double click: {e}")
 
@@ -1132,14 +1298,63 @@ class SearchDashboardTab(ttk.Frame):
                 if values:
                     # Create a tab-separated string
                     data = "\t".join(str(v) for v in values)
-                    
+
                     # Copy to clipboard
                     self.clipboard_clear()
                     self.clipboard_append(data)
-                    
+
                     messagebox.showinfo("Copy Successful", "Row data copied to clipboard.")
         except Exception as e:
             self.logger.error(f"Error copying row data: {e}")
+
+    def _copy_cell(self, item_id):
+        """Copy the selected cell's data to clipboard."""
+        try:
+            if self.tree and self.tree.selection():
+                # Get the focused cell
+                focused = self.tree.focus()
+                if focused:
+                    # Get column and item
+                    column = self.tree.identify_column(self.tree.winfo_pointerx() - self.tree.winfo_rootx())
+                    if column:
+                        col_index = int(column[1:]) - 1  # #1 -> 0, #2 -> 1, etc.
+                        values = self.tree.item(item_id, "values")
+                        if values and 0 <= col_index < len(values):
+                            cell_value = str(values[col_index])
+
+                            # Copy to clipboard
+                            self.clipboard_clear()
+                            self.clipboard_append(cell_value)
+
+                            messagebox.showinfo("Copy Successful", f"Cell data copied to clipboard:\n{cell_value}")
+        except Exception as e:
+            self.logger.error(f"Error copying cell data: {e}")
+
+    def _can_add_to_calendar(self, values):
+        """Check if the selected row can be added to calendar."""
+        # Check if we have date/time information
+        if not values:
+            return False
+
+        # Look for date/time columns in the data
+        try:
+            if hasattr(self.data_processor, 'filtered_data') and not self.data_processor.filtered_data.empty:
+                df = self.data_processor.filtered_data
+                # Check if any date-related columns exist
+                date_cols = [col for col in df.columns
+                           if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end', 'date', 'time'])]
+                return len(date_cols) > 0
+        except Exception:
+            pass
+
+        return False
+
+    def _add_to_calendar(self, item_id):
+        """Add the selected tender to calendar."""
+        try:
+            messagebox.showinfo("Calendar Integration", "Calendar integration is under development.\n\nThis feature will allow adding tender deadlines to your calendar application.")
+        except Exception as e:
+            self.logger.error(f"Error adding to calendar: {e}")
 
     def _show_row_details(self, item_id):
         """Show detailed information about the selected row in a new window."""
@@ -1688,7 +1903,6 @@ class SearchDashboardTab(ttk.Frame):
         # Ask for a name for the search
         search_name = tkinter.simpledialog.askstring(
             "Save Search", 
- 
             "Enter a name for this search:",
             parent=self
         )

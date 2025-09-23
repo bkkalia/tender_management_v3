@@ -1,0 +1,144 @@
+2025-09-23 18:41:24 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250923_184124.log
+2025-09-23 18:41:24 - root - INFO - Application starting...
+2025-09-23 18:41:24 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-23 18:41:24 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-23 18:41:24 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-23 18:41:24 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-23 18:41:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-23 18:41:25 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-23 18:41:25 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-23 18:41:25 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-23 18:41:25 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-23 18:41:25 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-23 18:41:25 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-23 18:41:25 - ui.main_window - INFO - Main application initialized
+2025-09-23 18:41:25 - root - INFO - Main window initialized
+2025-09-23 18:41:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:41:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-23 18:41:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:41:43.003997
+2025-09-23 18:41:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:46:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:46:01.650815
+2025-09-23 18:46:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:46:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:46:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:46:02.189298
+2025-09-23 18:46:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:46:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:46:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_30_days
+2025-09-23 18:46:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:46:20.028226
+2025-09-23 18:46:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:46:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_30_days) with status (live): 661 records
+2025-09-23 18:46:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:46:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:46:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied custom date range filter: 2025-09-23 00:00:00 to 2025-09-23 23:59:00, 166 records matching
+2025-09-23 18:57:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:57:27.269151
+2025-09-23 18:57:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:57:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 5 records match 'chint' with AND logic
+2025-09-23 18:57:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:57:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:57:27.990469
+2025-09-23 18:57:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:57:28 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 5 records match 'chintpu' with AND logic
+2025-09-23 18:57:28 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:57:28 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:57:28.363531
+2025-09-23 18:57:28 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:57:28 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 5 records match 'chintpur' with AND logic
+2025-09-23 18:57:28 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:57:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:57:37.447429
+2025-09-23 18:57:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:57:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 5 records match 'chintpur,' with AND logic
+2025-09-23 18:57:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:57:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:57:37.839755
+2025-09-23 18:57:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:57:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 5 records match 'chintpur,' with AND logic
+2025-09-23 18:57:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:57:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:57:39.135897
+2025-09-23 18:57:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:57:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 5 records match 'chintpur, roa' with AND logic
+2025-09-23 18:57:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:57:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:57:39.678922
+2025-09-23 18:57:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:57:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 5 records match 'chintpur, road' with AND logic
+2025-09-23 18:57:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:57:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:57:48.774783
+2025-09-23 18:57:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:57:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'chintpur, br' with AND logic
+2025-09-23 18:57:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:57:49 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:57:49.771638
+2025-09-23 18:57:49 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:57:49 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'chintpur, breat' with AND logic
+2025-09-23 18:57:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:57:50.087571
+2025-09-23 18:57:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:57:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'chintpur, breat' with AND logic
+2025-09-23 18:57:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:57:57.402944
+2025-09-23 18:57:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:57:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'chintpur, brest' with AND logic
+2025-09-23 18:58:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:58:01.819994
+2025-09-23 18:58:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 661 records match 'PWD' with OR logic
+2025-09-23 18:58:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'chintpur, breast' with AND logic
+2025-09-23 18:58:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:58:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:58:13.526643
+2025-09-23 18:58:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 1142 records match 'PWD, i' with OR logic
+2025-09-23 18:58:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'chintpur, breast' with AND logic
+2025-09-23 18:58:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:58:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:58:13.821828
+2025-09-23 18:58:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 1142 records match 'PWD, i' with OR logic
+2025-09-23 18:58:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'chintpur, breast' with AND logic
+2025-09-23 18:58:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:58:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:58:14.306819
+2025-09-23 18:58:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 843 records match 'PWD, irr' with OR logic
+2025-09-23 18:58:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'chintpur, breast' with AND logic
+2025-09-23 18:58:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:58:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:58:14.962964
+2025-09-23 18:58:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 843 records match 'PWD, irri' with OR logic
+2025-09-23 18:58:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'chintpur, breast' with AND logic
+2025-09-23 18:58:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:58:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:58:18.834965
+2025-09-23 18:58:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 843 records match 'PWD, irri' with OR logic
+2025-09-23 18:58:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 5 records match 'chintpur,' with AND logic
+2025-09-23 18:58:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:58:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:58:20.075679
+2025-09-23 18:58:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 843 records match 'PWD, irri' with OR logic
+2025-09-23 18:58:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 5 records match 'chintpur' with AND logic
+2025-09-23 18:58:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:58:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:58:26.290657
+2025-09-23 18:58:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 843 records match 'PWD, irri' with OR logic
+2025-09-23 18:58:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 843 records match 'a' with AND logic
+2025-09-23 18:58:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:58:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:58:26.905811
+2025-09-23 18:58:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 843 records match 'PWD, irri' with OR logic
+2025-09-23 18:58:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 38 records match 'amb' with AND logic
+2025-09-23 18:58:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:58:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: today
+2025-09-23 18:58:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:58:39.139907
+2025-09-23 18:58:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 843 records match 'PWD, irri' with OR logic
+2025-09-23 18:58:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 38 records match 'amb' with AND logic
+2025-09-23 18:58:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (today) with status (live): 0 records
+2025-09-23 18:58:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_3_days
+2025-09-23 18:58:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:58:40.938038
+2025-09-23 18:58:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 843 records match 'PWD, irri' with OR logic
+2025-09-23 18:58:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 38 records match 'amb' with AND logic
+2025-09-23 18:58:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_3_days) with status (live): 18 records
+2025-09-23 18:58:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:58:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_7_days
+2025-09-23 18:58:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:58:43.115493
+2025-09-23 18:58:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 843 records match 'PWD, irri' with OR logic
+2025-09-23 18:58:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 38 records match 'amb' with AND logic
+2025-09-23 18:58:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_7_days) with status (live): 33 records
+2025-09-23 18:58:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 18:58:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_30_days
+2025-09-23 18:58:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 18:58:44.721791
+2025-09-23 18:58:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 843 records match 'PWD, irri' with OR logic
+2025-09-23 18:58:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 38 records match 'amb' with AND logic
+2025-09-23 18:58:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_30_days) with status (live): 38 records
+2025-09-23 18:58:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:04:32 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=view&page=WebTenderStatusLists&service=direct&sp=S01cwxuq0wjZMgpYUlSHYhQ%3D%3D
+2025-09-23 19:04:36 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=%24DirectLink&page=FrontEndViewTender&service=direct&sp=S01cwxuq0wjZMgpYUlSHYhQ%3D%3D
+2025-09-23 19:09:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=%24DirectLink&page=FrontEndViewTender&service=direct&sp=S01cwxuq0wjZMgpYUlSHYhQ%3D%3D
+2025-09-23 19:13:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=%24DirectLink&page=FrontEndViewTender&service=direct&sp=SZfe22DI9FLSpIKBeM5s8Ig%3D%3D
+2025-09-23 19:16:06 - ui.calendar_tab.CalendarTab - INFO - Date selected: 9/30/25
+2025-09-23 19:16:06 - ui.calendar_tab.CalendarTab - INFO - Date selected: 10/1/25
+2025-09-23 19:16:06 - ui.calendar_tab.CalendarTab - INFO - Date selected: 10/30/25
+2025-09-23 19:16:07 - ui.calendar_tab.CalendarTab - INFO - Date selected: 10/31/25
+2025-09-23 19:16:07 - ui.calendar_tab.CalendarTab - INFO - Date selected: 11/7/25
+2025-09-23 19:16:22 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-09-23 19:16:24 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-23 19:16:34 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
