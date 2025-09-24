@@ -934,7 +934,7 @@ class SearchDashboardTab(ttk.Frame):
         """Update the dashboard metrics."""
         if not hasattr(self, 'dashboard_labels') or not self.dashboard_labels:
             return
-        
+
         try:
             # Default values
             metrics = {
@@ -949,41 +949,82 @@ class SearchDashboardTab(ttk.Frame):
                 "closing_next_7_days": 0,
                 "data_sources": 0
             }
-            
+
             # Calculate metrics if data is available
-            if (hasattr(self.data_processor, 'raw_data') and 
-                self.data_processor.raw_data is not None and 
+            if (hasattr(self.data_processor, 'raw_data') and
+                self.data_processor.raw_data is not None and
                 not self.data_processor.raw_data.empty):
-                
+
                 raw_data = self.data_processor.raw_data
                 metrics["total_tenders"] = len(raw_data)
-                
+
                 # Safe column access
                 if hasattr(raw_data, 'columns') and raw_data.columns is not None:
                     # Department metrics
-                    dept_cols = [col for col in raw_data.columns 
+                    dept_cols = [col for col in raw_data.columns
                                if any(kw in col.lower() for kw in ['department', 'dept', 'agency', 'organisation'])]
                     if dept_cols:
                         try:
                             metrics["unique_departments"] = raw_data[dept_cols[0]].nunique()
                         except Exception:
                             metrics["unique_departments"] = 0
+
+                    # Date-based metrics - find closing date columns
+                    date_cols = [col for col in raw_data.columns
+                               if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+
+                    if date_cols:
+                        # Use current datetime for precise time-aware filtering
+                        current_datetime = pd.Timestamp.now()
+                        today_start = current_datetime.normalize()  # Start of today (00:00:00)
+                        today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)  # End of today (23:59:59)
+
+                        for col in date_cols:
+                            # Skip columns that aren't datetime type
+                            if not pd.api.types.is_datetime64_dtype(raw_data[col]):
+                                continue
+
+                            # Get non-NA values for this column
+                            valid_dates = raw_data[~raw_data[col].isna()]
+                            if valid_dates.empty:
+                                continue
+
+                            # Live tenders - closing datetime is in the future
+                            metrics["live_tenders"] += (valid_dates[col] > current_datetime).sum()
+
+                            # Expired tenders - closing datetime has passed
+                            metrics["expired_tenders"] += (valid_dates[col] < current_datetime).sum()
+
+                            # Closing today - from current time until end of today
+                            metrics["closing_today"] += ((valid_dates[col] >= current_datetime) &
+                                                        (valid_dates[col] <= today_end)).sum()
+
+                            # Next 3 days - from current time to end of 3 days from today
+                            end_3_days = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
+                            metrics["closing_next_3_days"] += ((valid_dates[col] >= current_datetime) &
+                                                             (valid_dates[col] <= end_3_days)).sum()
+
+                            # Next 7 days - from current time to end of 7 days from today
+                            end_7_days = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
+                            metrics["closing_next_7_days"] += ((valid_dates[col] >= current_datetime) &
+                                                             (valid_dates[col] <= end_7_days)).sum()
+
             # Filtered data metrics
-            if (hasattr(self.data_processor, 'filtered_data') and 
-                self.data_processor.filtered_data is not None and 
+            if (hasattr(self.data_processor, 'filtered_data') and
+                self.data_processor.filtered_data is not None and
                 not self.data_processor.filtered_data.empty):
-                
+
                 filtered_data = self.data_processor.filtered_data
                 metrics["filtered_tenders"] = len(filtered_data)
-                
+
                 # Calculate match percentage
                 if metrics["total_tenders"] > 0:
                     match_pct = (len(filtered_data) / metrics["total_tenders"]) * 100
                     metrics["match_percentage"] = f"{match_pct:.1f}%"
-            
+
             # Data sources count
             metrics["data_sources"] = len(self.loaded_files) + len(self.remote_urls)
-            
+
             # Update dashboard labels safely
             for key, value in metrics.items():
                 if key in self.dashboard_labels and self.dashboard_labels[key] is not None:
@@ -991,7 +1032,7 @@ class SearchDashboardTab(ttk.Frame):
                         self.dashboard_labels[key].configure(text=str(value))
                     except Exception as e:
                         self.logger.error(f"Error updating dashboard label {key}: {e}")
-        
+
         except Exception as e:
             self.logger.error(f"Error updating dashboard: {e}")
 

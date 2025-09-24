@@ -152,3 +152,9 @@ Output file: hptenders_consolidated_master.xlsx
 2025-09-24 19:49:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1374 records closing after 2025-09-24 19:49:34.190751
 2025-09-24 19:49:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_30_days) with status (live): 1374 records
 2025-09-24 19:49:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-24 19:52:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_3_days
+2025-09-24 19:52:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1374 records closing after 2025-09-24 19:52:52.589697
+2025-09-24 19:52:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_3_days) with status (live): 583 records
+2025-09-24 19:52:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-24 20:05:49 - ui.main_window - INFO - Application closing
+2025-09-24 20:05:49 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
