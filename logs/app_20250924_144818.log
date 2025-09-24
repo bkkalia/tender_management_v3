@@ -1,0 +1,182 @@
+2025-09-24 14:48:18 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250924_144818.log
+2025-09-24 14:48:18 - root - INFO - Application starting...
+2025-09-24 14:48:18 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-24 14:48:18 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-24 14:48:18 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-24 14:48:18 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-24 14:48:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-24 14:48:19 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-24 14:48:19 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-24 14:48:19 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-24 14:48:19 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-24 14:48:19 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-24 14:48:19 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-24 14:48:19 - ui.main_window - INFO - Main application initialized
+2025-09-24 14:48:19 - root - INFO - Main window initialized
+2025-09-24 14:48:29 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Added new files for merging: ('H:/My Drive/CRM T84/0 Live App/Search data/merged_data/hptenders_gov_in_consolidated_master.xlsx',)
+2025-09-24 14:48:33 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Starting batch merge process via UI. Output Folder='H:/My Drive/CRM T84/0 Live App/Search data/merged_data'
+2025-09-24 14:48:33 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Processing portal hptenders with 1 files
+2025-09-24 14:48:33 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Sorted 1 files for portal 'hptenders', oldest first.
+2025-09-24 14:48:33 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Portal hptenders: Processing files in this order:
+  1. hptenders_gov_in_consolidated_master.xlsx
+
+2025-09-24 14:48:33 - core.file_merger - INFO - No existing consolidated file found for portal 'hptenders'. Creating new master.
+2025-09-24 14:48:35 - core.file_merger - INFO - Loaded 13809 records from hptenders_gov_in_consolidated_master.xlsx
+2025-09-24 14:48:35 - core.file_merger - INFO - Determining unique key from combined data...
+2025-09-24 14:48:35 - core.file_merger - WARNING - No suitable primary key found from preferred list: []
+2025-09-24 14:48:35 - core.file_merger - WARNING - Attempting to find a column with 'ID' in the name...
+2025-09-24 14:48:35 - core.file_merger - INFO - Found alternate ID column: 'Title and Ref.No./Tender ID'
+2025-09-24 14:48:35 - core.file_merger - INFO - Merge for portal 'hptenders': 13809 total input records -> 13809 unique records (removed 0 duplicates)
+2025-09-24 14:48:36 - core.file_merger - INFO - Successfully merged 1 files for portal 'hptenders'.
+Summary: 13809 total records in merged file
+• 13809 new records added
+• 0 existing records updated with newer data
+• 0 duplicate records resolved
+Output file: hptenders_consolidated_master.xlsx
+2025-09-24 14:49:05 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Batch merge process completed. Success: 1, Fail: 0
+2025-09-24 14:49:44 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Cleared all files from merge list.
+2025-09-24 14:49:51 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Added new files for merging: ('H:/My Drive/CRM T84/0 Live App/Search data/input_excel_files/hptenders_gov_in_tenders_20250924_105656.xlsx',)
+2025-09-24 14:49:54 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Starting batch merge process via UI. Output Folder='H:/My Drive/CRM T84/0 Live App/Search data/merged_data'
+2025-09-24 14:49:54 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Processing portal hptenders_gov_in with 1 files
+2025-09-24 14:49:54 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Sorted 1 files for portal 'hptenders_gov_in', oldest first.
+2025-09-24 14:49:54 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Portal hptenders_gov_in: Processing files in this order:
+  1. hptenders_gov_in_tenders_20250924_105656.xlsx
+
+2025-09-24 14:49:55 - core.file_merger - INFO - Backup of 'hptenders_gov_in_consolidated_master.xlsx' created at 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders_gov_in\hptenders_gov_in_consolidated_master_backup_20250924_144954.zip'
+2025-09-24 14:49:55 - core.file_merger - INFO - Removed oldest backup: 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders_gov_in\hptenders_gov_in_consolidated_master_backup_20250918_165626.zip' to maintain max 5 versions.
+2025-09-24 14:49:56 - core.file_merger - INFO - Starting with 13809 existing records from master file.
+2025-09-24 14:49:56 - core.file_merger - INFO - Loaded 1453 records from hptenders_gov_in_tenders_20250924_105656.xlsx
+2025-09-24 14:49:56 - core.file_merger - INFO - Determining unique key from combined data...
+2025-09-24 14:49:56 - core.file_merger - WARNING - No suitable primary key found from preferred list: []
+2025-09-24 14:49:56 - core.file_merger - WARNING - Attempting to find a column with 'ID' in the name...
+2025-09-24 14:49:56 - core.file_merger - INFO - Found alternate ID column: 'Title and Ref.No./Tender ID'
+2025-09-24 14:49:56 - core.file_merger - INFO - Merge for portal 'hptenders_gov_in': 1453 total input records -> 13809 unique records (removed 1453 duplicates)
+2025-09-24 14:49:58 - core.file_merger - INFO - Successfully merged 1 files for portal 'hptenders_gov_in'.
+Summary: 13809 total records in merged file
+• 13809 new records added
+• 0 existing records updated with newer data
+• 1453 duplicate records resolved
+Output file: hptenders_gov_in_consolidated_master.xlsx
+2025-09-24 14:50:10 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Batch merge process completed. Success: 1, Fail: 0
+2025-09-24 14:50:12 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Cleared all files from merge list.
+2025-09-24 14:50:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-24 14:50:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-24 14:50:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 2796 records closing after 2025-09-24 14:50:37.176614
+2025-09-24 14:50:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-24 14:50:49 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 2796 records closing after 2025-09-24 14:50:49.346055
+2025-09-24 14:50:49 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 2 records match 'Preparation of Structural design' with AND logic
+2025-09-24 14:50:49 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-24 14:50:53 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=%24DirectLink&page=FrontEndViewTender&service=direct&sp=SEB9vmCX3Hg4OncqxjjJa%2Bg%3D%3D
+2025-09-24 15:13:32 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=%24DirectLink&page=FrontEndViewTender&service=direct&sp=SEB9vmCX3Hg4OncqxjjJa%2Bg%3D%3D
+2025-09-24 15:55:52 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-24 15:56:39 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-24 15:56:39 - core.data_processor.TenderDataProcessor - INFO - Configuration updated in TenderDataProcessor
+2025-09-24 15:56:39 - ui.settings_tab.SettingsTab - INFO - Updated Search tab's data processor with new config
+2025-09-24 15:56:39 - ui.settings_tab.SettingsTab - INFO - Updated Portal Merger tab with new config
+2025-09-24 15:56:39 - ui.settings_tab.SettingsTab - INFO - Settings saved successfully
+2025-09-24 15:57:15 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-24 15:57:15 - core.data_processor.TenderDataProcessor - INFO - Configuration updated in TenderDataProcessor
+2025-09-24 15:57:15 - ui.settings_tab.SettingsTab - INFO - Updated Search tab's data processor with new config
+2025-09-24 15:57:15 - ui.settings_tab.SettingsTab - INFO - Updated Portal Merger tab with new config
+2025-09-24 15:57:15 - ui.settings_tab.SettingsTab - INFO - Settings saved successfully
+2025-09-24 15:57:33 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Added new files for merging: ('H:/My Drive/CRM T84/0 Live App/Search data/input_excel_files/hptenders_gov_in_tenders_20250924_105656.xlsx',)
+2025-09-24 15:57:37 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Starting batch merge process via UI. Output Folder='H:/My Drive/CRM T84/0 Live App/Search data/merged_data'
+2025-09-24 15:57:37 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Processing portal hptenders_gov_in with 1 files
+2025-09-24 15:57:37 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Sorted 1 files for portal 'hptenders_gov_in', oldest first.
+2025-09-24 15:57:37 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Portal hptenders_gov_in: Processing files in this order:
+  1. hptenders_gov_in_tenders_20250924_105656.xlsx
+
+2025-09-24 15:57:37 - core.file_merger - INFO - Backup of 'hptenders_gov_in_consolidated_master.xlsx' created at 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders_gov_in\hptenders_gov_in_consolidated_master_backup_20250924_155737.zip'
+2025-09-24 15:57:37 - core.file_merger - INFO - Removed oldest backup: 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders_gov_in\hptenders_gov_in_consolidated_master_backup_20250919_125551.zip' to maintain max 5 versions.
+2025-09-24 15:57:39 - core.file_merger - INFO - Starting with 13809 existing records from master file.
+2025-09-24 15:57:39 - core.file_merger - INFO - Loaded 1453 records from hptenders_gov_in_tenders_20250924_105656.xlsx
+2025-09-24 15:57:39 - core.file_merger - INFO - Determining unique key from combined data...
+2025-09-24 15:57:39 - core.file_merger - INFO - Loaded 1453 records from hptenders_gov_in_tenders_20250924_105656.xlsx
+2025-09-24 15:57:39 - core.file_merger - WARNING - No suitable primary key found from preferred list: ['tender_ID']
+2025-09-24 15:57:39 - core.file_merger - WARNING - Attempting to find a column with 'ID' in the name...
+2025-09-24 15:57:39 - core.file_merger - INFO - Found alternate ID column: 'Title and Ref.No./Tender ID'
+2025-09-24 15:57:39 - core.file_merger - INFO - Merge for portal 'hptenders_gov_in': 1453 total input records -> 13809 unique records (removed 1453 duplicates)
+2025-09-24 15:57:41 - core.file_merger - INFO - Successfully merged 1 files for portal 'hptenders_gov_in'.
+Summary: 13809 total records in merged file
+• 13809 new records added
+• 0 existing records updated with newer data
+• 1453 duplicate records resolved
+Output file: hptenders_gov_in_consolidated_master.xlsx
+2025-09-24 15:57:48 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Batch merge process completed. Success: 1, Fail: 0
+2025-09-24 15:57:50 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Cleared all files from merge list.
+2025-09-24 15:59:46 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Added new files for merging: ('H:/My Drive/CRM T84/0 Live App/Search data/input_excel_files/hptenders_gov_in_tenders_20250924_105656.xlsx',)
+2025-09-24 15:59:47 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Starting batch merge process via UI. Output Folder='H:/My Drive/CRM T84/0 Live App/Search data/merged_data'
+2025-09-24 15:59:47 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Processing portal hptenders_gov_in with 1 files
+2025-09-24 15:59:47 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Sorted 1 files for portal 'hptenders_gov_in', oldest first.
+2025-09-24 15:59:47 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Portal hptenders_gov_in: Processing files in this order:
+  1. hptenders_gov_in_tenders_20250924_105656.xlsx
+
+2025-09-24 15:59:47 - core.file_merger - INFO - Backup of 'hptenders_gov_in_consolidated_master.xlsx' created at 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders_gov_in\hptenders_gov_in_consolidated_master_backup_20250924_155947.zip'
+2025-09-24 15:59:47 - core.file_merger - INFO - Removed oldest backup: 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders_gov_in\hptenders_gov_in_consolidated_master_backup_20250920_170234.zip' to maintain max 5 versions.
+2025-09-24 15:59:48 - core.file_merger - INFO - Starting with 13809 existing records from master file.
+2025-09-24 15:59:48 - core.file_merger - INFO - Loaded 1453 records from hptenders_gov_in_tenders_20250924_105656.xlsx
+2025-09-24 15:59:48 - core.file_merger - INFO - Determining unique key from combined data...
+2025-09-24 15:59:48 - core.file_merger - INFO - Loaded 1453 records from hptenders_gov_in_tenders_20250924_105656.xlsx
+2025-09-24 15:59:49 - core.file_merger - WARNING - No suitable primary key found from preferred list: ['tender_ID']
+2025-09-24 15:59:49 - core.file_merger - WARNING - Attempting to find a column with 'ID' in the name...
+2025-09-24 15:59:49 - core.file_merger - INFO - Found alternate ID column: 'Title and Ref.No./Tender ID'
+2025-09-24 15:59:49 - core.file_merger - INFO - Merge for portal 'hptenders_gov_in': 1453 total input records -> 13809 unique records (removed 1453 duplicates)
+2025-09-24 15:59:50 - core.file_merger - INFO - Successfully merged 1 files for portal 'hptenders_gov_in'.
+Summary: 13809 total records in merged file
+• 13809 new records added
+• 0 existing records updated with newer data
+• 1453 duplicate records resolved
+Output file: hptenders_gov_in_consolidated_master.xlsx
+2025-09-24 15:59:56 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Batch merge process completed. Success: 1, Fail: 0
+2025-09-24 16:00:22 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Cleared all files from merge list.
+2025-09-24 16:00:38 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-24 16:00:38 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-24 16:00:38 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 2782 records closing after 2025-09-24 16:00:38.953957
+2025-09-24 16:00:38 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 2 records match 'Preparation of Structural design' with AND logic
+2025-09-24 16:00:38 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-24 16:02:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-24 16:02:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 2782 records closing after 2025-09-24 16:02:05.311215
+2025-09-24 16:02:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-24 16:02:32 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Added new files for merging: ('H:/My Drive/CRM T84/0 Live App/Search data/input_excel_files/hptenders_consolidated_master.xlsx', 'H:/My Drive/CRM T84/0 Live App/Search data/input_excel_files/hptenders_gov_in_consolidated_master.xlsx', 'H:/My Drive/CRM T84/0 Live App/Search data/input_excel_files/hptenders_gov_in_tenders_20250924_105656.xlsx')
+2025-09-24 16:02:37 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Starting batch merge process via UI. Output Folder='H:/My Drive/CRM T84/0 Live App/Search data/merged_data'
+2025-09-24 16:02:37 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Processing portal hptenders with 2 files
+2025-09-24 16:02:37 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Sorted 2 files for portal 'hptenders', oldest first.
+2025-09-24 16:02:37 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Portal hptenders: Processing files in this order:
+  1. hptenders_consolidated_master.xlsx
+  2. hptenders_gov_in_consolidated_master.xlsx
+
+2025-09-24 16:02:37 - core.file_merger - INFO - No existing consolidated file found for portal 'hptenders'. Creating new master.
+2025-09-24 16:02:38 - core.file_merger - INFO - Loaded 13809 records from hptenders_consolidated_master.xlsx
+2025-09-24 16:02:39 - core.file_merger - INFO - Loaded 13809 records from hptenders_gov_in_consolidated_master.xlsx
+2025-09-24 16:02:39 - core.file_merger - INFO - Determining unique key from combined data...
+2025-09-24 16:02:39 - core.file_merger - INFO - Loaded 13809 records from hptenders_gov_in_consolidated_master.xlsx
+2025-09-24 16:02:39 - core.file_merger - WARNING - No suitable primary key found from preferred list: ['tender_ID']
+2025-09-24 16:02:39 - core.file_merger - WARNING - Attempting to find a column with 'ID' in the name...
+2025-09-24 16:02:39 - core.file_merger - INFO - Found alternate ID column: 'Title and Ref.No./Tender ID'
+2025-09-24 16:02:39 - core.file_merger - INFO - Merge for portal 'hptenders': 27618 total input records -> 13809 unique records (removed 13809 duplicates)
+2025-09-24 16:02:41 - core.file_merger - INFO - Successfully merged 2 files for portal 'hptenders'.
+Summary: 13809 total records in merged file
+• 13809 new records added
+• 0 existing records updated with newer data
+• 13809 duplicate records resolved
+Output file: hptenders_consolidated_master.xlsx
+2025-09-24 16:02:41 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Processing portal hptenders_gov_in with 1 files
+2025-09-24 16:02:41 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Sorted 1 files for portal 'hptenders_gov_in', oldest first.
+2025-09-24 16:02:41 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Portal hptenders_gov_in: Processing files in this order:
+  1. hptenders_gov_in_tenders_20250924_105656.xlsx
+
+2025-09-24 16:02:41 - core.file_merger - INFO - No existing consolidated file found for portal 'hptenders_gov_in'. Creating new master.
+2025-09-24 16:02:41 - core.file_merger - INFO - Loaded 1453 records from hptenders_gov_in_tenders_20250924_105656.xlsx
+2025-09-24 16:02:41 - core.file_merger - INFO - Determining unique key from combined data...
+2025-09-24 16:02:41 - core.file_merger - INFO - Loaded 1453 records from hptenders_gov_in_tenders_20250924_105656.xlsx
+2025-09-24 16:02:41 - core.file_merger - WARNING - No suitable primary key found from preferred list: ['tender_ID']
+2025-09-24 16:02:41 - core.file_merger - WARNING - Attempting to find a column with 'ID' in the name...
+2025-09-24 16:02:41 - core.file_merger - INFO - Found alternate ID column: 'Title and Ref.No./Tender ID'
+2025-09-24 16:02:41 - core.file_merger - INFO - Merge for portal 'hptenders_gov_in': 1453 total input records -> 1453 unique records (removed 0 duplicates)
+2025-09-24 16:02:42 - core.file_merger - INFO - Successfully merged 1 files for portal 'hptenders_gov_in'.
+Summary: 1453 total records in merged file
+• 1453 new records added
+• 0 existing records updated with newer data
+• 0 duplicate records resolved
+Output file: hptenders_gov_in_consolidated_master.xlsx
+2025-09-24 16:03:16 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Batch merge process completed. Success: 2, Fail: 0

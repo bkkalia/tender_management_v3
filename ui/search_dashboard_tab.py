@@ -303,6 +303,7 @@ class SearchDashboardTab(ttk.Frame):
 
         create_action_button(action_frame, "Add Folder", self._add_folder, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
         create_action_button(action_frame, "Add Cloud URL", self._add_remote_url, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
+        create_action_button(action_frame, "Load Merged File", self._load_merged_file, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
         create_action_button(action_frame, "Refresh Data", self._load_data_from_folders, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
         create_action_button(action_frame, "Clear All", self._clear_folders, button_type='secondary', width=12).pack(pady=SPACING['small']//2, fill=tk.X)
 
@@ -851,23 +852,31 @@ class SearchDashboardTab(ttk.Frame):
 
             for col in cols:
                 width = 100
+                anchor = 'w'  # Default left alignment
+
                 if col in self.url_columns:
                     # URL columns can be narrower since we'll show an icon
                     width = 80
+                    anchor = 'center'  # Center align URLs
                 elif any(kw in col.lower() for kw in ['title', 'description', 'summary']):
                     width = 300
                 elif any(kw in col.lower() for kw in ['department', 'ministry', 'agency']):
                     width = 200
-                elif any(kw in col.lower() for kw in ['date', 'time']):
+                elif any(kw in col.lower() for kw in ['date', 'time', 'closing', 'close', 'due', 'deadline', 'end']):
                     width = 120
-                self.tree.column(col, width=width, minwidth=50)
-                self.tree.heading(col, text=col)
+                    anchor = 'center'  # Center align dates
+
+                self.tree.column(col, width=width, minwidth=50, anchor=anchor)
+
+                # Add sorting functionality to column headers
+                sort_indicator = " ▲" if col == self.sort_column and self.sort_ascending else " ▼" if col == self.sort_column else ""
+                self.tree.heading(col, text=col + sort_indicator, command=lambda c=col: self._sort_by_column(c))
 
             # Insert data rows - limit for performance
             max_rows = 1000
             display_df = df.head(max_rows) if len(df) > max_rows else df
 
-            for _, row in display_df.iterrows():
+            for row_index, (_, row) in enumerate(display_df.iterrows()):
                 try:
                     values = []
                     tags = []
@@ -896,8 +905,15 @@ class SearchDashboardTab(ttk.Frame):
 
                         values.append(display_val)
 
-                    # Insert row with tags
+                    # Insert row with tags and alternate row coloring
                     item_id = self.tree.insert("", "end", values=values)
+
+                    # Apply alternate row coloring using tags
+                    if row_index % 2 == 0:
+                        tags.append('evenrow')
+                    else:
+                        tags.append('oddrow')
+
                     if tags:
                         self.tree.item(item_id, tags=tags)
 
@@ -1114,6 +1130,58 @@ class SearchDashboardTab(ttk.Frame):
         
         # Apply the filter
         self._apply_filters()
+
+    def _sort_by_column(self, col):
+        """Sort the treeview data by the specified column."""
+        if not hasattr(self.data_processor, 'filtered_data') or self.data_processor.filtered_data is None or self.data_processor.filtered_data.empty:
+            return
+
+        try:
+            # Toggle sort direction if same column clicked
+            if self.sort_column == col:
+                self.sort_ascending = not self.sort_ascending
+            else:
+                self.sort_column = col
+                self.sort_ascending = True
+
+            # Sort the dataframe
+            df = self.data_processor.filtered_data.copy()
+
+            # Handle different data types for sorting
+            if col in df.columns:
+                try:
+                    # Try to sort as numeric first
+                    if df[col].dtype in ['int64', 'float64']:
+                        df = df.sort_values(col, ascending=self.sort_ascending, na_position='last')
+                    else:
+                        # Try to convert to datetime for date columns
+                        if any(kw in col.lower() for kw in ['date', 'time', 'closing', 'close', 'due', 'deadline', 'end']):
+                            try:
+                                temp_col = pd.to_datetime(df[col], errors='coerce')
+                                df = df.assign(**{f'__sort_{col}': temp_col})
+                                df = df.sort_values(f'__sort_{col}', ascending=self.sort_ascending, na_position='last')
+                                df = df.drop(columns=[f'__sort_{col}'])
+                            except:
+                                # Fall back to string sorting
+                                df = df.sort_values(col, ascending=self.sort_ascending, na_position='last', key=lambda x: x.astype(str))
+                        else:
+                            # String sorting for other columns
+                            df = df.sort_values(col, ascending=self.sort_ascending, na_position='last', key=lambda x: x.astype(str).str.lower())
+                except Exception as e:
+                    self.logger.warning(f"Error sorting column {col}: {e}")
+                    # Fallback to simple sort
+                    df = df.sort_values(col, ascending=self.sort_ascending, na_position='last')
+
+            # Update the filtered data
+            self.data_processor.filtered_data = df
+
+            # Refresh the display
+            self._refresh_tree_data()
+
+            self.logger.info(f"Sorted by column '{col}' ({'ascending' if self.sort_ascending else 'descending'})")
+
+        except Exception as e:
+            self.logger.error(f"Error sorting by column {col}: {e}")
 
     def _setup_treeview_bindings(self):
         """Bind treeview events."""
@@ -1412,6 +1480,11 @@ class SearchDashboardTab(ttk.Frame):
         
         # Treeview for displaying tender data
         self.tree = ttk.Treeview(tree_frame, show="headings")
+
+        # Configure tags for alternate row colors
+        self.tree.tag_configure('evenrow', background='#ffffff')  # White for even rows
+        self.tree.tag_configure('oddrow', background='#f8f9fa')   # Light gray for odd rows
+        self.tree.tag_configure('selected', background='#0078d4', foreground='white')  # Selection color
         self.tree.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
         
         # Vertical scrollbar
@@ -1476,6 +1549,67 @@ class SearchDashboardTab(ttk.Frame):
                 self.remote_urls.append(url_with_auth)
                 self._update_selected_folders_display()
                 messagebox.showinfo("URL Added", f"Remote URL added successfully:\n{url}")
+
+    def _load_merged_file(self):
+        """Load a single merged file directly into the tree view for analysis."""
+        # Ask user to select a merged file
+        file_path = filedialog.askopenfilename(
+            title="Select Merged File for Analysis",
+            filetypes=[
+                ("Excel Files", "*.xlsx"),
+                ("CSV Files", "*.csv"),
+                ("All Files", "*.*")
+            ],
+            initialdir="data/merged_data"  # Default to merged data folder
+        )
+
+        if not file_path:
+            return  # User canceled
+
+        # Show loading indicator
+        self.results_count_var.set("Loading merged file, please wait...")
+        self.update_idletasks()  # Force UI update
+
+        try:
+            # Load the file
+            if file_path.lower().endswith('.csv'):
+                df = pd.read_csv(file_path, encoding='utf-8', low_memory=False)
+            else:
+                df = pd.read_excel(file_path, engine='openpyxl')
+
+            if df.empty:
+                messagebox.showinfo("Empty File", "The selected file is empty or could not be loaded.")
+                self.results_count_var.set("No data loaded")
+                return
+
+            # Store in data processor
+            self.data_processor.raw_data = df
+            self.data_processor.filtered_data = df.copy()
+
+            # Clear any existing folder/remote sources since we're loading a direct file
+            self.loaded_files = []
+            self.remote_urls = []
+            self._update_selected_folders_display()
+
+            # Update record count
+            record_count = len(df)
+            messagebox.showinfo("Merged File Loaded",
+                              f"Successfully loaded merged file for analysis:\n{os.path.basename(file_path)}\n\n"
+                              f"Records: {record_count}")
+
+            # Refresh the display
+            self._refresh_tree_data()
+            self.update_dashboard()
+
+            # Apply default filter (live tenders)
+            self._apply_status_filter("live")
+
+            self.logger.info(f"Loaded merged file for analysis: {file_path} ({record_count} records)")
+
+        except Exception as e:
+            self.logger.error(f"Error loading merged file: {e}", exc_info=True)
+            messagebox.showerror("Error", f"An error occurred while loading the merged file:\n{str(e)}")
+            self.results_count_var.set("Error loading merged file")
 
     def _clear_folders(self):
         """Clear selected folders and remote URLs."""

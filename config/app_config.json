@@ -16,6 +16,9 @@
         "Tender ID"
     ],
     "merger_critical_fields": [
+         "Tender ID (Extracted)",
+        "Title and Ref.No./Tender ID",
+        "Tender ID",
         "Closing Date",
         "Status",
         "Value"

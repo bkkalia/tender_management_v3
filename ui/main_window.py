@@ -17,7 +17,10 @@ try:
     from ui.search_dashboard_tab import SearchDashboardTab
 except ImportError:
     SearchDashboardTab = None
-from ui.portal_merger_tab import PortalDataMergerTab
+try:
+    from ui.portal_merger_tab import PortalDataMergerTab
+except ImportError:
+    PortalDataMergerTab = None
 from ui.settings_tab import SettingsTab
 from ui.logs_tab import LogsTab
 from ui.calendar_tab import CalendarTab  # Import the CalendarTab class
@@ -390,9 +393,12 @@ India - 174303"""
                 self.logger.warning("SearchDashboardTab not available - skipping this tab")
             
             # Portal Data Merger Tab
-            merger_tab = PortalDataMergerTab(self.notebook, self)
-            self.notebook.add(merger_tab, text="Portal Merger")
-            self.tabs["Portal Merger"] = merger_tab
+            if PortalDataMergerTab is not None:
+                merger_tab = PortalDataMergerTab(self.notebook, self)
+                self.notebook.add(merger_tab, text="Portal Merger")
+                self.tabs["Portal Merger"] = merger_tab
+            else:
+                self.logger.warning("PortalDataMergerTab not available - skipping this tab")
             
             # Calendar Tab
             calendar_tab = CalendarTab(self.notebook, self)

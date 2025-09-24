@@ -1,0 +1,18 @@
+2025-09-24 17:42:00 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250924_174200.log
+2025-09-24 17:42:00 - root - INFO - Application starting...
+2025-09-24 17:42:00 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-24 17:42:00 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-24 17:42:00 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-24 17:42:00 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-24 17:42:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-24 17:42:01 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-24 17:42:01 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-24 17:42:01 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-24 17:42:01 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-24 17:42:01 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-24 17:42:01 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-24 17:42:01 - ui.main_window - INFO - Main application initialized
+2025-09-24 17:42:01 - root - INFO - Main window initialized
+2025-09-24 17:42:15 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Added new files for merging: ('H:/My Drive/CRM T84/0 Live App/Search data/input_excel_files/hptenders_consolidated_master.xlsx', 'H:/My Drive/CRM T84/0 Live App/Search data/input_excel_files/hptenders_gov_in_consolidated_master.xlsx', 'H:/My Drive/CRM T84/0 Live App/Search data/input_excel_files/hptenders_gov_in_tenders_20250924_105656.xlsx')
+2025-09-24 17:42:21 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Starting batch merge process via UI. Output Folder='H:/My Drive/CRM T84/0 Live App/Search data/merged_data'
+2025-09-24 17:42:21 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Processing portal hptenders with 3 files

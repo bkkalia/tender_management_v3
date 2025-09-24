@@ -142,3 +142,5 @@
 2025-09-23 19:16:22 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
 2025-09-23 19:16:24 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
 2025-09-23 19:16:34 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-09-23 19:30:19 - ui.main_window - INFO - Application closing
+2025-09-23 19:30:19 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json

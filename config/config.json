@@ -6,7 +6,7 @@
     "last_used_folders": [
         "G:/My Drive/0dev/Search Utility v3/tender_management_v3/data/merged_data"
     ],
-    "merger_unique_key": "Tender ID",
+    "merger_unique_key": "Tender ID (Extracted)",
     "merger_critical_fields": [
         "Closing Date",
         "Status",
@@ -15,7 +15,11 @@
     "last_loaded_files": [
         "G:/My Drive/0dev/Search Utility v3/tender_management_v3/data/merged_data\\hptenders_gov_in_consolidated_master.xlsx"
     ],
-    "merger_preferred_unique_keys": [],
+    "merger_preferred_unique_keys": [
+        "Tender ID (Extracted)",
+        "Title and Ref.No./Tender ID",
+        "Tender ID"
+    ],
     "merger_max_backups": 5,
     "version": "3.1",
     "saved_searches": {
@@ -37,5 +41,59 @@
             "date_filter": {}
         }
     },
-    "saved_searches_data": {}
+    "saved_searches_data": {},
+    "treeview_column_settings": {
+        "Tender ID": {
+            "visible": true,
+            "width": 100
+        },
+        "Title": {
+            "visible": true,
+            "width": 300
+        },
+        "Department": {
+            "visible": true,
+            "width": 200
+        },
+        "Closing Date": {
+            "visible": true,
+            "width": 120
+        },
+        "Status": {
+            "visible": true,
+            "width": 100
+        },
+        "Value": {
+            "visible": true,
+            "width": 120
+        },
+        "Location": {
+            "visible": true,
+            "width": 150
+        },
+        "Source File": {
+            "visible": true,
+            "width": 150
+        },
+        "Description": {
+            "visible": true,
+            "width": 300
+        },
+        "Agency": {
+            "visible": true,
+            "width": 200
+        },
+        "Ministry": {
+            "visible": true,
+            "width": 200
+        },
+        "Tender ID (Extracted)": {
+            "visible": true,
+            "width": 100
+        },
+        "Title and Ref.No./Tender ID": {
+            "visible": true,
+            "width": 100
+        }
+    }
 }

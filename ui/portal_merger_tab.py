@@ -17,6 +17,7 @@ if parent_dir not in sys.path:
 from ui.common_widgets import create_labeled_frame, create_action_button, create_info_label
 from core.file_merger import PortalDataMerger
 from utils.constants import SPACING, FONTS
+from datetime import datetime
 
 if TYPE_CHECKING:
     from ui.main_window import MainApplication  # Use absolute import
@@ -26,26 +27,44 @@ logger = logging.getLogger(__name__)
 def create_tooltip(widget, text):
     """Create a tooltip for a given widget"""
     def enter(event):
-        x, y, _, _ = widget.bbox("insert")
-        x += widget.winfo_rootx() + 25
-        y += widget.winfo_rooty() + 25
-        
+        # Handle different widget types for bbox
+        try:
+            if isinstance(widget, tk.Listbox):
+                # For Listbox, use event coordinates since bbox("insert") doesn't work
+                x = event.x_root + 25
+                y = event.y_root + 25
+            else:
+                # For other widgets like Entry, use bbox("insert")
+                bbox = widget.bbox("insert")
+                if bbox:
+                    x, y, _, _ = bbox
+                    x += widget.winfo_rootx() + 25
+                    y += widget.winfo_rooty() + 25
+                else:
+                    # Fallback to event coordinates
+                    x = event.x_root + 25
+                    y = event.y_root + 25
+        except tk.TclError:
+            # Fallback if bbox fails
+            x = event.x_root + 25
+            y = event.y_root + 25
+
         # Create a toplevel window
         tooltip = tk.Toplevel(widget)
         tooltip.wm_overrideredirect(True)
         tooltip.wm_geometry(f"+{x}+{y}")
-        
+
         label = ttk.Label(tooltip, text=text, justify=tk.LEFT,
                          background="#ffffe0", relief="solid", borderwidth=1,
                          font=("tahoma", 8, "normal"))
         label.pack(ipadx=1)
-        
-        widget.tooltip = tooltip
-        
+
+        setattr(widget, 'tooltip', tooltip)
+
     def leave(event):
         if hasattr(widget, "tooltip"):
             widget.tooltip.destroy()
-            
+
     widget.bind("<Enter>", enter)
     widget.bind("<Leave>", leave)
 
@@ -262,20 +281,19 @@ class PortalDataMergerTab(ttk.Frame):
 
         # Optionally, offer to load the LAST successfully merged file
         if success_count > 0 and last_successful_output_path:
+            # Always offer to load merged file
             if messagebox.askyesno("Load Merged Data?", f"Do you want to load the last successfully merged file '{os.path.basename(last_successful_output_path)}' into the Search tab?", parent=self):
                 search_tab = self.main_app.tabs.get("Search & Dashboard")
                 if search_tab:
                     if hasattr(search_tab, '_clear_folders_for_new_load'):
                         search_tab._clear_folders_for_new_load()
-                    
                     if hasattr(search_tab, 'load_single_file_into_processor'):
-                         search_tab.load_single_file_into_processor(last_successful_output_path)
-                         # Change self.main_app.logger to self.logger
-                         self.logger.info(f"Automatically loading merged file '{last_successful_output_path}' into Search Tab.")
+                        search_tab.load_single_file_into_processor(last_successful_output_path)
+                        self.logger.info(f"Automatically loading merged file '{last_successful_output_path}' into Search Tab.")
                     else:
-                        messagebox.showwarning("Warning", "Could not automatically load. Search tab missing 'load_single_file_into_processor' method.", parent=self)
+                        self.logger.warning("Search tab does not support loading merged file.")
                 else:
-                    messagebox.showwarning("Warning", "Search & Dashboard tab not found. Cannot load merged file.", parent=self)
+                    self.logger.warning("Search tab not found.")
         
         # Clear the list of files to merge after processing
         self._clear_all_files()
@@ -294,25 +312,24 @@ class PortalDataMergerTab(ttk.Frame):
             # Try to extract timestamp from filename using regex patterns
             # Common patterns like YYYYMMDD_HHMMSS or similar
             timestamp_patterns = [
-                r'(\d{8}_\d{6})',  # YYYYMMDD_HHMMSS
-                r'(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})',  # YYYY-MM-DD_HH-MM-SS
-                r'(\d{4}-\d{2}-\d{2})',  # YYYY-MM-DD
-                r'(\d{8})',  # YYYYMMDD
+                (r'(\d{8}_\d{6})', '%Y%m%d_%H%M%S'),  # YYYYMMDD_HHMMSS
+                (r'(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})', '%Y-%m-%d_%H-%M-%S'),  # YYYY-MM-DD_HH-MM-SS
+                (r'(\d{4}-\d{2}-\d{2})', '%Y-%m-%d'),  # YYYY-MM-DD
+                (r'(\d{8})', '%Y%m%d'),  # YYYYMMDD
             ]
             
-            # Try each pattern to extract timestamp from filename
-            for pattern in timestamp_patterns:
+            # Try each pattern to extract and parse timestamp from filename
+            for pattern, fmt in timestamp_patterns:
                 match = re.search(pattern, filename)
                 if match:
                     timestamp_str = match.group(1)
                     self.logger.debug(f"Found timestamp in filename: {timestamp_str}")
                     try:
-                        # If successful, we have a valid timestamp
-                        # No need to convert to datetime here, just use for ordering
-                        timestamp = timestamp_str
+                        dt = datetime.strptime(timestamp_str, fmt)
+                        timestamp = dt.timestamp()
                         break
-                    except Exception as e:
-                        self.logger.warning(f"Failed to parse timestamp {timestamp_str} from filename: {e}")
+                    except ValueError as e:
+                        self.logger.warning(f"Failed to parse timestamp {timestamp_str} with format {fmt}: {e}")
             
             # If no timestamp found in filename or parsing failed, use file's modification time
             if timestamp is None:

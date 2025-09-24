@@ -1,0 +1,50 @@
+2025-09-24 14:31:53 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250924_143152.log
+2025-09-24 14:31:53 - root - INFO - Application starting...
+2025-09-24 14:31:53 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-24 14:31:53 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-24 14:31:53 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-24 14:31:53 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-24 14:31:53 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-24 14:31:53 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-24 14:31:53 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-24 14:31:53 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-24 14:31:54 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-24 14:31:54 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-24 14:31:54 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-24 14:31:54 - ui.main_window - INFO - Main application initialized
+2025-09-24 14:31:54 - root - INFO - Main window initialized
+2025-09-24 14:35:35 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Added new files for merging: ('H:/My Drive/CRM T84/0 Live App/Search data/input_excel_files/hptenders_gov_in_tenders_20250924_105656.xlsx',)
+2025-09-24 14:35:43 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Starting batch merge process via UI. Output Folder='H:/My Drive/CRM T84/0 Live App/Search data/merged_data'
+2025-09-24 14:35:43 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Processing portal hptenders_gov_in with 1 files
+2025-09-24 14:35:43 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Sorted 1 files for portal 'hptenders_gov_in', oldest first.
+2025-09-24 14:35:43 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Portal hptenders_gov_in: Processing files in this order:
+  1. hptenders_gov_in_tenders_20250924_105656.xlsx
+
+2025-09-24 14:35:43 - core.file_merger - INFO - Backup of 'hptenders_gov_in_consolidated_master.xlsx' created at 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders_gov_in\hptenders_gov_in_consolidated_master_backup_20250924_143543.zip'
+2025-09-24 14:35:43 - core.file_merger - INFO - Removed oldest backup: 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders_gov_in\hptenders_gov_in_consolidated_master_backup_20250823_200220.zip' to maintain max 5 versions.
+2025-09-24 14:35:43 - core.file_merger - INFO - Removed oldest backup: 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders_gov_in\hptenders_gov_in_consolidated_master_backup_20250825_111656.zip' to maintain max 5 versions.
+2025-09-24 14:35:44 - core.file_merger - INFO - Removed oldest backup: 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders_gov_in\hptenders_gov_in_consolidated_master_backup_20250826_122103.zip' to maintain max 5 versions.
+2025-09-24 14:35:44 - core.file_merger - INFO - Removed oldest backup: 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders_gov_in\hptenders_gov_in_consolidated_master_backup_20250829_122355.zip' to maintain max 5 versions.
+2025-09-24 14:35:44 - core.file_merger - INFO - Removed oldest backup: 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders_gov_in\hptenders_gov_in_consolidated_master_backup_20250830_124031.zip' to maintain max 5 versions.
+2025-09-24 14:35:44 - core.file_merger - INFO - Removed oldest backup: 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders_gov_in\hptenders_gov_in_consolidated_master_backup_20250917_102836.zip' to maintain max 5 versions.
+2025-09-24 14:35:45 - core.file_merger - INFO - Starting with 13499 existing records from master file.
+2025-09-24 14:35:45 - core.file_merger - INFO - Loaded 1453 records from hptenders_gov_in_tenders_20250924_105656.xlsx
+2025-09-24 14:35:45 - core.file_merger - INFO - Determining unique key from combined data...
+2025-09-24 14:35:45 - core.file_merger - WARNING - No suitable primary key found from preferred list: []
+2025-09-24 14:35:45 - core.file_merger - WARNING - Attempting to find a column with 'ID' in the name...
+2025-09-24 14:35:45 - core.file_merger - INFO - Found alternate ID column: 'Title and Ref.No./Tender ID'
+2025-09-24 14:35:45 - core.file_merger - INFO - Merge for portal 'hptenders_gov_in': 1453 total input records -> 13809 unique records (removed 1143 duplicates)
+2025-09-24 14:35:47 - core.file_merger - INFO - Successfully merged 1 files for portal 'hptenders_gov_in'.
+Summary: 13809 total records in merged file
+• 13809 new records added
+• 0 existing records updated with newer data
+• 1143 duplicate records resolved
+Output file: hptenders_gov_in_consolidated_master.xlsx
+2025-09-24 14:36:11 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Batch merge process completed. Success: 1, Fail: 0
+2025-09-24 14:36:19 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Cleared all files from merge list.
+2025-09-24 14:36:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-24 14:36:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-24 14:36:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1398 records closing after 2025-09-24 14:36:42.005192
+2025-09-24 14:36:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-24 14:40:50 - ui.main_window - INFO - Application closing
+2025-09-24 14:40:50 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
