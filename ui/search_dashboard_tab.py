@@ -303,7 +303,6 @@ class SearchDashboardTab(ttk.Frame):
 
         create_action_button(action_frame, "Add Folder", self._add_folder, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
         create_action_button(action_frame, "Add Cloud URL", self._add_remote_url, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
-        create_action_button(action_frame, "Load Merged File", self._load_merged_file, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
         create_action_button(action_frame, "Refresh Data", self._load_data_from_folders, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
         create_action_button(action_frame, "Clear All", self._clear_folders, button_type='secondary', width=12).pack(pady=SPACING['small']//2, fill=tk.X)
 
@@ -1550,21 +1549,11 @@ class SearchDashboardTab(ttk.Frame):
                 self._update_selected_folders_display()
                 messagebox.showinfo("URL Added", f"Remote URL added successfully:\n{url}")
 
-    def _load_merged_file(self):
-        """Load a single merged file directly into the tree view for analysis."""
-        # Ask user to select a merged file
-        file_path = filedialog.askopenfilename(
-            title="Select Merged File for Analysis",
-            filetypes=[
-                ("Excel Files", "*.xlsx"),
-                ("CSV Files", "*.csv"),
-                ("All Files", "*.*")
-            ],
-            initialdir="data/merged_data"  # Default to merged data folder
-        )
-
-        if not file_path:
-            return  # User canceled
+    def _load_merged_file_from_path(self, file_path):
+        """Load a single merged file directly into the tree view for analysis using a provided file path."""
+        if not file_path or not os.path.exists(file_path):
+            self.logger.error(f"File path is invalid or file does not exist: {file_path}")
+            return
 
         # Show loading indicator
         self.results_count_var.set("Loading merged file, please wait...")
@@ -1610,6 +1599,25 @@ class SearchDashboardTab(ttk.Frame):
             self.logger.error(f"Error loading merged file: {e}", exc_info=True)
             messagebox.showerror("Error", f"An error occurred while loading the merged file:\n{str(e)}")
             self.results_count_var.set("Error loading merged file")
+
+    def _load_merged_file(self):
+        """Load a single merged file directly into the tree view for analysis."""
+        # Ask user to select a merged file
+        file_path = filedialog.askopenfilename(
+            title="Select Merged File for Analysis",
+            filetypes=[
+                ("Excel Files", "*.xlsx"),
+                ("CSV Files", "*.csv"),
+                ("All Files", "*.*")
+            ],
+            initialdir="data/merged_data"  # Default to merged data folder
+        )
+
+        if not file_path:
+            return  # User canceled
+
+        # Use the path-based method
+        self._load_merged_file_from_path(file_path)
 
     def _clear_folders(self):
         """Clear selected folders and remote URLs."""

@@ -279,16 +279,21 @@ class PortalDataMergerTab(ttk.Frame):
         # Change self.main_app.logger to self.logger
         self.logger.info(f"Batch merge process completed. Success: {success_count}, Fail: {fail_count}")
 
-        # Optionally, offer to load the LAST successfully merged file
+        # Automatically offer to load the LAST successfully merged file
         if success_count > 0 and last_successful_output_path:
             # Always offer to load merged file
             if messagebox.askyesno("Load Merged Data?", f"Do you want to load the last successfully merged file '{os.path.basename(last_successful_output_path)}' into the Search tab?", parent=self):
                 search_tab = self.main_app.tabs.get("Search & Dashboard")
                 if search_tab:
-                    if hasattr(search_tab, '_clear_folders_for_new_load'):
-                        search_tab._clear_folders_for_new_load()
-                    if hasattr(search_tab, 'load_single_file_into_processor'):
-                        search_tab.load_single_file_into_processor(last_successful_output_path)
+                    # Switch to the search tab first
+                    search_tab_name = "Search & Dashboard"
+                    if search_tab_name in self.main_app.tabs:
+                        tab_index = list(self.main_app.tabs.keys()).index(search_tab_name)
+                        self.main_app.notebook.select(tab_index)
+
+                    # Load the merged file directly
+                    if hasattr(search_tab, '_load_merged_file_from_path'):
+                        search_tab._load_merged_file_from_path(last_successful_output_path)
                         self.logger.info(f"Automatically loading merged file '{last_successful_output_path}' into Search Tab.")
                     else:
                         self.logger.warning("Search tab does not support loading merged file.")
