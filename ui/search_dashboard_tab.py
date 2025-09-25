@@ -258,7 +258,7 @@ class SearchDashboardTab(ttk.Frame):
 
         # Search and filter section with increased height to accommodate all filter buttons
         search_filter_frame = create_labeled_frame(main_pane, "Search, Filter & Dates")
-        main_pane.add(search_filter_frame, height=320, minsize=280)  # Increased from 280 to 320 to ensure all filter buttons including reset button are visible
+        main_pane.add(search_filter_frame, height=335, minsize=295)  # Increased from 320 to 335 to accommodate improved date range layout
         self._create_search_filter_widgets(search_filter_frame)
         self._create_date_filter_widgets(search_filter_frame)
 
@@ -561,11 +561,13 @@ class SearchDashboardTab(ttk.Frame):
         date_container = ttk.Frame(parent)
         date_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
         
-        # Configure grid with four equal columns and consistent spacing
-        for i in range(4):
-            date_container.grid_columnconfigure(i, weight=1, minsize=180)  # Minimum width for each section
+        # Configure grid with equal width distribution - all sections 25% each
+        date_container.grid_columnconfigure(0, weight=25, minsize=160)  # Status Filter
+        date_container.grid_columnconfigure(1, weight=25, minsize=160)  # Time Range Filter
+        date_container.grid_columnconfigure(2, weight=25, minsize=160)  # Custom Date Range
+        date_container.grid_columnconfigure(3, weight=25, minsize=160)  # Saved Searches
         date_container.grid_rowconfigure(0, weight=1)
-        
+
         # Calculate dynamic spacing based on container width
         section_padding = SPACING['small']
         internal_padding = (SPACING['small'], SPACING['medium'])
@@ -637,64 +639,128 @@ class SearchDashboardTab(ttk.Frame):
             reset_btn.pack(fill=tk.X, pady=(SPACING['small']//2, 0))
         
         # Section 3: Custom Date Range (Column 2)
-        custom_section = ttk.LabelFrame(date_container, text="🗓️ Custom Date Range", 
+        custom_section = ttk.LabelFrame(date_container, text="🗓️ Custom Date Range",
                                        padding=internal_padding)
         custom_section.grid(row=0, column=2, sticky="nsew", padx=(section_padding//2, section_padding//2))
-        
+
         # Custom content with consistent height
         custom_content = ttk.Frame(custom_section)
         custom_content.pack(fill=tk.BOTH, expand=True)
-        
+
         custom_label = ttk.Label(custom_content, text="Date Range:", font=('TkDefaultFont', 9, 'bold'))
         custom_label.pack(anchor=tk.W, pady=(0, SPACING['small']//2))
-        
+
         if HAS_TKCALENDAR and DateEntry is not None:
-            # Compact date picker layout
+            # Improved date picker layout with inline labels and centered alignment
             date_row = ttk.Frame(custom_content)
             date_row.pack(fill=tk.X, pady=(0, 2))
-            
-            ttk.Label(date_row, text="From:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
-            self.start_date_picker = DateEntry(date_row, width=8,
+
+            # Center the date picker components
+            date_center_frame = ttk.Frame(date_row)
+            date_center_frame.pack(expand=True)
+
+            # Left side - From date with inline label
+            from_frame = ttk.Frame(date_center_frame)
+            from_frame.pack(side=tk.LEFT, expand=True)
+
+            # Create horizontal layout for From label and date picker
+            from_inner_frame = ttk.Frame(from_frame)
+            from_inner_frame.pack(expand=True)
+
+            ttk.Label(from_inner_frame, text="From:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=(0, 5))
+            self.start_date_picker = DateEntry(from_inner_frame, width=12,  # Increased from 8 to 12 for full yyyy-mm-dd
                                               background=COLORS.get('primary', 'blue'),
                                               foreground='white', borderwidth=1,
-                                              date_pattern='yyyy-mm-dd')
-            self.start_date_picker.pack(side=tk.LEFT, padx=(2, 4))
-            
-            ttk.Label(date_row, text="To:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
-            self.end_date_picker = DateEntry(date_row, width=8,
+                                              date_pattern='yyyy-mm-dd', justify='center')
+            self.start_date_picker.pack(side=tk.LEFT)
+
+            # Right side - To date with inline label
+            to_frame = ttk.Frame(date_center_frame)
+            to_frame.pack(side=tk.LEFT, padx=15)
+
+            # Create horizontal layout for To label and date picker
+            to_inner_frame = ttk.Frame(to_frame)
+            to_inner_frame.pack(expand=True)
+
+            ttk.Label(to_inner_frame, text="To:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=(0, 5))
+            self.end_date_picker = DateEntry(to_inner_frame, width=12,  # Increased from 8 to 12 for full yyyy-mm-dd
                                             background=COLORS.get('primary', 'blue'),
                                             foreground='white', borderwidth=1,
-                                            date_pattern='yyyy-mm-dd')
-            self.end_date_picker.pack(side=tk.LEFT, padx=2)
-            
-            # Compact time row
+                                            date_pattern='yyyy-mm-dd', justify='center')
+            self.end_date_picker.pack(side=tk.LEFT)
+
+            # Time row with centered alignment
             time_row = ttk.Frame(custom_content)
-            time_row.pack(fill=tk.X, pady=(2, 2))
-            
-            ttk.Label(time_row, text="Time:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
-            
-            # Start time - more compact
-            ttk.Spinbox(time_row, from_=0, to=23, width=2, textvariable=self.start_hour_var, 
-                       format="%02.0f").pack(side=tk.LEFT, padx=1)
-            ttk.Label(time_row, text=":", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
-            ttk.Spinbox(time_row, from_=0, to=59, width=2, textvariable=self.start_min_var, 
-                       format="%02.0f").pack(side=tk.LEFT, padx=(0, 3))
-            
-            ttk.Label(time_row, text="to", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=1)
-            
-            # End time - more compact
-            ttk.Spinbox(time_row, from_=0, to=23, width=2, textvariable=self.end_hour_var, 
-                       format="%02.0f").pack(side=tk.LEFT, padx=1)
-            ttk.Label(time_row, text=":", font=('TkDefaultFont', 8)).pack(side=tk.LEFT)
-            ttk.Spinbox(time_row, from_=0, to=59, width=2, textvariable=self.end_min_var, 
+            time_row.pack(fill=tk.X, pady=(2, 20))  # Increased gap below time controls to 20 pixels (2x)
+
+            time_center_frame = ttk.Frame(time_row)
+            time_center_frame.pack(expand=True)
+
+            ttk.Label(time_center_frame, text="Time:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=(0, 5))
+
+            # Start time - improved layout
+            start_time_frame = ttk.Frame(time_center_frame)
+            start_time_frame.pack(side=tk.LEFT)
+
+            ttk.Spinbox(start_time_frame, from_=0, to=23, width=3, textvariable=self.start_hour_var,
                        format="%02.0f").pack(side=tk.LEFT)
-            
-            # Apply button
-            go_btn = create_action_button(custom_content, "Apply", 
+            ttk.Label(start_time_frame, text=":", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=1)
+            ttk.Spinbox(start_time_frame, from_=0, to=59, width=3, textvariable=self.start_min_var,
+                       format="%02.0f").pack(side=tk.LEFT)
+
+            ttk.Label(time_center_frame, text="to", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=8)
+
+            # End time - improved layout
+            end_time_frame = ttk.Frame(time_center_frame)
+            end_time_frame.pack(side=tk.LEFT)
+
+            ttk.Spinbox(end_time_frame, from_=0, to=23, width=3, textvariable=self.end_hour_var,
+                       format="%02.0f").pack(side=tk.LEFT)
+            ttk.Label(end_time_frame, text=":", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=1)
+            ttk.Spinbox(end_time_frame, from_=0, to=59, width=3, textvariable=self.end_min_var,
+                       format="%02.0f").pack(side=tk.LEFT)
+
+            # Apply button - full width with 10% padding, centered below time controls
+            button_row = ttk.Frame(custom_content)
+            button_row.pack(fill=tk.X, pady=(0, 0))  # Removed top padding since gap is now above
+
+            # Create container with reduced padding (50% reduction from 20 to 10)
+            button_container = ttk.Frame(button_row)
+            button_container.pack(expand=True, padx=10)  # Reduced from 20 to 10 (50% reduction)
+
+            go_btn = create_action_button(button_container, "Apply",
                                          self._apply_custom_date_filter,
-                                         button_type='primary', width=10)
+                                         button_type='primary', width=34)  # Reduced from 48 to 34 (30% reduction)
             if go_btn:
-                go_btn.pack(fill=tk.X, pady=(SPACING['small']//2, 0))
+                # Copy all styling from Reset button but keep blue background
+                go_btn.configure(
+                    font=('TkDefaultFont', 9, 'bold'),  # Same font as Reset button but BOLD
+                    relief='raised',  # Same relief as Reset button
+                    borderwidth=1,  # Same border as Reset button
+                    cursor='hand2',  # Same cursor as Reset button
+                    padx=10,  # Same horizontal padding as Reset button
+                    pady=5,   # Same vertical padding as Reset button
+                    highlightthickness=0,  # Remove highlight border
+                    highlightcolor='#2196f3',  # Blue highlight color
+                    highlightbackground='#2196f3'  # Blue highlight background
+                )
+                # Copy hover effects from Reset button but keep blue theme
+                def on_enter(e):
+                    go_btn.configure(
+                        background='#1976d2',  # Darker blue on hover (same as Reset but blue)
+                        foreground='white',
+                        relief='solid'
+                    )
+                def on_leave(e):
+                    go_btn.configure(
+                        background='#2196f3',  # Original blue (same as Reset but blue)
+                        foreground='white',
+                        relief='raised'
+                    )
+                go_btn.bind("<Enter>", on_enter)
+                go_btn.bind("<Leave>", on_leave)
+
+                go_btn.pack(expand=True, fill=tk.X, pady=(0, 0))  # Removed bottom padding to match Reset button size
         else:
             # Fallback text entries - also compact
             date_inputs = ttk.Frame(custom_content)
