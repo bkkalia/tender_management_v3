@@ -258,13 +258,13 @@ class SearchDashboardTab(ttk.Frame):
 
         # Search and filter section with increased height to accommodate all filter buttons
         search_filter_frame = create_labeled_frame(main_pane, "Search, Filter & Dates")
-        main_pane.add(search_filter_frame, height=220, minsize=180)  # Increased from 180 to 220
+        main_pane.add(search_filter_frame, height=320, minsize=280)  # Increased from 280 to 320 to ensure all filter buttons including reset button are visible
         self._create_search_filter_widgets(search_filter_frame)
         self._create_date_filter_widgets(search_filter_frame)
 
-        # Results section with flexible height
+        # Results section with flexible height - shifted down to make room for filter buttons
         tender_data_frame = create_labeled_frame(main_pane, "Tender Data")
-        main_pane.add(tender_data_frame, height=320, minsize=200)  # Slightly reduced to compensate
+        main_pane.add(tender_data_frame, height=220, minsize=160)  # Reduced from 260 to 220 to accommodate larger filter section
         self._create_tender_data_widgets(tender_data_frame)
         
         # Configure collapse button style - make it more compact
