@@ -159,6 +159,7 @@ class SearchDashboardTab(ttk.Frame):
         
         # Add missing saved search variable
         self.saved_search_var = tk.StringVar()
+        self.save_search_name_var = tk.StringVar()
         
         # --- NEW time vars for custom range ---
         self.start_hour_var = tk.StringVar(value="00")
@@ -266,7 +267,10 @@ class SearchDashboardTab(ttk.Frame):
         tender_data_frame = create_labeled_frame(main_pane, "Tender Data")
         main_pane.add(tender_data_frame, height=220, minsize=160)  # Reduced from 260 to 220 to accommodate larger filter section
         self._create_tender_data_widgets(tender_data_frame)
-        
+
+        # Add dedicated saved searches section at the bottom
+        self._create_saved_searches_widgets(self)
+
         # Configure collapse button style - make it more compact
         style = ttk.Style()
         style.configure("Collapse.TButton", font=FONTS.get('subheading', ('TkDefaultFont', 11, 'bold')), padding=0)
@@ -556,16 +560,15 @@ class SearchDashboardTab(ttk.Frame):
         style.configure("Success.TLabelframe.Label", foreground="#4caf50", font=('TkDefaultFont', 10, 'bold'))
 
     def _create_date_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
-        """Create redesigned date filter widgets in four horizontal sections with responsive layout."""
+        """Create redesigned date filter widgets in three horizontal sections with responsive layout."""
         # Main date filter container with responsive grid
         date_container = ttk.Frame(parent)
         date_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
-        
-        # Configure grid with equal width distribution - all sections 25% each
-        date_container.grid_columnconfigure(0, weight=25, minsize=160)  # Status Filter
-        date_container.grid_columnconfigure(1, weight=25, minsize=160)  # Time Range Filter
-        date_container.grid_columnconfigure(2, weight=25, minsize=160)  # Custom Date Range
-        date_container.grid_columnconfigure(3, weight=25, minsize=160)  # Saved Searches
+
+        # Configure grid with equal width distribution - all sections 33% each
+        date_container.grid_columnconfigure(0, weight=33, minsize=160)  # Status Filter
+        date_container.grid_columnconfigure(1, weight=33, minsize=160)  # Time Range Filter
+        date_container.grid_columnconfigure(2, weight=34, minsize=160)  # Custom Date Range
         date_container.grid_rowconfigure(0, weight=1)
 
         # Calculate dynamic spacing based on container width
@@ -831,6 +834,100 @@ class SearchDashboardTab(ttk.Frame):
         
         # Apply default Live filter
         self._apply_status_filter("live")
+
+    def _create_saved_searches_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
+        """Create dedicated saved searches widgets section."""
+        # Main saved searches container
+        saved_searches_container = ttk.LabelFrame(parent, text="💾 Saved Searches Management",
+                                                 padding=(SPACING['medium'], SPACING['medium']))
+        saved_searches_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
+
+        # Content frame
+        saved_content = ttk.Frame(saved_searches_container)
+        saved_content.pack(fill=tk.BOTH, expand=True)
+
+        # Top row: Load and Save
+        top_row = ttk.Frame(saved_content)
+        top_row.pack(fill=tk.X, pady=(0, SPACING['small']))
+
+        # Left: Load section
+        load_section = ttk.Frame(top_row)
+        load_section.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, SPACING['small']))
+
+        ttk.Label(load_section, text="Load Search:", font=('TkDefaultFont', 9, 'bold')).pack(anchor=tk.W)
+        self.saved_searches_combo = ttk.Combobox(load_section, textvariable=self.saved_search_var,
+                                                width=25, state="readonly", font=('TkDefaultFont', 9))
+        self.saved_searches_combo.pack(fill=tk.X, pady=(2, 0))
+        self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
+
+        # Right: Save section
+        save_section = ttk.Frame(top_row)
+        save_section.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(SPACING['small'], 0))
+
+        ttk.Label(save_section, text="Save Current Search:", font=('TkDefaultFont', 9, 'bold')).pack(anchor=tk.W)
+        save_entry_frame = ttk.Frame(save_section)
+        save_entry_frame.pack(fill=tk.X, pady=(2, 0))
+        self.save_search_name_var = tk.StringVar()
+        save_entry = ttk.Entry(save_entry_frame, textvariable=self.save_search_name_var, font=('TkDefaultFont', 9))
+        save_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        save_btn = create_action_button(save_entry_frame, "Save", self._save_current_search_by_name,
+                                       button_type='success_outline', width=8)
+        if save_btn:
+            save_btn.pack(side=tk.RIGHT, padx=(5, 0))
+
+        # Middle row: Action buttons
+        middle_row = ttk.Frame(saved_content)
+        middle_row.pack(fill=tk.X, pady=SPACING['small'])
+
+        # Delete button
+        del_btn = create_action_button(middle_row, "🗑️ Delete", self._delete_saved_search,
+                                      button_type='danger_outline', width=12)
+        if del_btn:
+            del_btn.pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        # Clean button
+        clean_btn = create_action_button(middle_row, "🧹 Clean", self._clean_corrupted_searches,
+                                        button_type='warning', width=12)
+        if clean_btn:
+            clean_btn.pack(side=tk.LEFT)
+
+        # Bottom row: Import/Export buttons
+        bottom_row = ttk.Frame(saved_content)
+        bottom_row.pack(fill=tk.X)
+
+        # Export section
+        export_section = ttk.Frame(bottom_row)
+        export_section.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, SPACING['small']))
+
+        ttk.Label(export_section, text="Export Searches:", font=('TkDefaultFont', 9, 'bold')).pack(anchor=tk.W)
+        export_btn_frame = ttk.Frame(export_section)
+        export_btn_frame.pack(fill=tk.X, pady=(2, 0))
+
+        export_json_btn = create_action_button(export_btn_frame, "JSON", self._export_saved_searches_json,
+                                             button_type='secondary', width=8)
+        if export_json_btn:
+            export_json_btn.pack(side=tk.LEFT, padx=(0, 2))
+
+        export_csv_btn = create_action_button(export_btn_frame, "CSV", self._export_saved_searches_csv,
+                                            button_type='secondary', width=8)
+        if export_csv_btn:
+            export_csv_btn.pack(side=tk.LEFT, padx=(2, 0))
+
+        # Import section
+        import_section = ttk.Frame(bottom_row)
+        import_section.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(SPACING['small'], 0))
+
+        ttk.Label(import_section, text="Import Searches:", font=('TkDefaultFont', 9, 'bold')).pack(anchor=tk.W)
+        import_btn_frame = ttk.Frame(import_section)
+        import_btn_frame.pack(fill=tk.X, pady=(2, 0))
+
+        import_btn = create_action_button(import_btn_frame, "Import", self._import_saved_searches,
+                                        button_type='info_outline', width=12)
+        if import_btn:
+            import_btn.pack()
+
+        # Update saved searches list
+        self._update_saved_searches_list()
 
     def _create_link_icon(self):
         """Create a link icon image for URL display."""
@@ -2139,28 +2236,23 @@ class SearchDashboardTab(ttk.Frame):
             self.logger.error(f"Error loading saved search: {e}")
             messagebox.showerror("Load Error", f"Error loading search '{search_name}'.\nThis search may be corrupted and should be deleted.")
 
-    def _save_current_search(self):
-        """Save the current search configuration - only text search terms."""
+    def _save_current_search_by_name(self):
+        """Save the current search configuration with a custom name."""
         # Check if there are any search terms to save
         dept_search = self.dept_filter_var.get().strip()
         global_search = self.global_search_var.get().strip()
-        
+
         if not dept_search and not global_search:
             messagebox.showinfo("Nothing to Save", "Please enter some search terms before saving.")
             return
-        
-        # Ask for a name for the search
-        search_name = tkinter.simpledialog.askstring(
-            "Save Search", 
-            "Enter a name for this search:",
-            parent=self
-        )
-        
-        if not search_name or not search_name.strip():
-            return  # User canceled or entered empty name
-        
-        search_name = search_name.strip()
-        
+
+        # Get the search name from the entry field
+        search_name = self.save_search_name_var.get().strip()
+
+        if not search_name:
+            messagebox.showinfo("No Name", "Please enter a name for the search.")
+            return
+
         # Create simplified search configuration - only text terms
         search_config = {
             'dept_filter': dept_search,
@@ -2169,38 +2261,105 @@ class SearchDashboardTab(ttk.Frame):
             'global_operator': self.global_operator_var.get(),
             'saved_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
-        
+
         try:
             # Get existing saved searches
             saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
             saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-            
+
             # Check if name already exists
             if search_name in saved_searches_data:
-                if not messagebox.askyesno("Overwrite Search", 
+                if not messagebox.askyesno("Overwrite Search",
                                          f"A search named '{search_name}' already exists. Overwrite it?"):
                     return
             # Add this search to the saved searches
             saved_searches_data[search_name] = search_config
-            
+
             # Update the list of saved search names if needed
             if search_name not in saved_searches_list:
-                saved_searches_list.append(search_name)
-            
+                saved_searches_list[search_name] = search_config
+
             # Update the config
             self.main_app.global_config.set("saved_searches_data", saved_searches_data)
             self.main_app.global_config.set("saved_searches", saved_searches_list)
-            
+
             # Save the config
             self.main_app.global_config.save_config()
-            
+
             # Update the UI
             self._update_saved_searches_list()
             self.saved_search_var.set(search_name)
-            
+            self.save_search_name_var.set("")  # Clear the save field
+
             messagebox.showinfo("Search Saved", f"Search '{search_name}' saved successfully.")
             self.logger.info(f"Saved search configuration: {search_name}")
-            
+
+        except Exception as e:
+            self.logger.error(f"Error saving search: {e}")
+            messagebox.showerror("Save Error", f"Failed to save search: {str(e)}")
+
+    def _save_current_search(self):
+        """Save the current search configuration - only text search terms."""
+        # Check if there are any search terms to save
+        dept_search = self.dept_filter_var.get().strip()
+        global_search = self.global_search_var.get().strip()
+
+        if not dept_search and not global_search:
+            messagebox.showinfo("Nothing to Save", "Please enter some search terms before saving.")
+            return
+
+        # Ask for a name for the search
+        search_name = tkinter.simpledialog.askstring(
+            "Save Search",
+            "Enter a name for this search:",
+            parent=self
+        )
+
+        if not search_name or not search_name.strip():
+            return  # User canceled or entered empty name
+
+        search_name = search_name.strip()
+
+        # Create simplified search configuration - only text terms
+        search_config = {
+            'dept_filter': dept_search,
+            'global_search': global_search,
+            'dept_operator': self.dept_operator_var.get(),
+            'global_operator': self.global_operator_var.get(),
+            'saved_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+        try:
+            # Get existing saved searches
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+
+            # Check if name already exists
+            if search_name in saved_searches_data:
+                if not messagebox.askyesno("Overwrite Search",
+                                         f"A search named '{search_name}' already exists. Overwrite it?"):
+                    return
+            # Add this search to the saved searches
+            saved_searches_data[search_name] = search_config
+
+            # Update the list of saved search names if needed
+            if search_name not in saved_searches_list:
+                saved_searches_list[search_name] = search_config
+
+            # Update the config
+            self.main_app.global_config.set("saved_searches_data", saved_searches_data)
+            self.main_app.global_config.set("saved_searches", saved_searches_list)
+
+            # Save the config
+            self.main_app.global_config.save_config()
+
+            # Update the UI
+            self._update_saved_searches_list()
+            self.saved_search_var.set(search_name)
+
+            messagebox.showinfo("Search Saved", f"Search '{search_name}' saved successfully.")
+            self.logger.info(f"Saved search configuration: {search_name}")
+
         except Exception as e:
             self.logger.error(f"Error saving search: {e}")
             messagebox.showerror("Save Error", f"Failed to save search: {str(e)}")
@@ -2228,7 +2387,7 @@ class SearchDashboardTab(ttk.Frame):
                 del saved_searches_data[search_name]
             
             if search_name in saved_searches_list:
-                saved_searches_list.remove(search_name)
+                del saved_searches_list[search_name]
             
             # Update the config
             self.main_app.global_config.set("saved_searches_data", saved_searches_data)
@@ -2248,33 +2407,109 @@ class SearchDashboardTab(ttk.Frame):
             self.logger.error(f"Error deleting saved search: {e}")
             messagebox.showerror("Delete Error", f"Failed to delete search: {str(e)}")
 
-    def _export_saved_searches(self):
+    def _export_saved_searches_json(self):
         """Export all saved searches to a JSON file."""
         try:
             saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
-            
+
             if not saved_searches_data:
                 messagebox.showinfo("No Searches", "No saved searches to export.")
                 return
-            
+
             # Ask for export file location
             filename = filedialog.asksaveasfilename(
                 title="Export Saved Searches",
                 defaultextension=".json",
                 filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
             )
-            
+
             if not filename:
                 return
-             
+
             # Export to JSON
             import json
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(saved_searches_data, f, indent=2, ensure_ascii=False)
-            
+
             messagebox.showinfo("Export Complete", f"Saved searches exported to:\n{filename}")
             self.logger.info(f"Exported saved searches to: {filename}")
-            
+
+        except Exception as e:
+            self.logger.error(f"Error exporting saved searches: {e}")
+            messagebox.showerror("Export Error", f"Failed to export searches: {str(e)}")
+
+    def _export_saved_searches_csv(self):
+        """Export all saved searches to a CSV file."""
+        try:
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+
+            if not saved_searches_data:
+                messagebox.showinfo("No Searches", "No saved searches to export.")
+                return
+
+            # Ask for export file location
+            filename = filedialog.asksaveasfilename(
+                title="Export Saved Searches",
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
+            )
+
+            if not filename:
+                return
+
+            # Convert to CSV format
+            import csv
+            with open(filename, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+
+                # Write header
+                writer.writerow(['Search Name', 'Department Filter', 'Global Search', 'Department Operator', 'Global Operator', 'Saved Date'])
+
+                # Write data rows
+                for search_name, search_config in saved_searches_data.items():
+                    writer.writerow([
+                        search_name,
+                        search_config.get('dept_filter', ''),
+                        search_config.get('global_search', ''),
+                        search_config.get('dept_operator', 'OR'),
+                        search_config.get('global_operator', 'AND'),
+                        search_config.get('saved_date', '')
+                    ])
+
+            messagebox.showinfo("Export Complete", f"Saved searches exported to:\n{filename}")
+            self.logger.info(f"Exported saved searches to: {filename}")
+
+        except Exception as e:
+            self.logger.error(f"Error exporting saved searches: {e}")
+            messagebox.showerror("Export Error", f"Failed to export searches: {str(e)}")
+
+    def _export_saved_searches(self):
+        """Export all saved searches to a JSON file."""
+        try:
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+
+            if not saved_searches_data:
+                messagebox.showinfo("No Searches", "No saved searches to export.")
+                return
+
+            # Ask for export file location
+            filename = filedialog.asksaveasfilename(
+                title="Export Saved Searches",
+                defaultextension=".json",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+
+            if not filename:
+                return
+
+            # Export to JSON
+            import json
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(saved_searches_data, f, indent=2, ensure_ascii=False)
+
+            messagebox.showinfo("Export Complete", f"Saved searches exported to:\n{filename}")
+            self.logger.info(f"Exported saved searches to: {filename}")
+
         except Exception as e:
             self.logger.error(f"Error exporting saved searches: {e}")
             messagebox.showerror("Export Error", f"Failed to export searches: {str(e)}")
@@ -2315,7 +2550,7 @@ class SearchDashboardTab(ttk.Frame):
                 
                 current_searches[search_name] = search_config
                 if search_name not in current_list:
-                    current_list.append(search_name)
+                    current_list[search_name] = search_config
             
             # Update config
             self.main_app.global_config.set("saved_searches_data", current_searches)
@@ -2343,7 +2578,15 @@ class SearchDashboardTab(ttk.Frame):
             cleaned_list = []
             removed_count = 0
             
-            for search_name in saved_searches_list[:]:  # Copy the list to modify during iteration
+            # Handle both list and dict formats for saved_searches
+            if isinstance(saved_searches_list, dict):
+                search_names_to_check = list(saved_searches_list.keys())
+            elif isinstance(saved_searches_list, list):
+                search_names_to_check = saved_searches_list[:]
+            else:
+                search_names_to_check = []
+
+            for search_name in search_names_to_check:
                 if search_name in saved_searches_data:
                     search_config = saved_searches_data[search_name]
                     
