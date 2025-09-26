@@ -42,6 +42,7 @@ if parent_dir not in sys.path:
 # Now we can use the absolute imports
 from utils.constants import SPACING, FONTS, COLORS
 from ui.common_widgets import create_labeled_frame, create_action_button, create_input_entry, create_info_label
+from ui.charts_window import ChartsWindow
 from core.data_processor import TenderDataProcessor
 from core.remote_data_loader import RemoteDataLoader
 
@@ -1726,8 +1727,20 @@ class SearchDashboardTab(ttk.Frame):
         self.data_folders_frame_visible = not getattr(self, 'data_folders_frame_visible', False)
 
     def _show_data_visualization(self):
-        """Placeholder for charts."""
-        messagebox.showinfo("Charts", "Chart functionality is under development.")
+        """Open charts window with data visualization based on current Tree view data."""
+        try:
+            # Check if we have data to visualize
+            if not hasattr(self, 'data_processor') or not hasattr(self.data_processor, 'filtered_data') or self.data_processor.filtered_data is None or self.data_processor.filtered_data.empty:
+                messagebox.showinfo("No Data", "No data available to visualize. Please load some data first.")
+                return
+
+            # Create and show the charts window
+            charts_window = ChartsWindow(self, self.data_processor.filtered_data.copy())
+            charts_window.show()
+
+        except Exception as e:
+            self.logger.error(f"Error opening charts window: {e}")
+            messagebox.showerror("Charts Error", f"Failed to open charts window: {str(e)}")
 
     def _add_folder(self):
         """Add a folder to the list."""
