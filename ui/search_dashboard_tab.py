@@ -2276,8 +2276,12 @@ class SearchDashboardTab(ttk.Frame):
             saved_searches_data[search_name] = search_config
 
             # Update the list of saved search names if needed
-            if search_name not in saved_searches_list:
-                saved_searches_list[search_name] = search_config
+            if isinstance(saved_searches_list, dict):
+                if search_name not in saved_searches_list:
+                    saved_searches_list[search_name] = search_config
+            elif isinstance(saved_searches_list, list):
+                if search_name not in saved_searches_list:
+                    saved_searches_list.append(search_name)
 
             # Update the config
             self.main_app.global_config.set("saved_searches_data", saved_searches_data)
@@ -2549,8 +2553,12 @@ class SearchDashboardTab(ttk.Frame):
                     new_count += 1
                 
                 current_searches[search_name] = search_config
-                if search_name not in current_list:
-                    current_list[search_name] = search_config
+                if isinstance(current_list, dict):
+                    if search_name not in current_list:
+                        current_list[search_name] = search_config
+                elif isinstance(current_list, list):
+                    if search_name not in current_list:
+                        current_list.append(search_name)
             
             # Update config
             self.main_app.global_config.set("saved_searches_data", current_searches)

@@ -22,8 +22,34 @@
     ],
     "merger_max_backups": 5,
     "version": "3.1",
-    "saved_searches": [],
-    "saved_searches_data": {},
+    "saved_searches": [
+        "pwd una",
+        "PWD Irri Una",
+        "PWD Una"
+    ],
+    "saved_searches_data": {
+        "pwd una": {
+            "dept_filter": "pwd",
+            "global_search": "una",
+            "dept_operator": "OR",
+            "global_operator": "AND",
+            "saved_date": "2025-09-26 14:26:13"
+        },
+        "PWD Irri Una": {
+            "dept_filter": "pwd, irri",
+            "global_search": "una",
+            "dept_operator": "OR",
+            "global_operator": "AND",
+            "saved_date": "2025-09-25 19:59:26"
+        },
+        "PWD Una": {
+            "dept_filter": "PWD",
+            "global_search": "una",
+            "dept_operator": "OR",
+            "global_operator": "AND",
+            "saved_date": "2025-09-25 20:01:52"
+        }
+    },
     "treeview_column_settings": {
         "Tender ID": {
             "visible": true,

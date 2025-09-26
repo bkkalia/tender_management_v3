@@ -38,10 +38,14 @@ def test_saved_searches_functionality():
 
     # Save the search
     saved_searches_data = config_manager.get("saved_searches_data", {})
-    saved_searches_list = config_manager.get("saved_searches", {})
+    saved_searches_list = config_manager.get("saved_searches", [])
 
     saved_searches_data[test_search_name] = test_search_config
-    saved_searches_list[test_search_name] = test_search_config
+    if isinstance(saved_searches_list, dict):
+        saved_searches_list[test_search_name] = test_search_config
+    elif isinstance(saved_searches_list, list):
+        if test_search_name not in saved_searches_list:
+            saved_searches_list.append(test_search_name)
 
     config_manager.set("saved_searches_data", saved_searches_data)
     config_manager.set("saved_searches", saved_searches_list)
@@ -104,13 +108,13 @@ def test_saved_searches_functionality():
 
     # Clean corrupted searches
     cleaned_data = {}
-    cleaned_list = {}
+    cleaned_list = []
     removed_count = 0
 
     for search_name, search_config in saved_searches_data.items():
         if isinstance(search_config, dict) and ('dept_filter' in search_config or 'global_search' in search_config):
             cleaned_data[search_name] = search_config
-            cleaned_list[search_name] = search_config
+            cleaned_list.append(search_name)
         else:
             removed_count += 1
             print(f"   Removed corrupted search: {search_name}")
@@ -126,7 +130,7 @@ def test_saved_searches_functionality():
     if test_search_name in cleaned_data:
         del cleaned_data[test_search_name]
     if test_search_name in cleaned_list:
-        del cleaned_list[test_search_name]
+        cleaned_list.remove(test_search_name)
 
     config_manager.set("saved_searches_data", cleaned_data)
     config_manager.set("saved_searches", cleaned_list)
