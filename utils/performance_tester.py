@@ -287,7 +287,11 @@ class PerformanceTester:
                                            {'format': export_format, 'run': i+1}):
                         # Simulate export operation
                         if export_format == 'excel':
-                            data_processor.filtered_data.to_excel(temp_path, index=False)
+                            try:
+                                data_processor.filtered_data.to_excel(temp_path, index=False, engine='openpyxl')
+                            except ImportError:
+                                logger.warning("openpyxl not installed, skipping Excel export test")
+                                continue
                         elif export_format == 'csv':
                             data_processor.filtered_data.to_csv(temp_path, index=False)
 
@@ -303,14 +307,210 @@ class PerformanceTester:
 
         return results
 
-    def get_system_info(self) -> Dict[str, Any]:
+    def benchmark_data_analysis(self, data_processor, analysis_types: Optional[List[str]] = None, iterations: int = 3) -> Dict[str, Any]:
         """
-        Get current system information for performance context.
+        Benchmark data analysis operations performance.
+
+        Args:
+            data_processor: TenderDataProcessor with loaded data
+            analysis_types: List of analysis types to test
+            iterations: Number of iterations per analysis type
 
         Returns:
-            Dictionary with system information
+            Dictionary with benchmark results
         """
-        return {
+        if analysis_types is None:
+            analysis_types = ['department_summary', 'value_analysis', 'date_analysis', 'status_summary']
+
+        results = {
+            'operation': 'data_analysis_benchmark',
+            'iterations': iterations,
+            'analysis_types': analysis_types,
+            'runs': []
+        }
+
+        for analysis_type in analysis_types:
+            for i in range(iterations):
+                with self.time_operation(f"analysis_{analysis_type}_run_{i+1}",
+                                       {'analysis_type': analysis_type, 'run': i+1}):
+                    if analysis_type == 'department_summary':
+                        # Group by department and count
+                        if hasattr(data_processor, 'filtered_data') and not data_processor.filtered_data.empty:
+                            dept_counts = data_processor.filtered_data.groupby('Department').size()
+                        else:
+                            dept_counts = data_processor.raw_data.groupby('Department').size()
+
+                    elif analysis_type == 'value_analysis':
+                        # Value statistics
+                        if hasattr(data_processor, 'filtered_data') and not data_processor.filtered_data.empty:
+                            value_stats = data_processor.filtered_data['Value'].describe()
+                        else:
+                            value_stats = data_processor.raw_data['Value'].describe()
+
+                    elif analysis_type == 'date_analysis':
+                        # Date-based analysis
+                        if hasattr(data_processor, 'filtered_data') and not data_processor.filtered_data.empty:
+                            date_analysis = data_processor.filtered_data.groupby(
+                                data_processor.filtered_data['Closing Date'].dt.month
+                            ).size()
+                        else:
+                            date_analysis = data_processor.raw_data.groupby(
+                                data_processor.raw_data['Closing Date'].dt.month
+                            ).size()
+
+                    elif analysis_type == 'status_summary':
+                        # Status distribution
+                        if hasattr(data_processor, 'filtered_data') and not data_processor.filtered_data.empty:
+                            status_counts = data_processor.filtered_data.groupby('Status').size()
+                        else:
+                            status_counts = data_processor.raw_data.groupby('Status').size()
+
+                run_result = self.results[f"analysis_{analysis_type}_run_{i+1}"][-1].copy()
+                run_result['analysis_type'] = analysis_type
+                run_result['records_analyzed'] = len(data_processor.filtered_data) if hasattr(data_processor, 'filtered_data') else len(data_processor.raw_data)
+                results['runs'].append(run_result)
+
+        return results
+
+    def benchmark_query_performance(self, data_processor, query_complexity: str = 'mixed', iterations: int = 5) -> Dict[str, Any]:
+        """
+        Benchmark query performance with different complexity levels.
+
+        Args:
+            data_processor: TenderDataProcessor with loaded data
+            query_complexity: Complexity level ('simple', 'medium', 'complex', 'mixed')
+            iterations: Number of iterations per query type
+
+        Returns:
+            Dictionary with benchmark results
+        """
+        results = {
+            'operation': 'query_performance_benchmark',
+            'query_complexity': query_complexity,
+            'iterations': iterations,
+            'runs': []
+        }
+
+        # Define query scenarios based on complexity
+        if query_complexity == 'simple':
+            queries = [
+                {'Department': 'IT'},
+                {'Status': 'Live'},
+                {'GlobalSearch': 'software'}
+            ]
+        elif query_complexity == 'medium':
+            queries = [
+                {'Department': 'IT, Finance', 'DepartmentOperator': 'OR'},
+                {'GlobalSearch': 'software, license', 'GlobalSearchOperator': 'AND'},
+                {'DateFilter': {'type': 'next_7_days'}}
+            ]
+        elif query_complexity == 'complex':
+            queries = [
+                {
+                    'Department': 'IT, Finance, Operations',
+                    'DepartmentOperator': 'OR',
+                    'GlobalSearch': 'maintenance, service',
+                    'GlobalSearchOperator': 'OR',
+                    'DateFilter': {'type': 'next_30_days'}
+                }
+            ]
+        else:  # mixed
+            queries = [
+                {'Department': 'IT'},
+                {'Department': 'IT, Finance', 'DepartmentOperator': 'OR', 'DateFilter': {'type': 'live'}},
+                {'GlobalSearch': 'software, license', 'GlobalSearchOperator': 'AND'},
+                {
+                    'Department': 'Finance, Procurement',
+                    'GlobalSearch': 'maintenance, service',
+                    'DateFilter': {'type': 'next_30_days'}
+                }
+            ]
+
+        for i, query in enumerate(queries):
+            for j in range(iterations):
+                with self.time_operation(f"query_complexity_{query_complexity}_q{i+1}_run_{j+1}",
+                                       {'query': query, 'complexity': query_complexity, 'run': j+1}):
+                    data_processor.apply_filters(query)
+
+                run_result = self.results[f"query_complexity_{query_complexity}_q{i+1}_run_{j+1}"][-1].copy()
+                run_result['query_config'] = query
+                run_result['results_count'] = len(data_processor.filtered_data)
+                run_result['query_complexity'] = query_complexity
+                results['runs'].append(run_result)
+
+        return results
+
+    def benchmark_memory_usage_analysis(self, data_processor, operations: Optional[List[str]] = None, iterations: int = 3) -> Dict[str, Any]:
+        """
+        Benchmark memory usage during analysis operations.
+
+        Args:
+            data_processor: TenderDataProcessor with loaded data
+            operations: List of operations to test memory usage for
+            iterations: Number of iterations per operation
+
+        Returns:
+            Dictionary with benchmark results
+        """
+        if operations is None:
+            operations = ['load_data', 'apply_filters', 'group_analysis', 'sort_data']
+
+        results = {
+            'operation': 'memory_usage_analysis_benchmark',
+            'iterations': iterations,
+            'operations': operations,
+            'runs': []
+        }
+
+        for operation in operations:
+            for i in range(iterations):
+                with self.time_operation(f"memory_{operation}_run_{i+1}",
+                                       {'operation': operation, 'run': i+1}):
+                    if operation == 'load_data':
+                        # Memory usage during data loading (already loaded, but simulate)
+                        _ = len(data_processor.raw_data)
+
+                    elif operation == 'apply_filters':
+                        # Apply a complex filter
+                        data_processor.apply_filters({
+                            'Department': 'IT, Finance',
+                            'GlobalSearch': 'software',
+                            'DateFilter': {'type': 'live'}
+                        })
+
+                    elif operation == 'group_analysis':
+                        # Perform grouping analysis
+                        if not data_processor.filtered_data.empty:
+                            grouped = data_processor.filtered_data.groupby(['Department', 'Status']).size()
+                        else:
+                            grouped = data_processor.raw_data.groupby(['Department', 'Status']).size()
+
+                    elif operation == 'sort_data':
+                        # Sort by value
+                        if not data_processor.filtered_data.empty:
+                            sorted_data = data_processor.filtered_data.sort_values('Value', ascending=False)
+                        else:
+                            sorted_data = data_processor.raw_data.sort_values('Value', ascending=False)
+
+                run_result = self.results[f"memory_{operation}_run_{i+1}"][-1].copy()
+                run_result['operation'] = operation
+                run_result['data_size'] = len(data_processor.filtered_data) if hasattr(data_processor, 'filtered_data') else len(data_processor.raw_data)
+                results['runs'].append(run_result)
+
+        return results
+
+    def get_system_info(self) -> Dict[str, Any]:
+        """
+        Get detailed system information for performance context.
+
+        Returns:
+            Dictionary with detailed system information
+        """
+        import platform
+        import subprocess
+
+        # Basic system info
+        info = {
             'cpu_count': psutil.cpu_count(),
             'cpu_count_logical': psutil.cpu_count(logical=True),
             'memory_total_gb': psutil.virtual_memory().total / 1024 / 1024 / 1024,
@@ -318,8 +518,101 @@ class PerformanceTester:
             'disk_total_gb': psutil.disk_usage('/').total / 1024 / 1024 / 1024,
             'disk_free_gb': psutil.disk_usage('/').free / 1024 / 1024 / 1024,
             'python_version': f"{__import__('sys').version_info.major}.{__import__('sys').version_info.minor}",
-            'platform': __import__('platform').platform()
+            'platform': platform.platform(),
+            'os_name': platform.system(),
+            'os_version': platform.version(),
+            'os_release': platform.release(),
+            'architecture': platform.architecture()[0],
+            'machine': platform.machine(),
+            'processor': platform.processor() or 'Unknown'
         }
+
+        # Try to get detailed CPU info
+        try:
+            if platform.system() == 'Windows':
+                # Try PowerShell as alternative to wmic
+                try:
+                    result = subprocess.run(['powershell', '-Command', 'Get-WmiObject Win32_Processor | Select-Object -ExpandProperty Name'],
+                                          capture_output=True, text=True, timeout=5)
+                    if result.returncode == 0 and result.stdout.strip():
+                        info['cpu_model'] = result.stdout.strip()
+                except:
+                    # Fallback to registry query
+                    try:
+                        result = subprocess.run(['reg', 'query', 'HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0', '/v', 'ProcessorNameString'],
+                                              capture_output=True, text=True, timeout=5)
+                        if result.returncode == 0:
+                            for line in result.stdout.split('\n'):
+                                if 'ProcessorNameString' in line:
+                                    parts = line.split('    ')
+                                    if len(parts) > 1:
+                                        info['cpu_model'] = parts[-1].strip()
+                                    break
+                    except:
+                        pass
+            else:
+                # For other systems, try to get from /proc/cpuinfo or similar
+                try:
+                    with open('/proc/cpuinfo', 'r') as f:
+                        for line in f:
+                            if line.startswith('model name'):
+                                info['cpu_model'] = line.split(':')[1].strip()
+                                break
+                except:
+                    pass
+        except:
+            pass
+
+        # Try to get GPU information
+        try:
+            if platform.system() == 'Windows':
+                # Try PowerShell for GPU info
+                try:
+                    result = subprocess.run(['powershell', '-Command', 'Get-WmiObject Win32_VideoController | Select-Object -ExpandProperty Name'],
+                                          capture_output=True, text=True, timeout=5)
+                    if result.returncode == 0 and result.stdout.strip():
+                        gpu_names = [line.strip() for line in result.stdout.strip().split('\n') if line.strip()]
+                        if gpu_names:
+                            info['gpu_info'] = ', '.join(gpu_names)
+                except:
+                    pass
+        except:
+            pass
+
+        # Try to get disk information
+        try:
+            if platform.system() == 'Windows':
+                # Try PowerShell for disk info
+                try:
+                    result = subprocess.run(['powershell', '-Command', 'Get-PhysicalDisk | Select-Object -ExpandProperty Model'],
+                                          capture_output=True, text=True, timeout=5)
+                    if result.returncode == 0 and result.stdout.strip():
+                        disk_models = [line.strip() for line in result.stdout.strip().split('\n') if line.strip()]
+                        if disk_models:
+                            info['disk_model'] = ', '.join(disk_models)
+                except:
+                    pass
+        except:
+            pass
+
+        # Get additional memory info
+        try:
+            vm = psutil.virtual_memory()
+            info['memory_used_gb'] = vm.used / 1024 / 1024 / 1024
+            info['memory_percent'] = vm.percent
+        except:
+            pass
+
+        # Get CPU frequency if available
+        try:
+            cpu_freq = psutil.cpu_freq()
+            if cpu_freq:
+                info['cpu_freq_mhz'] = cpu_freq.current
+                info['cpu_freq_max_mhz'] = cpu_freq.max
+        except:
+            pass
+
+        return info
 
     def get_results(self, operation_name: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -465,6 +758,65 @@ def benchmark_filtering_scenarios(data_processor, scenarios: Optional[List[Dict[
 
     tester = PerformanceTester()
     results = tester.benchmark_filtering(data_processor, scenarios, iterations)
+    tester.print_summary()
+    return results
+
+def benchmark_data_analysis_operations(data_processor, analysis_types: Optional[List[str]] = None, iterations: int = 3) -> Dict[str, Any]:
+    """
+    Quick function to benchmark data analysis operations.
+
+    Args:
+        data_processor: TenderDataProcessor with loaded data
+        analysis_types: List of analysis types to test
+        iterations: Number of iterations per analysis type
+
+    Returns:
+        Benchmark results dictionary
+    """
+    tester = PerformanceTester()
+    results = tester.benchmark_data_analysis(data_processor, analysis_types, iterations)
+    tester.print_summary()
+    return results
+
+def benchmark_query_complexity(data_processor, complexity_levels: Optional[List[str]] = None, iterations: int = 5) -> Dict[str, Any]:
+    """
+    Quick function to benchmark query performance at different complexity levels.
+
+    Args:
+        data_processor: TenderDataProcessor with loaded data
+        complexity_levels: List of complexity levels ('simple', 'medium', 'complex', 'mixed')
+        iterations: Number of iterations per complexity level
+
+    Returns:
+        Benchmark results dictionary
+    """
+    if complexity_levels is None:
+        complexity_levels = ['simple', 'medium', 'complex']
+
+    tester = PerformanceTester()
+    all_results = {}
+
+    for complexity in complexity_levels:
+        results = tester.benchmark_query_performance(data_processor, complexity, iterations)
+        all_results[complexity] = results
+
+    tester.print_summary()
+    return all_results
+
+def benchmark_memory_operations(data_processor, operations: Optional[List[str]] = None, iterations: int = 3) -> Dict[str, Any]:
+    """
+    Quick function to benchmark memory usage during operations.
+
+    Args:
+        data_processor: TenderDataProcessor with loaded data
+        operations: List of operations to test memory usage for
+        iterations: Number of iterations per operation
+
+    Returns:
+        Benchmark results dictionary
+    """
+    tester = PerformanceTester()
+    results = tester.benchmark_memory_usage_analysis(data_processor, operations, iterations)
     tester.print_summary()
     return results
 

@@ -25,3 +25,16 @@
 2025-09-27 19:25:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-27 19:25:01.543590
 2025-09-27 19:25:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
 2025-09-27 19:39:04 - ui.logs_tab.LogsTab - INFO - Logs tab selected
+2025-09-27 20:05:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: []
+2025-09-27 20:05:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-27 20:05:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 22129 records closing after 2025-09-27 20:05:52.635542
+2025-09-27 20:05:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: []
+2025-09-27 20:06:08 - ui.logs_tab.LogsTab - INFO - Logs tab selected
+2025-09-27 20:06:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: []
+2025-09-27 20:06:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'Description' (ascending)
+2025-09-27 20:06:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: []
+2025-09-27 20:06:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'Source File' (ascending)
+2025-09-27 20:06:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: today
+2025-09-27 20:07:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 22129 records closing after 2025-09-27 20:07:24.359495
+2025-09-27 20:07:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (today) with status (live): 0 records
+2025-09-27 20:08:57 - ui.logs_tab.LogsTab - INFO - Logs tab selected

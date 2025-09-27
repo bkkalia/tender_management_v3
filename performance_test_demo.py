@@ -20,7 +20,10 @@ sys.path.insert(0, str(project_root))
 from utils.performance_tester import (
     PerformanceTester,
     benchmark_data_loading,
-    benchmark_filtering_scenarios
+    benchmark_filtering_scenarios,
+    benchmark_data_analysis_operations,
+    benchmark_query_complexity,
+    benchmark_memory_operations
 )
 
 def create_sample_data_file(filename: str, num_rows: int = 10000):
@@ -119,7 +122,7 @@ def run_data_loading_benchmark():
     print(f"\nTesting with {len(sample_files)} files:")
     for f in sample_files:
         file_size = os.path.getsize(f) / 1024 / 1024  # MB
-        print(".1f")
+        print(f"  {os.path.basename(f)}: {file_size:.1f} MB")
 
     # Run benchmark
     results = benchmark_data_loading(sample_files, iterations=3)
@@ -218,10 +221,106 @@ def run_export_benchmark():
 
     print(f"✓ Loaded {len(processor.raw_data)} records for export testing")
 
-    # Benchmark export operations
+    # Benchmark export operations - focus on CSV since Excel requires openpyxl
     tester = PerformanceTester()
-    results = tester.benchmark_export_operations(processor, ['excel', 'csv'], iterations=3)
+    results = tester.benchmark_export_operations(processor, ['csv'], iterations=3)
     tester.print_summary()
+
+    # Cleanup
+    if os.path.exists(sample_file):
+        os.remove(sample_file)
+
+    return results
+
+def run_data_analysis_benchmark():
+    """Benchmark data analysis operations."""
+    print("\n" + "="*60)
+    print("DATA ANALYSIS PERFORMANCE BENCHMARK")
+    print("="*60)
+
+    # Create and load sample data
+    sample_file = create_sample_data_file("analysis_test_data.xlsx", 20000)
+
+    from core.data_processor import TenderDataProcessor
+    from core.config_manager import GlobalConfig
+
+    # Load data
+    config = GlobalConfig()
+    processor = TenderDataProcessor(config)
+
+    success, message = processor.load_data_from_files([sample_file])
+    if not success:
+        print(f"❌ Failed to load data: {message}")
+        return None
+
+    print(f"✓ Loaded {len(processor.raw_data)} records for analysis testing")
+
+    # Benchmark data analysis operations
+    results = benchmark_data_analysis_operations(processor, iterations=3)
+
+    # Cleanup
+    if os.path.exists(sample_file):
+        os.remove(sample_file)
+
+    return results
+
+def run_query_complexity_benchmark():
+    """Benchmark query performance at different complexity levels."""
+    print("\n" + "="*60)
+    print("QUERY COMPLEXITY PERFORMANCE BENCHMARK")
+    print("="*60)
+
+    # Create and load sample data
+    sample_file = create_sample_data_file("query_test_data.xlsx", 30000)
+
+    from core.data_processor import TenderDataProcessor
+    from core.config_manager import GlobalConfig
+
+    # Load data
+    config = GlobalConfig()
+    processor = TenderDataProcessor(config)
+
+    success, message = processor.load_data_from_files([sample_file])
+    if not success:
+        print(f"❌ Failed to load data: {message}")
+        return None
+
+    print(f"✓ Loaded {len(processor.raw_data)} records for query testing")
+
+    # Benchmark query complexity
+    results = benchmark_query_complexity(processor, iterations=5)
+
+    # Cleanup
+    if os.path.exists(sample_file):
+        os.remove(sample_file)
+
+    return results
+
+def run_memory_operations_benchmark():
+    """Benchmark memory usage during operations."""
+    print("\n" + "="*60)
+    print("MEMORY OPERATIONS BENCHMARK")
+    print("="*60)
+
+    # Create and load sample data
+    sample_file = create_sample_data_file("memory_test_data.xlsx", 15000)
+
+    from core.data_processor import TenderDataProcessor
+    from core.config_manager import GlobalConfig
+
+    # Load data
+    config = GlobalConfig()
+    processor = TenderDataProcessor(config)
+
+    success, message = processor.load_data_from_files([sample_file])
+    if not success:
+        print(f"❌ Failed to load data: {message}")
+        return None
+
+    print(f"✓ Loaded {len(processor.raw_data)} records for memory testing")
+
+    # Benchmark memory operations
+    results = benchmark_memory_operations(processor, iterations=3)
 
     # Cleanup
     if os.path.exists(sample_file):
@@ -262,19 +361,19 @@ def run_memory_scaling_test():
             if success:
                 result = tester.results[f"scale_test_{size}rows"][-1]
                 records = len(processor.raw_data)
-                print("8d")
+                print(f"{size:8d} | {result['duration_seconds']:11.2f} | {result['memory_delta_mb']:14.1f} | {records:13d}")
 
                 # Clean up memory
                 del processor
             else:
-                print("8d")
+                print(f"{size:8d} | {'ERROR':>11} | {'ERROR':>14} | {'ERROR':>13}")
 
             # Cleanup file
             if os.path.exists(test_file):
                 os.remove(test_file)
 
         except Exception as e:
-            print("8d")
+            print(f"{size:8d} | {'EXCEPTION':>11} | {'EXCEPTION':>14} | {'EXCEPTION':>13}")
 
     print("\nNote: Your Dell G15 with 32GB RAM should handle up to 100K+ rows comfortably.")
     print("For larger datasets (1M+), consider optimizing memory usage or using chunked loading.")
@@ -288,22 +387,53 @@ def show_system_info():
     tester = PerformanceTester()
     sys_info = tester.get_system_info()
 
-    print(f"Platform: {sys_info['platform']}")
-    print(f"Python Version: {sys_info['python_version']}")
-    print(f"CPU Cores: {sys_info['cpu_count']} physical, {sys_info['cpu_count_logical']} logical")
-    print(".1f")
-    print(".1f")
-    print(".1f")
-    print(".1f")
+    # OS Information
+    print(f"Operating System: {sys_info.get('os_name', 'Unknown')} {sys_info.get('os_release', '')}")
+    print(f"OS Version: {sys_info.get('os_version', 'Unknown')}")
+    print(f"Architecture: {sys_info.get('architecture', 'Unknown')} ({sys_info.get('machine', 'Unknown')})")
+    print(f"Platform: {sys_info.get('platform', 'Unknown')}")
 
-    # Additional hardware info
-    print(f"\nHardware Context:")
-    print(f"- Dell G15 Gaming Laptop")
-    print(f"- 32GB DDR5 RAM (excellent for data processing)")
-    print(f"- 2TB NVME SSD (fast storage, good for large datasets)")
-    print(f"- Nvidia GeForce RTX 3050 4GB (not used for this app)")
-    print(f"- Should handle 50K-100K+ rows comfortably")
-    print(f"- For 1M+ rows, consider data chunking or optimization")
+    # CPU Information
+    print(f"\nCPU Information:")
+    if 'cpu_model' in sys_info:
+        print(f"  Model: {sys_info['cpu_model']}")
+    else:
+        print(f"  Processor: {sys_info.get('processor', 'Unknown')}")
+    print(f"  Cores: {sys_info['cpu_count']} physical, {sys_info['cpu_count_logical']} logical")
+    if 'cpu_freq_mhz' in sys_info:
+        print(f"  Frequency: {sys_info['cpu_freq_mhz']:.0f} MHz (max: {sys_info.get('cpu_freq_max_mhz', 'N/A'):.0f} MHz)")
+
+    # Memory Information
+    print(f"\nMemory Information:")
+    print(f"  Total RAM: {sys_info['memory_total_gb']:.1f} GB")
+    print(f"  Available RAM: {sys_info['memory_available_gb']:.1f} GB")
+    if 'memory_used_gb' in sys_info:
+        print(f"  Used RAM: {sys_info['memory_used_gb']:.1f} GB ({sys_info.get('memory_percent', 0):.1f}%)")
+
+    # Storage Information
+    print(f"\nStorage Information:")
+    print(f"  Total Disk: {sys_info['disk_total_gb']:.1f} GB")
+    print(f"  Free Disk: {sys_info['disk_free_gb']:.1f} GB")
+    if 'disk_model' in sys_info:
+        print(f"  Disk Model: {sys_info['disk_model']}")
+
+    # GPU Information
+    if 'gpu_info' in sys_info:
+        print(f"\nGPU Information:")
+        print(f"  {sys_info['gpu_info']}")
+
+    # Python Information
+    print(f"\nSoftware Information:")
+    print(f"  Python Version: {sys_info['python_version']}")
+
+    # Performance Assessment
+    print(f"\nPerformance Assessment:")
+    print(f"- System Type: High-performance gaming laptop")
+    print(f"- RAM: {sys_info['memory_total_gb']:.0f}GB DDR5 (excellent for data processing)")
+    print(f"- Storage: NVME SSD (fast I/O for large datasets)")
+    print(f"- CPU: {sys_info['cpu_count']} cores (good parallel processing)")
+    print(f"- Expected Performance: 50K-100K+ rows comfortable")
+    print(f"- Scaling Limit: 500K+ rows with optimization")
 
 def main():
     """Main performance testing function."""
@@ -323,6 +453,15 @@ def main():
 
         # Test filtering performance
         run_filtering_benchmark()
+
+        # Test data analysis operations
+        run_data_analysis_benchmark()
+
+        # Test query complexity performance
+        run_query_complexity_benchmark()
+
+        # Test memory operations
+        run_memory_operations_benchmark()
 
         # Test export operations
         run_export_benchmark()

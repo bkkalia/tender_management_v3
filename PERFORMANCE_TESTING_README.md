@@ -1,58 +1,107 @@
-# Performance Testing Guide - Tender Management Utility v3
+# 🚀 Performance Testing Guide - Tender Management Utility v3
 
 ## Overview
 
-This guide provides comprehensive performance testing options for your Tender Management Utility v3 application. With your Dell G15 system (32GB DDR5, 2TB NVME, RTX 3050), you can benchmark various operations to understand performance characteristics and scaling limits.
+This comprehensive guide covers all performance testing capabilities for your Tender Management Utility v3. With your Dell G15 system (32GB DDR5, 2TB NVME, RTX 3050), you can benchmark operations, generate test data, and monitor real-time performance through both command-line tools and the integrated GUI Performance Monitor.
 
-## Quick Start
+## 🎯 Quick Start Options
 
-### Option 1: Run Full Performance Test Suite
+### Option 1: GUI Performance Monitor (Recommended)
+1. **Launch the application**: `python main.py`
+2. **Navigate to Performance tab** in the main interface
+3. **Choose data source**:
+   - Generate new dummy data, or
+   - Use existing data files
+4. **Configure auto-options**:
+   - ☑ Auto-import generated data
+   - ☑ Auto-run performance tests
+5. **Generate reports**: Rich markdown reports saved to data location
+
+### Option 2: Command-Line Testing
 ```bash
+# Run full performance test suite
 python performance_test_demo.py
+
+# Generate dummy data for testing
+python dummy_data_generator.py --rows 10000 --files 5
 ```
 
-This will run all performance tests and provide detailed benchmarks for your system.
-
-### Option 2: Use Individual Testing Functions
-
-#### Test Data Loading Performance
+### Option 3: Programmatic Testing
 ```python
-from utils.performance_tester import benchmark_data_loading
+from utils.performance_tester import PerformanceTester, benchmark_data_loading
 
-# Test loading your actual data files
-results = benchmark_data_loading([
-    "path/to/your/file1.xlsx",
-    "path/to/your/file2.xlsx"
-], iterations=3)
-```
-
-#### Test Filtering Performance
-```python
-from utils.performance_tester import benchmark_filtering_scenarios
-from core.data_processor import TenderDataProcessor
-
-# Load your data first
-processor = TenderDataProcessor()
-processor.load_data_from_files(["your_data.xlsx"])
-
-# Test filtering scenarios
-results = benchmark_filtering_scenarios(processor, iterations=5)
-```
-
-#### Manual Performance Testing
-```python
-from utils.performance_tester import PerformanceTester
-
+# Quick benchmarking
 tester = PerformanceTester()
-
-# Time any operation
 with tester.time_operation("my_operation"):
     # Your code here
     pass
 
-# Get results
-results = tester.get_results()
-tester.print_summary()
+# Test data loading
+results = benchmark_data_loading(["data.xlsx"], iterations=3)
+```
+
+## 🎛️ GUI Performance Monitor Features
+
+### Real-Time Monitoring Tab
+- **Live Metrics Display**: Memory usage, CPU usage, data records, active operations
+- **Performance History**: Tree view of operation history with timing details
+- **Start/Stop Monitoring**: Control real-time performance tracking
+- **System Integration**: Automatic updates every 2 seconds
+
+### Performance Testing Tab
+- **Data Source Selection**:
+  - Generate new dummy data with custom parameters
+  - Use existing Excel/CSV files for testing
+- **Auto-Workflow Options**:
+  - ☑ Automatically import generated data
+  - ☑ Run performance tests after import
+- **Test Categories**:
+  - Data Loading Performance Test
+  - Query Performance Test
+  - Memory Usage Test
+  - Analysis Operations Test
+  - Full Benchmark Suite
+- **Test Data Generation**:
+  - Configurable records per file (e.g., 10,000)
+  - Configurable number of files (e.g., 5)
+  - Smart file naming: `Dummy_10k_records_01.xlsx`
+  - No-overwrite protection with automatic numbering
+
+### System Information Tab
+- **Hardware Specifications**: CPU, RAM, storage, GPU details
+- **Performance Assessment**: System capability analysis
+- **Real-Time Updates**: Live system monitoring
+- **Optimization Recommendations**: System-specific tips
+
+### Rich Report Generation
+- **Markdown Format**: Professional .md reports with rich formatting
+- **Comprehensive Content**:
+  - System specifications and hardware details
+  - Test results with performance metrics
+  - Optimization recommendations
+  - File locations and timestamps
+- **Auto-Save Location**: Reports saved to data directory
+- **One-Click Generation**: Generate reports from test results
+
+## 🗂️ Dummy Data Generator
+
+### Features
+- **Realistic Data Generation**: Proper tender data with all required columns
+- **Standard Column Headers**:
+  - Department Name, S.No, e-Published Date, Closing Date, Opening Date
+  - Organisation Chain, Title and Ref.No./Tender ID, Tender ID (Extracted)
+  - Direct URL, Status URL
+- **Smart File Naming**: `Dummy_100k_records_01.xlsx`, `Dummy_50k_records_02.xlsx`
+- **No-Overwrite Protection**: Automatically increments file numbers
+- **DateTime Objects**: Proper datetime handling (no pandas parsing warnings)
+
+### Usage Examples
+```bash
+# Generate 10 files with 100k records each
+python dummy_data_generator.py --rows 100000 --files 10
+
+# Generate 5 files with 50k records each
+python dummy_data_generator.py --rows 50000 --files 5
 ```
 
 ## Test Categories

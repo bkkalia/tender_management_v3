@@ -26,9 +26,14 @@ from ui.logs_tab import LogsTab
 from ui.calendar_tab import CalendarTab  # Import the CalendarTab class
 # Note: TenderTasksTab is still placeholder
 from ui.tender_tasks_tab import TenderTasksTab
+try:
+    from ui.performance_tab import PerformanceTab
+except ImportError:
+    PerformanceTab = None
 
 from core.config_manager import GlobalConfig
 from utils.constants import COLORS, FONTS
+from utils.performance_tester import PerformanceTester
 
 logger = logging.getLogger(__name__)
 
@@ -203,18 +208,107 @@ class MainApplication(tk.Tk):
         self._initialize_tabs()
 
     def _create_status_bar(self):
-        """Create the status bar at the bottom of the window."""
+        """Create the status bar at the bottom of the window with performance monitoring."""
         self.status_frame = ttk.Frame(self)
         self.status_frame.pack(side=tk.BOTTOM, fill=tk.X)
-        
-        # Create status bar
+
+        # Initialize performance monitoring
+        self.performance_tester = PerformanceTester()
+        self.performance_metrics = {
+            'memory_usage': tk.StringVar(value="RAM: --"),
+            'data_records': tk.StringVar(value="Records: --"),
+            'last_operation': tk.StringVar(value="Last Op: --")
+        }
+
+        # Create status bar sections
         self.status_var = tk.StringVar(value="Ready")
         self.status_bar = ttk.Label(self.status_frame, textvariable=self.status_var, anchor=tk.W, padding=(5, 2))
         self.status_bar.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        
-        # Add version label on right side of status bar
+
+        # Performance indicators
+        perf_frame = ttk.Frame(self.status_frame)
+        perf_frame.pack(side=tk.RIGHT, padx=(0, 10))
+
+        # Memory usage indicator
+        memory_label = ttk.Label(perf_frame, textvariable=self.performance_metrics['memory_usage'],
+                                font=('TkDefaultFont', 8), foreground='blue')
+        memory_label.pack(side=tk.LEFT, padx=(0, 10))
+
+        # Data records indicator
+        records_label = ttk.Label(perf_frame, textvariable=self.performance_metrics['data_records'],
+                                 font=('TkDefaultFont', 8), foreground='green')
+        records_label.pack(side=tk.LEFT, padx=(0, 10))
+
+        # Last operation indicator
+        operation_label = ttk.Label(perf_frame, textvariable=self.performance_metrics['last_operation'],
+                                   font=('TkDefaultFont', 8), foreground='purple')
+        operation_label.pack(side=tk.LEFT, padx=(0, 10))
+
+        # Add version label on right side
         version_label = ttk.Label(self.status_frame, text="v3.1", padding=(5, 2))
         version_label.pack(side=tk.RIGHT)
+
+        # Start performance monitoring updates
+        self._start_performance_monitoring()
+
+    def _start_performance_monitoring(self):
+        """Start periodic performance monitoring updates."""
+        self._update_performance_metrics()
+        # Update every 2 seconds
+        self.after(2000, self._start_performance_monitoring)
+
+    def _update_performance_metrics(self):
+        """Update performance metrics in the status bar."""
+        try:
+            # Get current memory usage
+            import psutil
+            memory = psutil.virtual_memory()
+            memory_mb = memory.used / (1024 * 1024)
+            self.performance_metrics['memory_usage'].set(f"RAM: {memory_mb:.0f}MB")
+
+            # Get data records count from search tab
+            search_tab = self.tabs.get("Search & Dashboard")
+            if search_tab and hasattr(search_tab, 'data_processor'):
+                if hasattr(search_tab.data_processor, 'raw_data') and search_tab.data_processor.raw_data is not None:
+                    record_count = len(search_tab.data_processor.raw_data)
+                    self.performance_metrics['data_records'].set(f"Records: {record_count:,}")
+                elif hasattr(search_tab.data_processor, 'filtered_data') and search_tab.data_processor.filtered_data is not None:
+                    record_count = len(search_tab.data_processor.filtered_data)
+                    self.performance_metrics['data_records'].set(f"Records: {record_count:,}")
+
+            # Update last operation from performance tester
+            if hasattr(self, 'performance_tester') and self.performance_tester.results:
+                last_ops = list(self.performance_tester.results.keys())
+                if last_ops:
+                    last_op = last_ops[-1]
+                    # Truncate if too long
+                    if len(last_op) > 15:
+                        last_op = last_op[:12] + "..."
+                    self.performance_metrics['last_operation'].set(f"Last: {last_op}")
+
+        except Exception as e:
+            self.logger.debug(f"Error updating performance metrics: {e}")
+            # Don't show errors in status bar, just keep defaults
+
+    def update_performance_status(self, operation_name: str, details: str = ""):
+        """Update the performance status with current operation."""
+        try:
+            # Log to console for debugging
+            self.logger.info(f"Performance: {operation_name} - {details}")
+
+            # Update status bar
+            status_text = f"{operation_name}"
+            if details:
+                status_text += f" - {details}"
+            self.status_var.set(status_text)
+
+            # Update last operation metric
+            if len(operation_name) > 15:
+                operation_name = operation_name[:12] + "..."
+            self.performance_metrics['last_operation'].set(f"Last: {operation_name}")
+
+        except Exception as e:
+            self.logger.debug(f"Error updating performance status: {e}")
 
     def _load_initial_data(self):
         """Load initial data after UI is ready."""
@@ -415,11 +509,19 @@ India - 174303"""
             self.notebook.add(settings_tab, text="Settings")
             self.tabs["Settings"] = settings_tab
             
+            # Performance Tab
+            if PerformanceTab is not None:
+                performance_tab = PerformanceTab(self.notebook, self)
+                self.notebook.add(performance_tab, text="Performance")
+                self.tabs["Performance"] = performance_tab
+            else:
+                self.logger.warning("PerformanceTab not available - skipping this tab")
+
             # Logs Tab
             logs_tab = LogsTab(self.notebook, self)
             self.notebook.add(logs_tab, text="Logs")
             self.tabs["Logs"] = logs_tab
-            
+
             # Select the default tab
             self.notebook.select(0)  # Select first tab
             

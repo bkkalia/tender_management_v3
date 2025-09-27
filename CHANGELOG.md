@@ -8,18 +8,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Enhanced saved searches functionality with dedicated UI section
-- Support for both JSON and CSV export formats for saved searches
-- Improved data structure compatibility for saved searches
-- Better error handling and user feedback throughout the application
+- **Performance Monitoring System**: Complete real-time performance tracking integrated into GUI
+  - Live status bar indicators (RAM usage, data records, last operation)
+  - Dedicated Performance tab with three sections: Real-time Monitor, Performance Tests, System Info
+  - Automatic performance metrics updates every 2 seconds
+- **Advanced Dummy Data Generator**: Enhanced with correct column headers and smart file naming
+  - Standard tender data columns: Department Name, S.No, e-Published Date, Closing Date, Opening Date, Organisation Chain, Title and Ref.No./Tender ID, Tender ID (Extracted), Direct URL, Status URL
+  - Smart file naming: `Dummy_100k_records_01.xlsx` with automatic numbering to prevent overwrites
+  - DateTime objects for pandas compatibility (no parsing warnings)
+- **GUI Performance Testing Suite**: Complete testing interface within the application
+  - Data source selection (generate new dummy data or use existing files)
+  - Auto-import and auto-test workflows with configurable options
+  - Rich markdown report generation saved to data location
+  - Test categories: Data Loading, Query Performance, Memory Usage, Analysis Operations, Full Benchmark
+- **Enhanced Status Bar**: Real-time performance indicators
+  - Memory usage tracking with percentage display
+  - Data record count with comma formatting
+  - Last operation tracking with truncation for long names
+- **Rich Markdown Reports**: Professional performance reports with:
+  - System specifications and hardware details
+  - Test results with performance metrics
+  - Optimization recommendations and file locations
+  - Auto-save to Downloads/dummy_data folder
+- **Performance Tab Integration**: New tab added to main application interface
+  - Real-time monitoring with live metrics display
+  - Performance testing with automated workflows
+  - System information with hardware specifications
+  - Comprehensive testing suite with progress feedback
 
 ### Fixed
+- Date parsing warnings in dummy data generator (now uses datetime objects)
 - Data structure compatibility issues in saved searches functionality
 - Clean functionality to handle both dictionary and list formats
 - Import/export operations with proper error handling
 - UI responsiveness issues when no data is loaded
 
 ### Changed
+- Enhanced dummy data generator with proper column headers and naming scheme
+- Updated performance testing documentation with GUI features
+- Improved HTML website with performance monitoring feature descriptions
 - Separated saved searches from date filter widgets for better UX
 - Improved layout organization and visual hierarchy
 - Enhanced configuration management system
