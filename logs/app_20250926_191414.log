@@ -1,0 +1,174 @@
+2025-09-26 19:14:14 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250926_191414.log
+2025-09-26 19:14:14 - root - INFO - Application starting...
+2025-09-26 19:14:14 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-26 19:14:14 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-26 19:14:14 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-26 19:14:14 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-26 19:14:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-26 19:14:15 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-26 19:14:15 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-26 19:14:15 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-26 19:14:15 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-26 19:14:15 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-26 19:14:15 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-26 19:14:15 - ui.main_window - INFO - Main application initialized
+2025-09-26 19:14:15 - root - INFO - Main window initialized
+2025-09-26 19:14:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-26 19:14:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-26 19:14:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1375 records closing after 2025-09-26 19:14:29.549605
+2025-09-26 19:14:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-26 19:14:39 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:14:44 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:14:49 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:14:55 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:15:00 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:15:05 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:15:10 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:15:15 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:15:20 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:15:25 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:15:30 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:15:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:15:40 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:15:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:15:50 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:15:55 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:16:01 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:16:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:16:11 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:16:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:16:21 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:16:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:16:31 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:16:36 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:16:41 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:16:46 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:16:51 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:16:56 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:17:02 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:17:07 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:17:12 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:17:17 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:17:22 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:17:27 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:17:32 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:17:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:17:42 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:17:47 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:17:52 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:17:57 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:18:02 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:18:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:18:13 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:18:18 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:18:23 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:18:28 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:18:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:18:38 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:18:43 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:18:48 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:18:53 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:18:58 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:19:03 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:19:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:19:14 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:19:19 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:19:24 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:19:29 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:19:34 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:19:39 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:19:44 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:19:49 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:19:54 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:19:59 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:20:05 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:20:10 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:20:15 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:20:20 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:20:25 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:20:30 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:20:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:20:40 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:20:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:20:50 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:20:56 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:21:01 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:21:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:21:11 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:21:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:21:21 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:21:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:21:31 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:21:36 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:21:41 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:21:46 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:21:52 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:21:57 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:22:02 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:22:07 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:22:12 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:22:17 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:22:22 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:22:27 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:22:32 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:22:38 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:22:43 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:22:48 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:22:53 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:22:58 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:23:04 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:23:09 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:23:14 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:23:19 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:23:24 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:23:29 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:23:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:23:40 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:23:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:23:50 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:23:55 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:24:00 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:24:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:24:11 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:24:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:24:21 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:24:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:24:31 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:24:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:24:42 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:24:47 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:24:52 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:24:57 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:25:02 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:25:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:25:13 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:25:18 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:25:23 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:25:28 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:25:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:25:39 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:25:44 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:25:49 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:25:54 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:25:59 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:26:04 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:26:09 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:26:15 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:26:20 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:26:25 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:26:30 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:26:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:26:40 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:26:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:26:50 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:26:56 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:27:01 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:27:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:27:11 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:27:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:27:21 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:27:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:27:32 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:27:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:27:42 - ui.main_window - INFO - Application closing
+2025-09-26 19:27:42 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json

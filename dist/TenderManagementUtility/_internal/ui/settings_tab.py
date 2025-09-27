@@ -93,16 +93,18 @@ class SettingsTab(ttk.Frame):
         default_data_row = ttk.Frame(paths_frame)
         default_data_row.pack(fill=tk.X, padx=SPACING['medium'], pady=SPACING['small'])
         
-        create_info_label(default_data_row, "Default Data Folder:").pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        info_label = create_info_label(default_data_row, "Default Data Folder:")
+        info_label.pack(side=tk.LEFT, padx=(0, SPACING['small']))
         
         default_data_entry = ttk.Entry(default_data_row, textvariable=self.default_data_folder_var, width=50)
         default_data_entry.pack(side=tk.LEFT, padx=(0, SPACING['small']), fill=tk.X, expand=True)
         
-        create_action_button(
+        browse_btn = create_action_button(
             default_data_row, "Browse...", 
             lambda: self._browse_folder(self.default_data_folder_var),
             width=10
-        ).pack(side=tk.LEFT)
+        )
+        browse_btn.pack(side=tk.LEFT)
         
         # Help text for default data folder
         create_info_label(
@@ -193,14 +195,87 @@ class SettingsTab(ttk.Frame):
             font_style=FONTS.get('small', ('TkDefaultFont', 9, 'italic'))
         ).pack(fill=tk.X, padx=SPACING['medium'], pady=(0, SPACING['small']))
         
-        # Section 3: Advanced Settings (placeholder for future)
+        # Section 3: Treeview Column Settings
+        treeview_frame = create_labeled_frame(content_frame, "Treeview Column Settings")
+        treeview_frame.pack(fill=tk.X, pady=SPACING['medium'])
+
+        # Initialize column settings variables
+        self.column_settings = self.main_app.global_config.get("treeview_column_settings", {})
+        self.column_vars = {}  # Dictionary to store checkbox variables
+        self.width_vars = {}   # Dictionary to store width variables
+
+        # Create scrollable frame for column settings
+        columns_container = ttk.Frame(treeview_frame)
+        columns_container.pack(fill=tk.BOTH, expand=True, padx=SPACING['medium'], pady=SPACING['small'])
+
+        # Header row
+        header_frame = ttk.Frame(columns_container)
+        header_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
+
+        ttk.Label(header_frame, text="Column Name", font=FONTS.get('subheading', ('TkDefaultFont', 10, 'bold'))).pack(side=tk.LEFT, padx=(0, SPACING['large']))
+        ttk.Label(header_frame, text="Visible", font=FONTS.get('subheading', ('TkDefaultFont', 10, 'bold'))).pack(side=tk.LEFT, padx=(0, SPACING['large']))
+        ttk.Label(header_frame, text="Width", font=FONTS.get('subheading', ('TkDefaultFont', 10, 'bold'))).pack(side=tk.LEFT)
+
+        # Separator line
+        ttk.Separator(columns_container, orient="horizontal").pack(fill=tk.X, pady=SPACING['small'])
+
+        # Scrollable frame for column list
+        columns_scroll_frame = ttk.Frame(columns_container)
+        columns_scroll_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Canvas and scrollbar for scrolling
+        canvas = tk.Canvas(columns_scroll_frame, height=150)
+        scrollbar = ttk.Scrollbar(columns_scroll_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Pack canvas and scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # Store reference to scrollable frame for adding columns
+        self.columns_scrollable_frame = scrollable_frame
+
+        # Load and display current column settings
+        self._load_column_settings()
+
+        # Buttons for column management
+        buttons_frame = ttk.Frame(treeview_frame)
+        buttons_frame.pack(fill=tk.X, padx=SPACING['medium'], pady=SPACING['small'])
+
+        create_action_button(
+            buttons_frame, "Reset Column Settings", self._reset_column_settings,
+            button_type='secondary', width=18
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            buttons_frame, "Apply to Current View", self._apply_column_settings_to_current_view,
+            button_type='info', width=18
+        ).pack(side=tk.LEFT)
+
+        # Help text for column settings
+        create_info_label(
+            treeview_frame,
+            "Configure which columns are visible in the Search & Dashboard treeview and their widths.\n"
+            "Changes take effect when you refresh the data or restart the application.",
+            font_style=FONTS.get('small', ('TkDefaultFont', 9, 'italic'))
+        ).pack(fill=tk.X, padx=SPACING['medium'], pady=(0, SPACING['small']))
+
+        # Section 4: Advanced Settings (placeholder for future)
         advanced_frame = create_labeled_frame(content_frame, "Advanced Settings")
         advanced_frame.pack(fill=tk.X, pady=SPACING['medium'])
-        
+
         # Placeholder for future advanced settings
         ttk.Label(
-            advanced_frame, 
-            text="Advanced settings will be available in a future update.",
+            advanced_frame,
+            text="Additional advanced settings will be available in future updates.",
             padding=SPACING['medium'],
             font=FONTS.get('body', ('TkDefaultFont', 10, 'italic'))
         ).pack(fill=tk.X)
@@ -230,6 +305,170 @@ class SettingsTab(ttk.Frame):
         self.merger_unique_keys_var.trace_add("write", self._on_setting_changed)
         self.merger_critical_fields_var.trace_add("write", self._on_setting_changed)
         self.merger_max_backups_var.trace_add("write", self._on_setting_changed)
+
+    def _load_column_settings(self):
+        """Load and display column settings from config."""
+        # Clear existing column settings
+        for widget in self.columns_scrollable_frame.winfo_children():
+            widget.destroy()
+
+        self.column_vars = {}
+        self.width_vars = {}
+
+        # Get current column settings from config
+        column_settings = self.main_app.global_config.get("treeview_column_settings", {})
+
+        # If no settings exist, create default settings based on common columns
+        if not column_settings:
+            # Default columns that are commonly found in tender data
+            default_columns = [
+                "Tender ID", "Title", "Department", "Closing Date", "Status",
+                "Value", "Location", "Source File", "Description", "Agency",
+                "Ministry", "Tender ID (Extracted)", "Title and Ref.No./Tender ID"
+            ]
+
+            column_settings = {}
+            for col in default_columns:
+                column_settings[col] = {
+                    "visible": True,
+                    "width": 100  # Default width
+                }
+
+            # Special widths for specific columns
+            special_widths = {
+                "Title": 300,
+                "Description": 300,
+                "Department": 200,
+                "Agency": 200,
+                "Ministry": 200,
+                "Closing Date": 120,
+                "Status": 100,
+                "Value": 120,
+                "Location": 150,
+                "Source File": 150
+            }
+
+            for col, width in special_widths.items():
+                if col in column_settings:
+                    column_settings[col]["width"] = width
+
+        # Create UI elements for each column
+        for col_name, settings in column_settings.items():
+            col_frame = ttk.Frame(self.columns_scrollable_frame)
+            col_frame.pack(fill=tk.X, pady=1)
+
+            # Column name label
+            name_label = ttk.Label(col_frame, text=col_name, width=25, anchor="w")
+            name_label.pack(side=tk.LEFT, padx=(0, SPACING['medium']))
+
+            # Visibility checkbox
+            visible_var = tk.BooleanVar(value=settings.get("visible", True))
+            self.column_vars[col_name] = visible_var
+
+            visible_cb = ttk.Checkbutton(col_frame, variable=visible_var,
+                                       command=self._on_column_setting_changed)
+            visible_cb.pack(side=tk.LEFT, padx=(0, SPACING['large']))
+
+            # Width spinbox
+            width_var = tk.StringVar(value=str(settings.get("width", 100)))
+            self.width_vars[col_name] = width_var
+
+            width_sb = ttk.Spinbox(col_frame, from_=50, to=500, textvariable=width_var,
+                                 width=5, command=self._on_column_setting_changed)
+            width_sb.pack(side=tk.LEFT)
+
+            # Bind width variable change
+            width_var.trace_add("write", self._on_column_setting_changed)
+
+    def _on_column_setting_changed(self, *args):
+        """Track when column settings have been changed."""
+        self.settings_changed = True
+        self.status_var.set("Column settings changed. Click 'Save Settings' to apply.")
+
+    def _reset_column_settings(self):
+        """Reset column settings to defaults."""
+        confirm = messagebox.askyesno(
+            "Confirm Reset",
+            "Are you sure you want to reset all column settings to their default values?",
+            parent=self
+        )
+
+        if not confirm:
+            return
+
+        # Clear current settings
+        self.main_app.global_config.set("treeview_column_settings", {})
+
+        # Reload column settings (will use defaults)
+        self._load_column_settings()
+
+        self.settings_changed = True
+        self.status_var.set("Column settings reset to defaults. Click 'Save Settings' to apply.")
+
+    def _apply_column_settings_to_current_view(self):
+        """Apply column settings to the current Search & Dashboard view."""
+        try:
+            # Get the Search & Dashboard tab
+            search_tab = self.main_app.tabs.get("Search & Dashboard")
+            if not search_tab or not hasattr(search_tab, 'tree'):
+                messagebox.showwarning("No Active View", "Search & Dashboard tab is not available or has no data loaded.")
+                return
+
+            # Save current settings first
+            self._save_column_settings()
+
+            # Apply settings to current treeview
+            self._apply_column_settings_to_treeview(search_tab.tree)
+
+            messagebox.showinfo("Settings Applied", "Column settings applied to current view successfully.")
+
+        except Exception as e:
+            self.logger.error(f"Error applying column settings to current view: {e}")
+            messagebox.showerror("Apply Error", f"Failed to apply column settings:\n{str(e)}")
+
+    def _save_column_settings(self):
+        """Save current column settings to config."""
+        column_settings = {}
+
+        for col_name in self.column_vars:
+            visible = self.column_vars[col_name].get()
+            try:
+                width = int(self.width_vars[col_name].get())
+            except ValueError:
+                width = 100  # Default width if invalid
+
+            column_settings[col_name] = {
+                "visible": visible,
+                "width": width
+            }
+
+        self.main_app.global_config.set("treeview_column_settings", column_settings)
+
+    def _apply_column_settings_to_treeview(self, treeview):
+        """Apply column settings to a specific treeview widget."""
+        if not treeview:
+            return
+
+        try:
+            column_settings = self.main_app.global_config.get("treeview_column_settings", {})
+
+            # Get current columns
+            current_columns = treeview['columns']
+
+            for col in current_columns:
+                settings = column_settings.get(col, {})
+
+                # Set visibility (hide/show column)
+                if not settings.get("visible", True):
+                    # Hide column by setting width to 0
+                    treeview.column(col, width=0, minwidth=0)
+                else:
+                    # Show column with configured width
+                    width = settings.get("width", 100)
+                    treeview.column(col, width=width, minwidth=50)
+
+        except Exception as e:
+            self.logger.error(f"Error applying column settings to treeview: {e}")
     
     def _on_setting_changed(self, *args):
         """Track when settings have been changed."""
@@ -297,6 +536,9 @@ class SettingsTab(ttk.Frame):
                 "merger_critical_fields": self._parse_comma_separated_list(self.merger_critical_fields_var.get()),
                 "merger_max_backups": max_backups
             }
+
+            # Save column settings
+            self._save_column_settings()
             
             # Create directories if they don't exist
             for path_key in ["default_data_folder", "merged_data_folder"]:
@@ -333,21 +575,30 @@ class SettingsTab(ttk.Frame):
     
     def _propagate_config_changes(self, new_settings: Dict[str, Any]):
         """Notify other components of configuration changes."""
-        # Reinitialize relevant components that depend on these settings
-        
-        # Update Search tab's data processor with new paths if it exists
-        search_tab = self.main_app.tabs.get("Search & Dashboard")
-        if search_tab and hasattr(search_tab, "data_processor"):
-            search_tab.data_processor.update_config(self.main_app.global_config)
-            self.logger.info("Updated Search tab's data processor with new config")
-        
-        # Update Portal Merger tab with new merger settings if it exists
-        merger_tab = self.main_app.tabs.get("Portal Merger")
-        if merger_tab and hasattr(merger_tab, "merger"):
-            merger_tab.merger = None  # Force recreation with new config
-            # Create a new PortalDataMerger instance directly
-            merger_tab.merger = PortalDataMerger(self.main_app.global_config)
-            self.logger.info("Updated Portal Merger tab with new config")
+        try:
+            # Update Search tab's data processor with new paths if it exists
+            search_tab = self.main_app.tabs.get("Search & Dashboard")
+            if search_tab and hasattr(search_tab, "data_processor"):
+                if hasattr(search_tab.data_processor, 'update_config'):
+                    search_tab.data_processor.update_config(self.main_app.global_config)
+                    self.logger.info("Updated Search tab's data processor with new config")
+                else:
+                    # Recreate the data processor with new config
+                    from core.data_processor import TenderDataProcessor
+                    search_tab.data_processor = TenderDataProcessor(self.main_app.global_config)
+                    self.logger.info("Recreated Search tab's data processor with new config")
+            
+            # Update Portal Merger tab with new merger settings if it exists
+            merger_tab = self.main_app.tabs.get("Portal Merger")
+            if merger_tab and hasattr(merger_tab, "merger"):
+                merger_tab.merger = None  # Force recreation with new config
+                # Create a new PortalDataMerger instance directly
+                merger_tab.merger = PortalDataMerger(self.main_app.global_config)
+                self.logger.info("Updated Portal Merger tab with new config")
+                
+        except Exception as e:
+            self.logger.error(f"Error propagating config changes: {e}")
+            # Don't raise the error, just log it so settings still save
     
     def on_tab_selected(self):
         """Called when this tab is selected."""

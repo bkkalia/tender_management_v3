@@ -157,11 +157,12 @@ class SearchDashboardTab(ttk.Frame):
         self.dept_operator_var = tk.StringVar(value="OR")
         self.global_operator_var = tk.StringVar(value="AND")
         self.status_filter_var = tk.StringVar(value="live")
-        
+
         # Add missing saved search variable
         self.saved_search_var = tk.StringVar()
         self.save_search_name_var = tk.StringVar()
-        
+
+
         # --- NEW time vars for custom range ---
         self.start_hour_var = tk.StringVar(value="00")
         self.start_min_var = tk.StringVar(value="00")
@@ -268,9 +269,6 @@ class SearchDashboardTab(ttk.Frame):
         tender_data_frame = create_labeled_frame(main_pane, "Tender Data")
         main_pane.add(tender_data_frame, height=220, minsize=160)  # Reduced from 260 to 220 to accommodate larger filter section
         self._create_tender_data_widgets(tender_data_frame)
-
-        # Add dedicated saved searches section at the bottom
-        self._create_saved_searches_widgets(self)
 
         # Configure collapse button style - make it more compact
         style = ttk.Style()
@@ -566,10 +564,11 @@ class SearchDashboardTab(ttk.Frame):
         date_container = ttk.Frame(parent)
         date_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
 
-        # Configure grid with equal width distribution - all sections 33% each
-        date_container.grid_columnconfigure(0, weight=33, minsize=160)  # Status Filter
-        date_container.grid_columnconfigure(1, weight=33, minsize=160)  # Time Range Filter
-        date_container.grid_columnconfigure(2, weight=34, minsize=160)  # Custom Date Range
+        # Configure grid with equal width distribution - 4 sections
+        date_container.grid_columnconfigure(0, weight=25, minsize=120)  # Status Filter
+        date_container.grid_columnconfigure(1, weight=25, minsize=120)  # Time Range Filter
+        date_container.grid_columnconfigure(2, weight=25, minsize=120)  # Custom Date Range
+        date_container.grid_columnconfigure(3, weight=25, minsize=120)  # Saved Searches
         date_container.grid_rowconfigure(0, weight=1)
 
         # Calculate dynamic spacing based on container width
@@ -784,32 +783,34 @@ class SearchDashboardTab(ttk.Frame):
             if go_btn:
                 go_btn.pack(fill=tk.X, pady=(SPACING['small']//2, 0))
         
+
+        
         # Section 4: Saved Searches (Column 3)
-        saved_section = ttk.LabelFrame(date_container, text="💾 Saved Searches", 
+        saved_section = ttk.LabelFrame(date_container, text="💾 Saved Searches",
                                       padding=internal_padding)
         saved_section.grid(row=0, column=3, sticky="nsew", padx=(section_padding//2, 0))
-        
+
         # Saved content with consistent height
         saved_content = ttk.Frame(saved_section)
         saved_content.pack(fill=tk.BOTH, expand=True)
-        
+
         saved_label = ttk.Label(saved_content, text="Searches:", font=('TkDefaultFont', 9, 'bold'))
         saved_label.pack(anchor=tk.W, pady=(0, SPACING['small']//2))
-        
+
         # Compact combobox
-        self.saved_searches_combo = ttk.Combobox(saved_content, textvariable=self.saved_search_var, 
+        self.saved_searches_combo = ttk.Combobox(saved_content, textvariable=self.saved_search_var,
                                                 width=12, state="readonly", font=('TkDefaultFont', 8))
         self.saved_searches_combo.pack(fill=tk.X, pady=(0, SPACING['small']//2))
         self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
-        
+
         # Compact 2x3 button grid
         buttons_container = ttk.Frame(saved_content)
         buttons_container.pack(fill=tk.X, expand=True)
-        
+
         # Configure button grid for equal distribution
         for i in range(3):
             buttons_container.grid_columnconfigure(i, weight=1)
-        
+
         # Button definitions with shorter labels for space
         button_configs = [
             # Row 0
@@ -821,114 +822,22 @@ class SearchDashboardTab(ttk.Frame):
             ("Import", self._import_saved_searches, 'secondary'),
             ("Clean", self._clean_corrupted_searches, 'warning')
         ]
-        
+
         for i, (text, command, btn_type) in enumerate(button_configs):
             row = i // 3
             col = i % 3
-            btn = create_action_button(buttons_container, text, command, 
+            btn = create_action_button(buttons_container, text, command,
                                      width=5, button_type=btn_type)
             if btn:
                 btn.grid(row=row, column=col, padx=1, pady=1, sticky="ew")
-        
+
         # Update saved searches list
         self._update_saved_searches_list()
-        
+
         # Apply default Live filter
         self._apply_status_filter("live")
 
-    def _create_saved_searches_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
-        """Create dedicated saved searches widgets section."""
-        # Main saved searches container
-        saved_searches_container = ttk.LabelFrame(parent, text="💾 Saved Searches Management",
-                                                 padding=(SPACING['medium'], SPACING['medium']))
-        saved_searches_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
 
-        # Content frame
-        saved_content = ttk.Frame(saved_searches_container)
-        saved_content.pack(fill=tk.BOTH, expand=True)
-
-        # Top row: Load and Save
-        top_row = ttk.Frame(saved_content)
-        top_row.pack(fill=tk.X, pady=(0, SPACING['small']))
-
-        # Left: Load section
-        load_section = ttk.Frame(top_row)
-        load_section.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, SPACING['small']))
-
-        ttk.Label(load_section, text="Load Search:", font=('TkDefaultFont', 9, 'bold')).pack(anchor=tk.W)
-        self.saved_searches_combo = ttk.Combobox(load_section, textvariable=self.saved_search_var,
-                                                width=25, state="readonly", font=('TkDefaultFont', 9))
-        self.saved_searches_combo.pack(fill=tk.X, pady=(2, 0))
-        self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
-
-        # Right: Save section
-        save_section = ttk.Frame(top_row)
-        save_section.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(SPACING['small'], 0))
-
-        ttk.Label(save_section, text="Save Current Search:", font=('TkDefaultFont', 9, 'bold')).pack(anchor=tk.W)
-        save_entry_frame = ttk.Frame(save_section)
-        save_entry_frame.pack(fill=tk.X, pady=(2, 0))
-        self.save_search_name_var = tk.StringVar()
-        save_entry = ttk.Entry(save_entry_frame, textvariable=self.save_search_name_var, font=('TkDefaultFont', 9))
-        save_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        save_btn = create_action_button(save_entry_frame, "Save", self._save_current_search_by_name,
-                                       button_type='success_outline', width=8)
-        if save_btn:
-            save_btn.pack(side=tk.RIGHT, padx=(5, 0))
-
-        # Middle row: Action buttons
-        middle_row = ttk.Frame(saved_content)
-        middle_row.pack(fill=tk.X, pady=SPACING['small'])
-
-        # Delete button
-        del_btn = create_action_button(middle_row, "🗑️ Delete", self._delete_saved_search,
-                                      button_type='danger_outline', width=12)
-        if del_btn:
-            del_btn.pack(side=tk.LEFT, padx=(0, SPACING['small']))
-
-        # Clean button
-        clean_btn = create_action_button(middle_row, "🧹 Clean", self._clean_corrupted_searches,
-                                        button_type='warning', width=12)
-        if clean_btn:
-            clean_btn.pack(side=tk.LEFT)
-
-        # Bottom row: Import/Export buttons
-        bottom_row = ttk.Frame(saved_content)
-        bottom_row.pack(fill=tk.X)
-
-        # Export section
-        export_section = ttk.Frame(bottom_row)
-        export_section.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, SPACING['small']))
-
-        ttk.Label(export_section, text="Export Searches:", font=('TkDefaultFont', 9, 'bold')).pack(anchor=tk.W)
-        export_btn_frame = ttk.Frame(export_section)
-        export_btn_frame.pack(fill=tk.X, pady=(2, 0))
-
-        export_json_btn = create_action_button(export_btn_frame, "JSON", self._export_saved_searches_json,
-                                             button_type='secondary', width=8)
-        if export_json_btn:
-            export_json_btn.pack(side=tk.LEFT, padx=(0, 2))
-
-        export_csv_btn = create_action_button(export_btn_frame, "CSV", self._export_saved_searches_csv,
-                                            button_type='secondary', width=8)
-        if export_csv_btn:
-            export_csv_btn.pack(side=tk.LEFT, padx=(2, 0))
-
-        # Import section
-        import_section = ttk.Frame(bottom_row)
-        import_section.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(SPACING['small'], 0))
-
-        ttk.Label(import_section, text="Import Searches:", font=('TkDefaultFont', 9, 'bold')).pack(anchor=tk.W)
-        import_btn_frame = ttk.Frame(import_section)
-        import_btn_frame.pack(fill=tk.X, pady=(2, 0))
-
-        import_btn = create_action_button(import_btn_frame, "Import", self._import_saved_searches,
-                                        button_type='info_outline', width=12)
-        if import_btn:
-            import_btn.pack()
-
-        # Update saved searches list
-        self._update_saved_searches_list()
 
     def _create_link_icon(self):
         """Create a link icon image for URL display."""
@@ -1863,13 +1772,7 @@ class SearchDashboardTab(ttk.Frame):
         
         self.selected_folders_var.set(text)
 
-    def _update_saved_searches_list(self):
-        """Update the saved searches dropdown list."""
-        if not hasattr(self, 'saved_searches_combo'):
-            return
-        
-        saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-        self.saved_searches_combo['values'] = saved_searches_list
+
 
     def _clear_time_filter_selection(self):
         """Clear the visual selection of time filter buttons."""
@@ -2211,24 +2114,32 @@ class SearchDashboardTab(ttk.Frame):
         # Apply the date range filter
         df = df[mask]
         self.logger.info(f"Time range filter ({time_range}) with status ({current_status}): {len(df)} records")
-        
+
         return df
+
+    def _update_saved_searches_list(self):
+        """Update the saved searches dropdown list."""
+        if not hasattr(self, 'saved_searches_combo'):
+            return
+
+        saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+        self.saved_searches_combo['values'] = saved_searches_list
 
     def _load_saved_search(self, event=None):
         """Load a saved search configuration."""
         search_name = self.saved_search_var.get()
         if not search_name:
             return
-        
+
         try:
             saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
-            
+
             if search_name not in saved_searches_data:
                 messagebox.showinfo("Not Found", f"Search '{search_name}' not found.")
                 return
-            
+
             search_config = saved_searches_data[search_name]
-            
+
             # Only load text search terms - ignore complex filter data
             if 'dept_filter' in search_config:
                 self.dept_filter_var.set(search_config['dept_filter'])
@@ -2238,13 +2149,13 @@ class SearchDashboardTab(ttk.Frame):
                 self.dept_operator_var.set(search_config['dept_operator'])
             if 'global_operator' in search_config:
                 self.global_operator_var.set(search_config['global_operator'])
-            
+
             # Apply the search filters
             self._apply_filters()
-            
+
             messagebox.showinfo("Search Loaded", f"Search terms for '{search_name}' loaded successfully.")
             self.logger.info(f"Loaded search configuration: {search_name}")
-            
+
         except Exception as e:
             self.logger.error(f"Error loading saved search: {e}")
             messagebox.showerror("Load Error", f"Error loading search '{search_name}'.\nThis search may be corrupted and should be deleted.")
@@ -2360,8 +2271,12 @@ class SearchDashboardTab(ttk.Frame):
             saved_searches_data[search_name] = search_config
 
             # Update the list of saved search names if needed
-            if search_name not in saved_searches_list:
-                saved_searches_list[search_name] = search_config
+            if isinstance(saved_searches_list, dict):
+                if search_name not in saved_searches_list:
+                    saved_searches_list[search_name] = search_config
+            elif isinstance(saved_searches_list, list):
+                if search_name not in saved_searches_list:
+                    saved_searches_list.append(search_name)
 
             # Update the config
             self.main_app.global_config.set("saved_searches_data", saved_searches_data)
@@ -2384,42 +2299,42 @@ class SearchDashboardTab(ttk.Frame):
     def _delete_saved_search(self):
         """Delete a saved search configuration with better error handling."""
         search_name = self.saved_search_var.get()
-        
+
         if not search_name:
             messagebox.showinfo("No Selection", "Please select a saved search to delete.")
             return
-        
+
         # Confirm deletion
-        if not messagebox.askyesno("Confirm Delete", 
+        if not messagebox.askyesno("Confirm Delete",
                                  f"Are you sure you want to delete the saved search '{search_name}'?"):
             return
-        
+
         try:
             # Get saved searches from config
             saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
             saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-            
+
             # Remove the search
             if search_name in saved_searches_data:
                 del saved_searches_data[search_name]
-            
+
             if search_name in saved_searches_list:
                 del saved_searches_list[search_name]
-            
+
             # Update the config
             self.main_app.global_config.set("saved_searches_data", saved_searches_data)
             self.main_app.global_config.set("saved_searches", saved_searches_list)
-            
+
             # Save the config
             self.main_app.global_config.save_config()
-            
+
             # Update the UI
             self._update_saved_searches_list()
             self.saved_search_var.set("")
-            
+
             messagebox.showinfo("Search Deleted", f"Search '{search_name}' deleted successfully.")
             self.logger.info(f"Deleted search configuration: {search_name}")
-            
+
         except Exception as e:
             self.logger.error(f"Error deleting saved search: {e}")
             messagebox.showerror("Delete Error", f"Failed to delete search: {str(e)}")
@@ -2539,32 +2454,32 @@ class SearchDashboardTab(ttk.Frame):
                 title="Import Saved Searches",
                 filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
             )
-            
+
             if not filename:
                 return
-            
+
             import json
             with open(filename, 'r', encoding='utf-8') as f:
                 imported_searches = json.load(f)
-            
+
             if not isinstance(imported_searches, dict):
                 messagebox.showerror("Invalid File", "Invalid saved searches file format.")
                 return
-            
+
             # Get current saved searches
             current_searches = self.main_app.global_config.get("saved_searches_data", {})
             current_list = self.main_app.global_config.get("saved_searches", [])
-            
+
             # Count new searches
             new_count = 0
             overwritten_count = 0
-            
+
             for search_name, search_config in imported_searches.items():
                 if search_name in current_searches:
                     overwritten_count += 1
                 else:
                     new_count += 1
-                
+
                 current_searches[search_name] = search_config
                 if isinstance(current_list, dict):
                     if search_name not in current_list:
@@ -2572,19 +2487,19 @@ class SearchDashboardTab(ttk.Frame):
                 elif isinstance(current_list, list):
                     if search_name not in current_list:
                         current_list.append(search_name)
-            
+
             # Update config
             self.main_app.global_config.set("saved_searches_data", current_searches)
             self.main_app.global_config.set("saved_searches", current_list)
             self.main_app.global_config.save_config()
-            
+
             # Update UI
             self._update_saved_searches_list()
-            
+
             message = f"Import complete!\n\nNew searches: {new_count}\nOverwritten: {overwritten_count}"
             messagebox.showinfo("Import Complete", message)
             self.logger.info(f"Imported saved searches from: {filename}")
-            
+
         except Exception as e:
             self.logger.error(f"Error importing saved searches: {e}")
             messagebox.showerror("Import Error", f"Failed to import searches: {str(e)}")
@@ -2594,11 +2509,11 @@ class SearchDashboardTab(ttk.Frame):
         try:
             saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
             saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-            
+
             cleaned_data = {}
             cleaned_list = []
             removed_count = 0
-            
+
             # Handle both list and dict formats for saved_searches
             if isinstance(saved_searches_list, dict):
                 search_names_to_check = list(saved_searches_list.keys())
@@ -2610,9 +2525,9 @@ class SearchDashboardTab(ttk.Frame):
             for search_name in search_names_to_check:
                 if search_name in saved_searches_data:
                     search_config = saved_searches_data[search_name]
-                    
+
                     # Check if it's a valid, simple search config
-                    if (isinstance(search_config, dict) and 
+                    if (isinstance(search_config, dict) and
                         ('dept_filter' in search_config or 'global_search' in search_config)):
                         # Keep valid searches
                         cleaned_data[search_name] = {
@@ -2631,24 +2546,24 @@ class SearchDashboardTab(ttk.Frame):
                     # Remove references to non-existent searches
                     removed_count += 1
                     self.logger.warning(f"Removed reference to missing search: {search_name}")
-            
+
             # Update config with cleaned data
             self.main_app.global_config.set("saved_searches_data", cleaned_data)
             self.main_app.global_config.set("saved_searches", cleaned_list)
             self.main_app.global_config.save_config()
-            
+
             # Update UI
             self._update_saved_searches_list()
             self.saved_search_var.set("")
-            
+
             if removed_count > 0:
-                messagebox.showinfo("Cleanup Complete", 
+                messagebox.showinfo("Cleanup Complete",
                                   f"Removed {removed_count} corrupted saved search(es).")
             else:
                 messagebox.showinfo("No Issues Found", "All saved searches are valid.")
-            
+
             self.logger.info(f"Cleaned saved searches, removed {removed_count} corrupted entries")
-            
+
         except Exception as e:
             self.logger.error(f"Error cleaning saved searches: {e}")
             messagebox.showerror("Cleanup Error", f"Failed to clean searches: {str(e)}")

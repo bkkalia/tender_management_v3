@@ -6,16 +6,25 @@
     "last_used_folders": [
         "H:/My Drive/0dev/Search Utility v2/tender_management_v2.1/data/input_excel_files"
     ],
+    "remote_data_sources": [],
+    "remote_connection_timeout": 30,
+    "remote_download_chunk_size": 8192,
+    "cleanup_temp_files_on_exit": true,
     "merger_preferred_unique_keys": [
         "Tender ID (Extracted)",
         "Title and Ref.No./Tender ID",
         "Tender ID"
     ],
     "merger_critical_fields": [
+         "Tender ID (Extracted)",
+        "Title and Ref.No./Tender ID",
+        "Tender ID",
         "Closing Date",
         "Status",
         "Value"
     ],
+    "merger_max_backups": 5,
+    "default_dashboard": "Search & Dashboard",
     "last_loaded_files": [
         "./data/merged_data/hptenders_gov_in_consolidated_master.xlsx"
     ]

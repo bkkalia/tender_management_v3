@@ -1,12 +1,12 @@
 {
     "app_title": "Tender Search Utility V3",
-    "default_data_folder": "./data/merged_data",
-    "merged_data_folder": "./data/merged_data/",
+    "default_data_folder": "H:/My Drive/CRM T84/0 Live App/Search data/merged_data",
+    "merged_data_folder": "H:/My Drive/CRM T84/0 Live App/Search data/merged_data",
     "log_level": "INFO",
     "last_used_folders": [
         "G:/My Drive/0dev/Search Utility v3/tender_management_v3/data/merged_data"
     ],
-    "merger_unique_key": "Tender ID",
+    "merger_unique_key": "Tender ID (Extracted)",
     "merger_critical_fields": [
         "Closing Date",
         "Status",
@@ -15,6 +15,93 @@
     "last_loaded_files": [
         "G:/My Drive/0dev/Search Utility v3/tender_management_v3/data/merged_data\\hptenders_gov_in_consolidated_master.xlsx"
     ],
-    "merger_preferred_unique_keys": [],
-    "merger_max_backups": 5
+    "merger_preferred_unique_keys": [
+        "Tender ID (Extracted)",
+        "Title and Ref.No./Tender ID",
+        "Tender ID"
+    ],
+    "merger_max_backups": 5,
+    "version": "3.1",
+    "saved_searches": [
+        "pwd una",
+        "PWD Irri Una",
+        "PWD Una"
+    ],
+    "saved_searches_data": {
+        "pwd una": {
+            "dept_filter": "pwd",
+            "global_search": "una",
+            "dept_operator": "OR",
+            "global_operator": "AND",
+            "saved_date": "2025-09-26 14:26:13"
+        },
+        "PWD Irri Una": {
+            "dept_filter": "pwd, irri",
+            "global_search": "una",
+            "dept_operator": "OR",
+            "global_operator": "AND",
+            "saved_date": "2025-09-25 19:59:26"
+        },
+        "PWD Una": {
+            "dept_filter": "PWD",
+            "global_search": "una",
+            "dept_operator": "OR",
+            "global_operator": "AND",
+            "saved_date": "2025-09-25 20:01:52"
+        }
+    },
+    "treeview_column_settings": {
+        "Tender ID": {
+            "visible": true,
+            "width": 100
+        },
+        "Title": {
+            "visible": true,
+            "width": 300
+        },
+        "Department": {
+            "visible": true,
+            "width": 200
+        },
+        "Closing Date": {
+            "visible": true,
+            "width": 120
+        },
+        "Status": {
+            "visible": true,
+            "width": 100
+        },
+        "Value": {
+            "visible": true,
+            "width": 120
+        },
+        "Location": {
+            "visible": true,
+            "width": 150
+        },
+        "Source File": {
+            "visible": true,
+            "width": 150
+        },
+        "Description": {
+            "visible": true,
+            "width": 300
+        },
+        "Agency": {
+            "visible": true,
+            "width": 200
+        },
+        "Ministry": {
+            "visible": true,
+            "width": 200
+        },
+        "Tender ID (Extracted)": {
+            "visible": true,
+            "width": 100
+        },
+        "Title and Ref.No./Tender ID": {
+            "visible": true,
+            "width": 100
+        }
+    }
 }

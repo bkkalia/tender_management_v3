@@ -22,10 +22,11 @@ class ChartsWindow:
         self.selected_column = tk.StringVar()
         self.selected_columns = []  # For multi-column charts
 
-        # Auto-refresh functionality
+        # Auto-refresh functionality - 2 seconds as requested
         self.auto_refresh_enabled = True
         self.refresh_timer = None
-        self.refresh_interval = 5000  # 5 seconds
+        self.refresh_interval = 2000  # 2 seconds
+        self.last_data_hash = None  # For smart refresh detection
 
         # Set up matplotlib style
         plt.style.use('default')
@@ -44,95 +45,188 @@ class ChartsWindow:
         self._start_auto_refresh()
 
     def _create_window(self):
-        """Create the main charts window."""
+        """Create the main charts window with resize support."""
         self.window = tk.Toplevel(self.parent)
         self.window.title("📊 Data Charts & Visualizations")
-        self.window.geometry("1000x700")
+        self.window.geometry("1200x800")  # Larger default size
+
+        # Make window resizable with minimum size
+        self.window.resizable(True, True)
+        self.window.minsize(800, 600)
 
         # Center the window
         self.window.transient(self.parent)
-        # Remove grab_set() to make window non-modal
-        # self.window.grab_set()
 
         # Handle window close
         self.window.protocol("WM_DELETE_WINDOW", self._on_close)
 
-        # Make window non-modal - don't force focus
-        # self.window.focus_set()
-
     def _create_widgets(self):
-        """Create all widgets for the charts window."""
+        """Create all widgets for the charts window with improved horizontal toolbar layout."""
         if not self.window:
             return
 
         # Main container
         main_frame = ttk.Frame(self.window)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # Control panel at top
-        control_frame = ttk.LabelFrame(main_frame, text="Chart Controls", padding=10)
-        control_frame.pack(fill=tk.X, pady=(0, 10))
+        # TOP HORIZONTAL TOOLBAR - All controls in one bar
+        self._create_top_toolbar(main_frame)
 
-        # Chart type selection
-        chart_frame = ttk.Frame(control_frame)
-        chart_frame.pack(fill=tk.X, pady=(0, 10))
+        # Main content area with chart display
+        content_frame = ttk.Frame(main_frame)
+        content_frame.pack(fill=tk.BOTH, expand=True, pady=(5, 0))
 
-        ttk.Label(chart_frame, text="Chart Type:").pack(side=tk.LEFT, padx=(0, 10))
-        chart_combo = ttk.Combobox(chart_frame, textvariable=self.current_chart_type,
-                                 values=["bar", "pie", "line", "histogram", "scatter"],
-                                 state="readonly", width=15)
-        chart_combo.pack(side=tk.LEFT, padx=(0, 20))
-        chart_combo.bind("<<ComboboxSelected>>", lambda e: self._update_chart())
-
-        # Column selection
-        column_frame = ttk.Frame(control_frame)
-        column_frame.pack(fill=tk.X, pady=(0, 10))
-
-        ttk.Label(column_frame, text="Primary Column:").pack(side=tk.LEFT, padx=(0, 10))
-        if hasattr(self.data, 'columns') and self.data.columns is not None:
-            column_combo = ttk.Combobox(column_frame, textvariable=self.selected_column,
-                                       values=list(self.data.columns), state="readonly", width=20)
-            column_combo.pack(side=tk.LEFT, padx=(0, 20))
-            column_combo.bind("<<ComboboxSelected>>", lambda e: self._update_chart())
-
-            # Set default column
-            if len(self.data.columns) > 0:
-                self.selected_column.set(self.data.columns[0])
-
-        # Action buttons
-        button_frame = ttk.Frame(control_frame)
-        button_frame.pack(fill=tk.X)
-
-        ttk.Button(button_frame, text="🔄 Refresh Data",
-                  command=self._refresh_data).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(button_frame, text="📊 New Chart",
-                  command=self._update_chart).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(button_frame, text="❌ Close",
-                  command=self._on_close).pack(side=tk.RIGHT)
-
-        # Chart display area
-        chart_frame = ttk.LabelFrame(main_frame, text="Chart Display", padding=10)
+        # Chart display area - takes up most space
+        chart_frame = ttk.LabelFrame(content_frame, text="Chart Display", padding=10)
         chart_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Create matplotlib figure and canvas
-        self.figure, self.ax = plt.subplots(figsize=(8, 6), dpi=100)
+        # Create matplotlib figure and canvas with proper configuration for zooming/scrolling
+        self.figure, self.ax = plt.subplots(figsize=(12, 8), dpi=100)
+
+        # Configure matplotlib for proper zooming and scrolling
+        self.ax.set_adjustable('box')  # Allow independent x/y axis scaling
+        self.ax.set_aspect('auto')  # Allow automatic aspect ratio adjustment
+
+        # Configure subplot parameters for better layout
+        self.figure.subplots_adjust(left=0.1, bottom=0.1, right=0.95, top=0.9, wspace=0.2, hspace=0.2)
+
         self.canvas = FigureCanvasTkAgg(self.figure, master=chart_frame)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
-        # Add navigation toolbar
-        toolbar_frame = ttk.Frame(chart_frame)
-        toolbar_frame.pack(fill=tk.X, pady=(5, 0))
-        NavigationToolbar2Tk(self.canvas, toolbar_frame)
+        # Add touch pad and mouse wheel support for zooming and panning
+        self._add_touchpad_support()
+
+        # Add matplotlib navigation toolbar to the center section of top toolbar
+        if hasattr(self, 'matplotlib_toolbar_frame'):
+            self.toolbar = NavigationToolbar2Tk(self.canvas, self.matplotlib_toolbar_frame)
+
+    def _create_top_toolbar(self, parent):
+        """Create a comprehensive top horizontal toolbar with all controls."""
+        # Top toolbar frame
+        toolbar_frame = ttk.Frame(parent, style='Toolbar.TFrame')
+        toolbar_frame.pack(fill=tk.X, pady=(0, 5))
+
+        # Configure toolbar style
+        style = ttk.Style()
+        style.configure('Toolbar.TFrame', background='#f0f0f0', borderwidth=1, relief='raised')
+
+        # Left section - Chart type and column controls
+        left_controls = ttk.Frame(toolbar_frame)
+        left_controls.pack(side=tk.LEFT, padx=10, pady=5)
+
+        # Chart type selection
+        chart_type_frame = ttk.Frame(left_controls)
+        chart_type_frame.pack(side=tk.LEFT, padx=(0, 20))
+
+        ttk.Label(chart_type_frame, text="Chart Type:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
+        chart_combo = ttk.Combobox(chart_type_frame, textvariable=self.current_chart_type,
+                                 values=["bar", "pie", "line", "histogram", "scatter"],
+                                 state="readonly", width=12, font=('TkDefaultFont', 9))
+        chart_combo.pack(side=tk.LEFT, padx=(5, 0))
+        chart_combo.bind("<<ComboboxSelected>>", lambda e: self._update_chart_and_description())
+
+        # Chart description
+        self.chart_description_var = tk.StringVar(value="Select a chart type to see description")
+        chart_desc_label = ttk.Label(chart_type_frame, textvariable=self.chart_description_var,
+                                   font=('TkDefaultFont', 8), foreground='gray', wraplength=300)
+        chart_desc_label.pack(side=tk.LEFT, padx=(15, 0))
+
+        # Column selection
+        column_frame = ttk.Frame(left_controls)
+        column_frame.pack(side=tk.LEFT, padx=(0, 20))
+
+        ttk.Label(column_frame, text="Data Column:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
+        self.column_combo = ttk.Combobox(column_frame, textvariable=self.selected_column,
+                                       state="readonly", width=20, font=('TkDefaultFont', 9))
+        self.column_combo.pack(side=tk.LEFT, padx=(5, 0))
+        self.column_combo.bind("<<ComboboxSelected>>", lambda e: self._update_chart())
+
+        # Filter to only show relevant columns after widget creation
+        self._filter_relevant_columns()
+
+        # Center section - Matplotlib navigation tools
+        center_controls = ttk.Frame(toolbar_frame)
+        center_controls.pack(side=tk.LEFT, expand=True, padx=20, pady=5)
+
+        # Create a frame for matplotlib toolbar
+        matplotlib_toolbar_frame = ttk.Frame(center_controls)
+        matplotlib_toolbar_frame.pack(expand=True)
+
+        # Create matplotlib toolbar (will be populated when canvas is ready)
+        self.matplotlib_toolbar_frame = matplotlib_toolbar_frame
+
+        # Right section - Window controls and action buttons
+        right_controls = ttk.Frame(toolbar_frame)
+        right_controls.pack(side=tk.RIGHT, padx=10, pady=5)
+
+        # Window control buttons (minimize, maximize, close) - Make them highly visible
+        window_controls = ttk.Frame(right_controls, style='WindowControls.TFrame')
+        window_controls.pack(side=tk.RIGHT, padx=(20, 0))
+
+        # Configure window controls style
+        style.configure('WindowControls.TFrame', background='#e0e0e0', borderwidth=2, relief='raised')
+
+        # Minimize button - Highly visible
+        minimize_btn = ttk.Button(window_controls, text="🪟", command=self._minimize_window, width=5,
+                                 style='WindowControl.TButton')
+        minimize_btn.pack(side=tk.LEFT, padx=(5, 3))
+        minimize_btn.bind("<Enter>", lambda e: self._show_tooltip(minimize_btn, "Minimize Window"))
+        minimize_btn.bind("<Leave>", lambda e: self._hide_tooltip())
+
+        # Maximize/Fullscreen button - Highly visible
+        self.maximize_btn = ttk.Button(window_controls, text="⛶", command=self._toggle_fullscreen, width=5,
+                                      style='WindowControl.TButton')
+        self.maximize_btn.pack(side=tk.LEFT, padx=(0, 3))
+        self.maximize_btn.bind("<Enter>", lambda e: self._show_tooltip(self.maximize_btn, "Toggle Fullscreen"))
+        self.maximize_btn.bind("<Leave>", lambda e: self._hide_tooltip())
+
+        # Close button - Highly visible
+        close_btn = ttk.Button(window_controls, text="✕", command=self._on_close, width=5,
+                              style='WindowControl.TButton')
+        close_btn.pack(side=tk.LEFT)
+        close_btn.bind("<Enter>", lambda e: self._show_tooltip(close_btn, "Close Window"))
+        close_btn.bind("<Leave>", lambda e: self._hide_tooltip())
+
+        # Configure window control button style
+        style.configure('WindowControl.TButton', font=('TkDefaultFont', 10, 'bold'), padding=5)
+
+        # Separator
+        ttk.Separator(right_controls, orient="vertical").pack(side=tk.RIGHT, padx=(15, 10), fill=tk.Y)
+
+        # Action buttons
+        action_controls = ttk.Frame(right_controls)
+        action_controls.pack(side=tk.RIGHT)
+
+        ttk.Button(action_controls, text="🔄 Refresh",
+                  command=self._refresh_data, width=10).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(action_controls, text="📊 Update",
+                  command=self._update_chart, width=10).pack(side=tk.LEFT, padx=(0, 10))
+
+        # Status label
+        self.status_var = tk.StringVar(value="Ready")
+        status_label = ttk.Label(toolbar_frame, textvariable=self.status_var,
+                               font=('TkDefaultFont', 8), foreground='gray')
+        status_label.pack(side=tk.RIGHT, padx=(0, 10))
 
     def _refresh_data(self):
-        """Refresh data from parent Tree view."""
+        """Refresh data from parent Tree view with smart refresh detection."""
         try:
             if hasattr(self.parent, 'data_processor') and hasattr(self.parent.data_processor, 'filtered_data'):
                 new_data = self.parent.data_processor.filtered_data
                 if new_data is not None and not new_data.empty:
-                    self.data = new_data.copy()
-                    self._update_chart()
-                    logger.info("Charts data refreshed from Tree view")
+                    # Check if data has actually changed using more robust comparison
+                    data_changed = self._has_data_changed(new_data)
+                    if data_changed:
+                        self.data = new_data.copy()
+                        self._filter_relevant_columns()  # Re-filter columns after data refresh
+                        self._update_chart()
+                        # Only log when data actually changes
+                        self.status_var.set("Chart updated")
+                        logger.info("Charts data refreshed from Tree view")
+                    else:
+                        # Data hasn't changed - completely silent operation
+                        self.status_var.set("Ready")
+                        # No logging, no messages - completely silent
                 else:
                     messagebox.showinfo("No Data", "No data available in Tree view to refresh.")
             else:
@@ -140,6 +234,117 @@ class ChartsWindow:
         except Exception as e:
             logger.error(f"Error refreshing chart data: {e}")
             messagebox.showerror("Refresh Error", f"Failed to refresh data: {str(e)}")
+
+    def _has_data_changed(self, new_data):
+        """Check if data has actually changed using robust comparison."""
+        try:
+            # If no previous data, it's a change
+            if self.last_data_hash is None:
+                return True
+
+            # Compare basic properties first (faster)
+            if (len(new_data) != len(self.data) or
+                set(new_data.columns) != set(self.data.columns)):
+                return True
+
+            # Try pandas equals first (most reliable)
+            try:
+                if new_data.equals(self.data):
+                    return False
+            except Exception:
+                pass
+
+            # If pandas equals fails, do more careful comparison
+            try:
+                # Reset index and sort both dataframes for consistent comparison
+                new_reset = new_data.reset_index(drop=True)
+                old_reset = self.data.reset_index(drop=True)
+
+                # Sort columns to ensure consistent order
+                new_sorted = new_reset.reindex(sorted(new_reset.columns), axis=1)
+                old_sorted = old_reset.reindex(sorted(old_reset.columns), axis=1)
+
+                # Compare dtypes first
+                if not new_sorted.dtypes.equals(old_sorted.dtypes):
+                    return True
+
+                # Compare values - handle NaN values properly
+                new_values = new_sorted.values
+                old_values = old_sorted.values
+
+                # Check if shapes match
+                if new_values.shape != old_values.shape:
+                    return True
+
+                # Compare values, treating NaN as equal
+                if new_values.shape[0] == 0:  # Both empty
+                    return False
+
+                # Use pandas isnull for proper NaN comparison
+                new_nan_mask = pd.isna(new_values)
+                old_nan_mask = pd.isna(old_values)
+
+                if not (new_nan_mask == old_nan_mask).all():
+                    return True
+
+                # Compare non-NaN values
+                new_non_nan = new_values[~new_nan_mask]
+                old_non_nan = old_values[~old_nan_mask]
+
+                if len(new_non_nan) != len(old_non_nan):
+                    return True
+
+                if len(new_non_nan) > 0 and not (new_non_nan == old_non_nan).all():
+                    return True
+
+                return False
+
+            except Exception as e:
+                logger.debug(f"Detailed comparison failed: {e}")
+                # If detailed comparison fails, assume no change to be safe
+                return False
+
+        except Exception as e:
+            logger.warning(f"Error in data change detection: {e}")
+            # If we can't determine, assume no change to avoid unnecessary refreshes
+            return False
+
+    def _update_data_hash(self, data):
+        """Update the data hash for comparison."""
+        try:
+            # Create a more stable hash based on actual data content
+            if data is not None and not data.empty:
+                # Use a combination of shape, columns, and a sample of values
+                hash_data = f"{data.shape}_{sorted(data.columns.tolist())}"
+                if len(data) > 0:
+                    # Add first few and last few values for comparison
+                    sample = data.head(3).values.tolist() + data.tail(3).values.tolist()
+                    hash_data += f"_{sample}"
+                self.last_data_hash = hash(hash_data)
+            else:
+                self.last_data_hash = None
+        except Exception as e:
+            logger.warning(f"Error updating data hash: {e}")
+            self.last_data_hash = None
+
+    def _update_chart_and_description(self):
+        """Update chart and its description."""
+        self._update_chart_description()
+        self._update_chart()
+
+    def _update_chart_description(self):
+        """Update the chart description based on selected chart type."""
+        chart_type = self.current_chart_type.get()
+
+        descriptions = {
+            "bar": "Bar Chart: Shows the frequency count of each category in the selected column",
+            "pie": "Pie Chart: Shows the distribution of categories as percentages with absolute counts",
+            "line": "Line Chart: Shows trends and patterns over time or across categories",
+            "histogram": "Histogram: Shows the distribution of numeric values in the selected column",
+            "scatter": "Scatter Plot: Shows relationship between the selected column and other numeric columns"
+        }
+
+        self.chart_description_var.set(descriptions.get(chart_type, "Chart visualization"))
 
     def _update_chart(self):
         """Update the chart based on current settings."""
@@ -296,6 +501,11 @@ class ChartsWindow:
     def _create_pie_chart(self, chart_data, column):
         """Create a pie chart with both percentages and absolute numbers."""
         try:
+            # Ensure chart_data has the required columns
+            if 'Category' not in chart_data.columns or 'Count' not in chart_data.columns:
+                self._show_error_message("Invalid data format for pie chart")
+                return
+
             if len(chart_data) > 10:
                 # Show only top 10 and group others
                 top_10 = chart_data.head(10)
@@ -455,6 +665,44 @@ class ChartsWindow:
         self.ax.set_ylim(0, 1)
         self.canvas.draw()
 
+    def _filter_relevant_columns(self):
+        """Filter to only show relevant columns (Date, Department, Source File)."""
+        if not hasattr(self.data, 'columns') or self.data.columns is None:
+            return
+
+        # Define relevant column patterns
+        date_patterns = ['date', 'time', 'closing', 'close', 'due', 'deadline', 'end', 'publish', 'created']
+        dept_patterns = ['department', 'dept', 'agency', 'organisation', 'ministry', 'authority', 'organization']
+        source_patterns = ['source', 'file', 'filename', 'path', 'origin']
+
+        # Define columns to exclude
+        exclude_patterns = ['url', 'link', 'id', 'sr', 'serial', 'number', 'tender_id', 'reference']
+
+        relevant_columns = []
+
+        for col in self.data.columns:
+            col_lower = str(col).lower()
+
+            # Skip columns that match exclude patterns
+            if any(pattern in col_lower for pattern in exclude_patterns):
+                continue
+
+            # Check if column matches relevant patterns
+            is_date = any(pattern in col_lower for pattern in date_patterns)
+            is_dept = any(pattern in col_lower for pattern in dept_patterns)
+            is_source = any(pattern in col_lower for pattern in source_patterns)
+
+            # Also include columns that are likely to be these types
+            if (is_date or is_dept or is_source or
+                'date' in col_lower or 'dept' in col_lower or 'source' in col_lower):
+                relevant_columns.append(col)
+
+        # Update the column combo with filtered columns
+        if relevant_columns:
+            self.column_combo['values'] = relevant_columns
+            if not self.selected_column.get() or self.selected_column.get() not in relevant_columns:
+                self.selected_column.set(relevant_columns[0])
+
     def _set_smart_defaults(self):
         """Set smart default column and chart type based on data."""
         if not hasattr(self.data, 'columns') or self.data.columns is None:
@@ -497,6 +745,154 @@ class ChartsWindow:
 
             # Schedule next refresh
             self._start_auto_refresh()
+
+    def _add_touchpad_support(self):
+        """Add touch pad and mouse wheel support for zooming and panning."""
+        try:
+            # Initialize pan state variables
+            self._pan_start = None
+            self._pan_prev = None
+
+            # Bind mouse wheel events for zooming
+            def on_mousewheel(event):
+                if event.widget is not self.canvas.get_tk_widget():
+                    return
+
+                # Get the current axis limits
+                xlim = self.ax.get_xlim()
+                ylim = self.ax.get_ylim()
+
+                # Calculate zoom factor (Ctrl+scroll for horizontal, Shift+scroll for vertical)
+                if event.state & 0x4:  # Ctrl key pressed
+                    # Horizontal zoom
+                    zoom_factor = 1.2 if event.delta > 0 else 0.8
+                    center_x = (xlim[0] + xlim[1]) / 2
+                    new_width = (xlim[1] - xlim[0]) * zoom_factor
+                    self.ax.set_xlim(center_x - new_width/2, center_x + new_width/2)
+                elif event.state & 0x1:  # Shift key pressed
+                    # Vertical zoom
+                    zoom_factor = 1.2 if event.delta > 0 else 0.8
+                    center_y = (ylim[0] + ylim[1]) / 2
+                    new_height = (ylim[1] - ylim[0]) * zoom_factor
+                    self.ax.set_ylim(center_y - new_height/2, center_y + new_height/2)
+                else:
+                    # Both axes zoom
+                    zoom_factor = 1.2 if event.delta > 0 else 0.8
+                    center_x = (xlim[0] + xlim[1]) / 2
+                    center_y = (ylim[0] + ylim[1]) / 2
+                    new_width = (xlim[1] - xlim[0]) * zoom_factor
+                    new_height = (ylim[1] - ylim[0]) * zoom_factor
+                    self.ax.set_xlim(center_x - new_width/2, center_x + new_width/2)
+                    self.ax.set_ylim(center_y - new_height/2, center_y + new_height/2)
+
+                self.canvas.draw()
+
+            # Bind to the canvas widget
+            canvas_widget = self.canvas.get_tk_widget()
+            canvas_widget.bind("<MouseWheel>", on_mousewheel)  # Windows
+            canvas_widget.bind("<Button-4>", lambda e: on_mousewheel(type('Event', (), {'delta': 120, 'state': e.state, 'widget': e.widget})()))  # Linux scroll up
+            canvas_widget.bind("<Button-5>", lambda e: on_mousewheel(type('Event', (), {'delta': -120, 'state': e.state, 'widget': e.widget})()))  # Linux scroll down
+
+            # Add pan support with mouse drag
+            def on_mouse_press(event):
+                if event.widget is not canvas_widget:
+                    return
+                self._pan_start = (event.x, event.y)
+                self._pan_prev = self.ax.transData.transform([(event.x, event.y)])
+
+            def on_mouse_drag(event):
+                if self._pan_start is None or self._pan_prev is None:
+                    return
+                if event.widget is not canvas_widget:
+                    return
+
+                # Calculate pan distance
+                curr = self.ax.transData.transform([(event.x, event.y)])
+                if curr is not None and len(curr) > 0:
+                    dx = curr[0][0] - self._pan_prev[0][0]
+                    dy = curr[0][1] - self._pan_prev[0][1]
+
+                    # Apply pan
+                    xlim = self.ax.get_xlim()
+                    ylim = self.ax.get_ylim()
+                    self.ax.set_xlim(xlim[0] - dx, xlim[1] - dx)
+                    self.ax.set_ylim(ylim[0] - dy, ylim[1] - dy)
+
+                    self.canvas.draw()
+                    self._pan_prev = curr
+
+            def on_mouse_release(event):
+                self._pan_start = None
+                self._pan_prev = None
+
+            canvas_widget.bind("<ButtonPress-1>", on_mouse_press)
+            canvas_widget.bind("<B1-Motion>", on_mouse_drag)
+            canvas_widget.bind("<ButtonRelease-1>", on_mouse_release)
+
+        except Exception as e:
+            logger.warning(f"Could not add touchpad support: {e}")
+
+    def _minimize_window(self):
+        """Minimize the window."""
+        try:
+            if self.window:
+                self.window.iconify()  # Minimize the window
+                self.status_var.set("Window minimized")
+        except Exception as e:
+            logger.warning(f"Could not minimize window: {e}")
+
+    def _toggle_fullscreen(self):
+        """Toggle fullscreen mode."""
+        try:
+            if self.window:
+                # Toggle fullscreen state
+                self.is_fullscreen = not getattr(self, 'is_fullscreen', False)
+
+                if self.is_fullscreen:
+                    # Go fullscreen
+                    self.window.attributes('-fullscreen', True)
+                    self.maximize_btn.config(text="⛶")  # Restore icon
+                    self.status_var.set("Fullscreen mode")
+                else:
+                    # Exit fullscreen
+                    self.window.attributes('-fullscreen', False)
+                    self.maximize_btn.config(text="⛶")  # Maximize icon
+                    self.status_var.set("Window mode")
+
+                # Update button tooltip
+                if self.is_fullscreen:
+                    self.maximize_btn.bind("<Enter>", lambda e: self._show_tooltip(self.maximize_btn, "Exit Fullscreen"))
+                else:
+                    self.maximize_btn.bind("<Enter>", lambda e: self._show_tooltip(self.maximize_btn, "Enter Fullscreen"))
+
+        except Exception as e:
+            logger.warning(f"Could not toggle fullscreen: {e}")
+
+    def _show_tooltip(self, widget, text):
+        """Show tooltip for a widget."""
+        try:
+            # Create tooltip if it doesn't exist
+            if not hasattr(self, 'tooltip'):
+                self.tooltip = tk.Toplevel(self.window)
+                self.tooltip.wm_overrideredirect(True)
+                self.tooltip.wm_geometry("+%d+%d" % (widget.winfo_rootx(), widget.winfo_rooty() + 20))
+                self.tooltip_label = tk.Label(self.tooltip, text=text, background="#ffffe0", relief="solid", borderwidth=1)
+                self.tooltip_label.pack()
+            else:
+                # Update tooltip position and text
+                self.tooltip.wm_geometry("+%d+%d" % (widget.winfo_rootx(), widget.winfo_rooty() + 20))
+                self.tooltip_label.config(text=text)
+                self.tooltip.deiconify()
+        except Exception as e:
+            logger.warning(f"Could not show tooltip: {e}")
+
+    def _hide_tooltip(self):
+        """Hide tooltip."""
+        try:
+            if hasattr(self, 'tooltip'):
+                self.tooltip.withdraw()
+        except Exception as e:
+            logger.warning(f"Could not hide tooltip: {e}")
 
     def _on_close(self):
         """Handle window close event."""
