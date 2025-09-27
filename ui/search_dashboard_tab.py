@@ -273,6 +273,10 @@ class SearchDashboardTab(ttk.Frame):
         self.url_columns: List[str] = []
         self.link_icons: Dict[str, tk.PhotoImage] = {}
 
+        # Track open chart windows to limit instances
+        self.open_chart_windows: List[tk.Toplevel] = []
+        self.max_chart_windows = 2
+
         self._create_widgets()
         self._setup_treeview_bindings()
         self.update_dashboard() # Initial dashboard state
@@ -1709,8 +1713,32 @@ class SearchDashboardTab(ttk.Frame):
                 messagebox.showinfo("No Data", "No data available to visualize. Please load some data first.")
                 return
 
+            # Check window instance limit
+            if len(self.open_chart_windows) >= self.max_chart_windows:
+                messagebox.showwarning("Window Limit Reached",
+                                     f"Maximum of {self.max_chart_windows} chart windows are already open.\n"
+                                     "Please close an existing chart window before opening a new one.")
+                return
+
             # Create and show the charts window
             charts_window = ChartsWindow(self, self.data_processor.filtered_data.copy())
+
+            # Track the window and add cleanup callback
+            def on_window_close():
+                if charts_window.window in self.open_chart_windows:
+                    self.open_chart_windows.remove(charts_window.window)
+
+            # Override the window's close method to clean up tracking
+            original_close = charts_window._on_close
+            def tracked_close():
+                on_window_close()
+                original_close()
+            charts_window._on_close = tracked_close
+
+            # Add to tracking list
+            if charts_window.window is not None:
+                self.open_chart_windows.append(charts_window.window)
+
             charts_window.show()
 
         except Exception as e:

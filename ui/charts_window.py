@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -8,6 +8,8 @@ import logging
 from typing import Optional, Dict, Any
 from datetime import datetime
 import numpy as np
+import os
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -21,12 +23,17 @@ class ChartsWindow:
         self.current_chart_type = tk.StringVar(value="bar")
         self.selected_column = tk.StringVar()
         self.selected_columns = []  # For multi-column charts
+        self.selected_period = tk.StringVar(value="months")  # New: time period selection
 
         # Auto-refresh functionality - 2 seconds as requested
         self.auto_refresh_enabled = True
         self.refresh_timer = None
         self.refresh_interval = 2000  # 2 seconds
         self.last_data_hash = None  # For smart refresh detection
+
+        # Calendar search debouncing
+        self.calendar_search_after_id = None
+        self.calendar_search_delay_ms = 300  # 300ms debounce for calendar search
 
         # Set up matplotlib style
         plt.style.use('default')
@@ -64,7 +71,7 @@ class ChartsWindow:
         self.window.protocol("WM_DELETE_WINDOW", self._on_close)
 
     def _create_widgets(self):
-        """Create all widgets for the charts window with improved horizontal toolbar layout."""
+        """Create all widgets for the charts window with tabbed interface."""
         if not self.window:
             return
 
@@ -75,33 +82,19 @@ class ChartsWindow:
         # TOP HORIZONTAL TOOLBAR - All controls in one bar
         self._create_top_toolbar(main_frame)
 
-        # Main content area with chart display
+        # Main content area with tabbed interface
         content_frame = ttk.Frame(main_frame)
         content_frame.pack(fill=tk.BOTH, expand=True, pady=(5, 0))
 
-        # Chart display area - takes up most space
-        chart_frame = ttk.LabelFrame(content_frame, text="Chart Display", padding=10)
-        chart_frame.pack(fill=tk.BOTH, expand=True)
+        # Create tabbed notebook
+        self.notebook = ttk.Notebook(content_frame)
+        self.notebook.pack(fill=tk.BOTH, expand=True)
 
-        # Create matplotlib figure and canvas with proper configuration for zooming/scrolling
-        self.figure, self.ax = plt.subplots(figsize=(12, 8), dpi=100)
+        # Charts Tab
+        self._create_charts_tab()
 
-        # Configure matplotlib for proper zooming and scrolling
-        self.ax.set_adjustable('box')  # Allow independent x/y axis scaling
-        self.ax.set_aspect('auto')  # Allow automatic aspect ratio adjustment
-
-        # Configure subplot parameters for better layout
-        self.figure.subplots_adjust(left=0.1, bottom=0.1, right=0.95, top=0.9, wspace=0.2, hspace=0.2)
-
-        self.canvas = FigureCanvasTkAgg(self.figure, master=chart_frame)
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-
-        # Add touch pad and mouse wheel support for zooming and panning
-        self._add_touchpad_support()
-
-        # Add matplotlib navigation toolbar to the center section of top toolbar
-        if hasattr(self, 'matplotlib_toolbar_frame'):
-            self.toolbar = NavigationToolbar2Tk(self.canvas, self.matplotlib_toolbar_frame)
+        # Calendar Tab
+        self._create_calendar_tab()
 
     def _create_top_toolbar(self, parent):
         """Create a comprehensive top horizontal toolbar with all controls."""
@@ -143,6 +136,17 @@ class ChartsWindow:
                                        state="readonly", width=20, font=('TkDefaultFont', 9))
         self.column_combo.pack(side=tk.LEFT, padx=(5, 0))
         self.column_combo.bind("<<ComboboxSelected>>", lambda e: self._update_chart())
+
+        # Time period selection (for date columns)
+        period_frame = ttk.Frame(left_controls)
+        period_frame.pack(side=tk.LEFT, padx=(0, 20))
+
+        ttk.Label(period_frame, text="Time Period:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
+        self.period_combo = ttk.Combobox(period_frame, textvariable=self.selected_period,
+                                       values=["days", "weeks", "months", "years"],
+                                       state="readonly", width=10, font=('TkDefaultFont', 9))
+        self.period_combo.pack(side=tk.LEFT, padx=(5, 0))
+        self.period_combo.bind("<<ComboboxSelected>>", lambda e: self._update_chart())
 
         # Filter to only show relevant columns after widget creation
         self._filter_relevant_columns()
@@ -200,6 +204,10 @@ class ChartsWindow:
         action_controls = ttk.Frame(right_controls)
         action_controls.pack(side=tk.RIGHT)
 
+        ttk.Button(action_controls, text="💾 Save Config",
+                  command=self._save_chart_config, width=12).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(action_controls, text="📤 Export Chart",
+                  command=self._export_chart, width=12).pack(side=tk.LEFT, padx=(0, 5))
         ttk.Button(action_controls, text="🔄 Refresh",
                   command=self._refresh_data, width=10).pack(side=tk.LEFT, padx=(0, 5))
         ttk.Button(action_controls, text="📊 Update",
@@ -503,14 +511,23 @@ class ChartsWindow:
     def _prepare_datetime_as_categorical(self, column):
         """Prepare datetime data as categorical periods for pie/bar/histogram charts."""
         try:
-            # Convert datetime to categorical periods (e.g., months, quarters)
+            # Convert datetime to categorical periods based on selected period
             dt_series = self.data[column].dropna()
 
             if len(dt_series) == 0:
                 return None
 
-            # Group by month-year periods for better categorization
-            period_counts = dt_series.dt.to_period('M').value_counts().sort_index()
+            # Get selected period and map to pandas period frequency
+            period = self.selected_period.get()
+            period_freq = {
+                'days': 'D',
+                'weeks': 'W',
+                'months': 'M',
+                'years': 'Y'
+            }.get(period, 'M')  # Default to months
+
+            # Group by selected period for categorization
+            period_counts = dt_series.dt.to_period(period_freq).value_counts().sort_index()
 
             # Convert periods to readable strings
             categories = [str(period) for period in period_counts.index]
@@ -527,14 +544,23 @@ class ChartsWindow:
     def _prepare_datetime_as_categorical_from_series(self, dt_series):
         """Prepare datetime series as categorical periods for pie/bar/histogram charts."""
         try:
-            # Convert datetime to categorical periods (e.g., months, quarters)
+            # Convert datetime to categorical periods based on selected period
             dt_series = dt_series.dropna()
 
             if len(dt_series) == 0:
                 return None
 
-            # Group by month-year periods for better categorization
-            period_counts = dt_series.dt.to_period('M').value_counts().sort_index()
+            # Get selected period and map to pandas period frequency
+            period = self.selected_period.get()
+            period_freq = {
+                'days': 'D',
+                'weeks': 'W',
+                'months': 'M',
+                'years': 'Y'
+            }.get(period, 'M')  # Default to months
+
+            # Group by selected period for categorization
+            period_counts = dt_series.dt.to_period(period_freq).value_counts().sort_index()
 
             # Convert periods to readable strings
             categories = [str(period) for period in period_counts.index]
@@ -1043,19 +1069,698 @@ class ChartsWindow:
         except Exception as e:
             logger.warning(f"Could not hide tooltip: {e}")
 
-    def _on_close(self):
-        """Handle window close event."""
-        # Stop auto-refresh
-        self.auto_refresh_enabled = False
-        if self.refresh_timer:
-            if self.window:
-                self.window.after_cancel(self.refresh_timer)
-
-        if self.window:
-            self.window.destroy()
-            self.window = None
-
     def show(self):
         """Show the charts window."""
         if self.window:
-            self.window.mainloop()
+            self.window.deiconify()
+            self.window.focus_force()
+
+    def _on_close(self):
+        """Handle window close event."""
+        try:
+            if self.window:
+                self.window.destroy()
+        except Exception as e:
+            logger.warning(f"Could not close window: {e}")
+
+    def _create_charts_tab(self):
+        """Create the charts tab with matplotlib display."""
+        # Charts Tab Frame
+        charts_frame = ttk.Frame(self.notebook)
+        self.notebook.add(charts_frame, text="📊 Charts")
+
+        # Chart display area - takes up most space
+        chart_frame = ttk.LabelFrame(charts_frame, text="Chart Display", padding=10)
+        chart_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Create matplotlib figure and canvas with proper configuration for zooming/scrolling
+        self.figure, self.ax = plt.subplots(figsize=(12, 8), dpi=100)
+
+        # Configure matplotlib for proper zooming and scrolling
+        self.ax.set_adjustable('box')  # Allow independent x/y axis scaling
+        self.ax.set_aspect('auto')  # Allow automatic aspect ratio adjustment
+
+        # Configure subplot parameters for better layout
+        self.figure.subplots_adjust(left=0.1, bottom=0.1, right=0.95, top=0.9, wspace=0.2, hspace=0.2)
+
+        self.canvas = FigureCanvasTkAgg(self.figure, master=chart_frame)
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+        # Add touch pad and mouse wheel support for zooming and panning
+        self._add_touchpad_support()
+
+        # Add matplotlib navigation toolbar to the center section of top toolbar
+        if hasattr(self, 'matplotlib_toolbar_frame'):
+            self.toolbar = NavigationToolbar2Tk(self.canvas, self.matplotlib_toolbar_frame)
+
+    def _create_calendar_tab(self):
+        """Create the calendar tab with tender calendar view."""
+        # Calendar Tab Frame
+        calendar_frame = ttk.Frame(self.notebook)
+        self.notebook.add(calendar_frame, text="📅 Calendar")
+
+        # Calendar controls
+        controls_frame = ttk.Frame(calendar_frame)
+        controls_frame.pack(fill=tk.X, pady=(0, 10))
+
+        # Left section - Navigation and search
+        left_controls = ttk.Frame(controls_frame)
+        left_controls.pack(side=tk.LEFT)
+
+        # Month/Year navigation
+        nav_frame = ttk.Frame(left_controls)
+        nav_frame.pack(side=tk.TOP, pady=(0, 5))
+
+        ttk.Button(nav_frame, text="◀", command=self._prev_month, width=3).pack(side=tk.LEFT, padx=(0, 5))
+        self.calendar_title_var = tk.StringVar(value="September 2025")
+        ttk.Label(nav_frame, textvariable=self.calendar_title_var, font=('TkDefaultFont', 12, 'bold')).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(nav_frame, text="▶", command=self._next_month, width=3).pack(side=tk.LEFT)
+
+        # Search functionality
+        search_frame = ttk.Frame(left_controls)
+        search_frame.pack(side=tk.TOP, pady=(5, 0))
+
+        ttk.Label(search_frame, text="Search:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT, padx=(0, 5))
+        self.calendar_search_var = tk.StringVar()
+        search_entry = ttk.Entry(search_frame, textvariable=self.calendar_search_var, width=20)
+        search_entry.pack(side=tk.LEFT, padx=(0, 5))
+        search_entry.bind("<KeyRelease>", lambda e: self._debounced_calendar_search())
+        ttk.Button(search_frame, text="Clear", command=self._clear_calendar_search, width=6).pack(side=tk.LEFT)
+
+        # Right section - Action buttons
+        right_controls = ttk.Frame(controls_frame)
+        right_controls.pack(side=tk.RIGHT)
+
+        # Today button and export/print buttons
+        ttk.Button(right_controls, text="Today", command=self._goto_today).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(right_controls, text="📄 Print", command=self._print_calendar).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(right_controls, text="📊 Export CSV", command=self._export_calendar_csv).pack(side=tk.LEFT)
+
+        # Calendar display area
+        calendar_display_frame = ttk.Frame(calendar_frame)
+        calendar_display_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Create calendar grid
+        self._create_calendar_grid(calendar_display_frame)
+
+        # Legend
+        legend_frame = ttk.Frame(calendar_frame)
+        legend_frame.pack(fill=tk.X, pady=(10, 0))
+
+        ttk.Label(legend_frame, text="Legend:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
+        ttk.Label(legend_frame, text="• Number = Tender count for that day", foreground='blue').pack(side=tk.LEFT, padx=(10, 0))
+
+        # Initial calendar update
+        self._update_calendar()
+
+    def _create_calendar_grid(self, parent):
+        """Create the calendar grid display."""
+        # Calendar grid container
+        self.calendar_grid_frame = ttk.Frame(parent)
+        self.calendar_grid_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Days of week header
+        days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        for i, day in enumerate(days):
+            ttk.Label(self.calendar_grid_frame, text=day, font=('TkDefaultFont', 10, 'bold'),
+                     anchor='center').grid(row=0, column=i, sticky='nsew', padx=1, pady=1)
+
+        # Configure grid weights
+        for i in range(7):
+            self.calendar_grid_frame.grid_columnconfigure(i, weight=1)
+
+        # Create day cells (6 rows max for any month)
+        self.day_buttons = []
+        for week in range(6):
+            for day in range(7):
+                btn = tk.Button(self.calendar_grid_frame, text="", width=4, height=2,
+                              font=('TkDefaultFont', 9), relief='flat', bg='white',
+                              command=lambda w=week, d=day: self._on_day_click(w, d))
+                btn.grid(row=week+1, column=day, sticky='nsew', padx=1, pady=1)
+                self.day_buttons.append(btn)
+
+    def _update_calendar(self):
+        """Update the calendar display with current data."""
+        try:
+            # Get current calendar date
+            if not hasattr(self, 'current_calendar_date'):
+                self.current_calendar_date = datetime.now()
+
+            year = self.current_calendar_date.year
+            month = self.current_calendar_date.month
+
+            # Update title
+            month_name = self.current_calendar_date.strftime("%B %Y")
+            self.calendar_title_var.set(month_name)
+
+            # Calculate calendar layout
+            import calendar as cal
+            cal.setfirstweekday(0)  # Monday first
+
+            # Get month data
+            month_days = cal.monthcalendar(year, month)
+
+            # Get tender counts for this month
+            tender_counts = self._get_tender_counts_for_month(year, month)
+
+            # Update day buttons
+            day_num = 1
+            for week in range(6):
+                for day in range(7):
+                    btn = self.day_buttons[week * 7 + day]
+
+                    if week < len(month_days) and day < len(month_days[week]) and month_days[week][day] != 0:
+                        day_of_month = month_days[week][day]
+                        count = tender_counts.get(day_of_month, 0)
+
+                        if count > 0:
+                            btn.config(text=f"{day_of_month}\n{count}T",
+                                     bg='#e3f2fd', fg='blue', font=('TkDefaultFont', 10, 'bold'))
+                        else:
+                            btn.config(text=str(day_of_month), bg='white', fg='black',
+                                     font=('TkDefaultFont', 11, 'bold'))
+                    else:
+                        btn.config(text="", bg='#f5f5f5', state='disabled')
+
+        except Exception as e:
+            logger.error(f"Error updating calendar: {e}")
+
+    def _get_tender_counts_for_month(self, year, month):
+        """Get tender counts by day for the specified month."""
+        try:
+            counts = {}
+
+            if self.data is None or self.data.empty:
+                return counts
+
+            # Find date columns
+            date_cols = [col for col in self.data.columns
+                        if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end', 'date', 'time'])]
+
+            if not date_cols:
+                return counts
+
+            date_col = date_cols[0]
+
+            # Convert to datetime if needed
+            if not pd.api.types.is_datetime64_dtype(self.data[date_col]):
+                try:
+                    # Try to convert with common formats first, then fall back to infer
+                    dates = pd.to_datetime(self.data[date_col], errors='coerce', format='%Y-%m-%d')
+                    if dates.isna().all():
+                        # Try another common format
+                        dates = pd.to_datetime(self.data[date_col], errors='coerce', format='%d/%m/%Y')
+                    if dates.isna().all():
+                        # Fall back to inferring format
+                        dates = pd.to_datetime(self.data[date_col], errors='coerce')
+                except Exception:
+                    return counts
+            else:
+                dates = self.data[date_col]
+
+            # Check if we have any valid datetime values
+            if dates.isna().all() or not pd.api.types.is_datetime64_dtype(dates):
+                return counts
+
+            # Filter for the specified month and count by day
+            month_start = pd.Timestamp(year, month, 1)
+            if month == 12:
+                month_end = pd.Timestamp(year + 1, 1, 1) - pd.Timedelta(days=1)
+            else:
+                month_end = pd.Timestamp(year, month + 1, 1) - pd.Timedelta(days=1)
+
+            # Filter valid datetime values within the month range
+            valid_dates = dates.dropna()
+            month_data = valid_dates[(valid_dates >= month_start) & (valid_dates <= month_end)]
+
+            # Ensure month_data is still datetime-like before using .dt accessor
+            if len(month_data) > 0 and pd.api.types.is_datetime64_dtype(month_data):
+                day_counts = month_data.dt.day.value_counts()
+                return day_counts.to_dict()
+            else:
+                return counts
+
+        except Exception as e:
+            logger.error(f"Error getting tender counts for month: {e}")
+            return {}
+
+    def _prev_month(self):
+        """Go to previous month."""
+        if hasattr(self, 'current_calendar_date'):
+            year = self.current_calendar_date.year
+            month = self.current_calendar_date.month
+
+            if month == 1:
+                self.current_calendar_date = datetime(year - 1, 12, 1)
+            else:
+                self.current_calendar_date = datetime(year, month - 1, 1)
+
+            self._update_calendar()
+
+    def _next_month(self):
+        """Go to next month."""
+        if hasattr(self, 'current_calendar_date'):
+            year = self.current_calendar_date.year
+            month = self.current_calendar_date.month
+
+            if month == 12:
+                self.current_calendar_date = datetime(year + 1, 1, 1)
+            else:
+                self.current_calendar_date = datetime(year, month + 1, 1)
+
+            self._update_calendar()
+
+    def _goto_today(self):
+        """Go to current month."""
+        self.current_calendar_date = datetime.now()
+        self._update_calendar()
+
+    def _on_day_click(self, week, day):
+        """Handle day click in calendar."""
+        try:
+            # Calculate the actual date
+            if not hasattr(self, 'current_calendar_date'):
+                return
+
+            year = self.current_calendar_date.year
+            month = self.current_calendar_date.month
+
+            import calendar as cal
+            month_days = cal.monthcalendar(year, month)
+
+            if week < len(month_days) and day < len(month_days[week]):
+                day_of_month = month_days[week][day]
+                if day_of_month != 0:
+                    selected_date = datetime(year, month, day_of_month)
+
+                    # Show details for this date
+                    self._show_date_details(selected_date)
+
+        except Exception as e:
+            logger.error(f"Error handling day click: {e}")
+
+    def _show_date_details(self, date):
+        """Show detailed information for tenders on the selected date with filtering and export."""
+        try:
+            # Find tenders for this date
+            date_str = date.strftime("%Y-%m-%d")
+
+            # Find date columns
+            date_cols = [col for col in self.data.columns
+                        if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end', 'date', 'time'])]
+
+            if not date_cols or self.data is None or self.data.empty:
+                messagebox.showinfo("No Data", f"No tender data available for {date_str}")
+                return
+
+            date_col = date_cols[0]
+
+            # Filter data for this date
+            if pd.api.types.is_datetime64_dtype(self.data[date_col]):
+                date_filter = self.data[date_col].dt.date == date.date()
+            else:
+                try:
+                    dt_series = pd.to_datetime(self.data[date_col], errors='coerce')
+                    date_filter = dt_series.dt.date == date.date()
+                except:
+                    messagebox.showinfo("Date Error", f"Could not process dates for {date_str}")
+                    return
+
+            day_tenders = self.data[date_filter]
+
+            if day_tenders.empty:
+                messagebox.showinfo("No Tenders", f"No tenders found for {date_str}")
+                return
+
+            # Create details window
+            details_window = tk.Toplevel(self.window)
+            details_window.title(f"Tenders for {date_str}")
+            details_window.geometry("1000x700")
+
+            # Create a class to manage the details window
+            DateDetailsWindow(details_window, day_tenders, date_str)
+
+        except Exception as e:
+            logger.error(f"Error showing date details: {e}")
+            messagebox.showerror("Error", f"Could not show details: {str(e)}")
+
+    def _debounced_calendar_search(self):
+        """Debounced search for calendar."""
+        try:
+            if self.window and self.calendar_search_after_id:
+                self.window.after_cancel(self.calendar_search_after_id)
+            if self.window:
+                self.calendar_search_after_id = self.window.after(self.calendar_search_delay_ms, self._perform_calendar_search)
+        except Exception as e:
+            logger.warning(f"Could not debounce calendar search: {e}")
+
+    def _perform_calendar_search(self):
+        """Perform the actual calendar search."""
+        try:
+            # Implement search logic here - for now just update calendar
+            search_term = self.calendar_search_var.get().strip().lower()
+            # Could filter calendar display based on search term
+            self._update_calendar()
+        except Exception as e:
+            logger.warning(f"Could not perform calendar search: {e}")
+
+    def _clear_calendar_search(self):
+        """Clear the calendar search."""
+        try:
+            self.calendar_search_var.set("")
+            self._update_calendar()
+        except Exception as e:
+            logger.warning(f"Could not clear calendar search: {e}")
+
+    def _print_calendar(self):
+        """Print the calendar."""
+        try:
+            import calendar as cal
+            if hasattr(self, 'current_calendar_date'):
+                year = self.current_calendar_date.year
+                month = self.current_calendar_date.month
+                month_name = self.current_calendar_date.strftime("%B %Y")
+                print(f"\n{month_name}")
+                print(cal.month(year, month))
+            else:
+                print("No calendar date available")
+        except Exception as e:
+            logger.warning(f"Could not print calendar: {e}")
+
+    def _export_calendar_csv(self):
+        """Export calendar data to CSV."""
+        try:
+            from tkinter import filedialog
+            if not hasattr(self, 'current_calendar_date'):
+                return
+
+            year = self.current_calendar_date.year
+            month = self.current_calendar_date.month
+
+            # Get tender counts
+            tender_counts = self._get_tender_counts_for_month(year, month)
+
+            # Create DataFrame
+            days = list(range(1, 32))
+            data = {'Day': days, 'Tender_Count': [tender_counts.get(day, 0) for day in days]}
+            df = pd.DataFrame(data)
+
+            file_path = filedialog.asksaveasfilename(
+                title="Export Calendar to CSV",
+                defaultextension=".csv",
+                filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")],
+                initialfile=f"calendar_{year}_{month:02d}.csv"
+            )
+
+            if file_path:
+                df.to_csv(file_path, index=False)
+                messagebox.showinfo("Export Successful", f"Calendar exported to:\n{file_path}")
+        except Exception as e:
+            logger.warning(f"Could not export calendar: {e}")
+            messagebox.showerror("Export Error", f"Failed to export: {str(e)}")
+
+    def _save_chart_config(self):
+        """Save the current chart configuration to a JSON file."""
+        try:
+            # Get current chart settings
+            config = {
+                "chart_type": self.current_chart_type.get(),
+                "selected_column": self.selected_column.get(),
+                "selected_period": self.selected_period.get(),
+                "timestamp": datetime.now().isoformat()
+            }
+
+            # Open file dialog to choose save location
+            file_path = filedialog.asksaveasfilename(
+                title="Save Chart Configuration",
+                defaultextension=".json",
+                filetypes=[("JSON Files", "*.json"), ("All Files", "*.*")],
+                initialfile=f"chart_config_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            )
+
+            if not file_path:
+                return
+
+            # Save configuration to file
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(config, f, indent=2, ensure_ascii=False)
+
+            self.status_var.set(f"Configuration saved to {os.path.basename(file_path)}")
+            messagebox.showinfo("Save Successful", f"Chart configuration saved to:\n{file_path}")
+
+        except Exception as e:
+            logger.error(f"Error saving chart config: {e}")
+            messagebox.showerror("Save Error", f"Failed to save configuration: {str(e)}")
+
+    def _export_chart(self):
+        """Export the current chart as an image file."""
+        try:
+            # Check if we have a chart to export
+            if not hasattr(self, 'figure') or self.figure is None:
+                messagebox.showwarning("No Chart", "No chart available to export")
+                return
+
+            # Open file dialog to choose save location
+            file_path = filedialog.asksaveasfilename(
+                title="Export Chart as Image",
+                defaultextension=".png",
+                filetypes=[
+                    ("PNG Files", "*.png"),
+                    ("JPEG Files", "*.jpg"),
+                    ("SVG Files", "*.svg"),
+                    ("PDF Files", "*.pdf"),
+                    ("All Files", "*.*")
+                ],
+                initialfile=f"chart_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+            )
+
+            if not file_path:
+                return
+
+            # Determine format from file extension
+            _, ext = os.path.splitext(file_path)
+            ext = ext.lower()
+
+            format_map = {
+                '.png': 'png',
+                '.jpg': 'jpg',
+                '.jpeg': 'jpg',
+                '.svg': 'svg',
+                '.pdf': 'pdf'
+            }
+
+            format_type = format_map.get(ext, 'png')
+
+            # Save the figure
+            self.figure.savefig(file_path, format=format_type, dpi=300, bbox_inches='tight')
+
+            self.status_var.set(f"Chart exported to {os.path.basename(file_path)}")
+            messagebox.showinfo("Export Successful", f"Chart exported to:\n{file_path}")
+
+        except Exception as e:
+            logger.error(f"Error exporting chart: {e}")
+            messagebox.showerror("Export Error", f"Failed to export chart: {str(e)}")
+
+
+class DateDetailsWindow:
+    """Window for displaying and managing date-specific tender details."""
+
+    def __init__(self, parent, data, date_str):
+        self.parent = parent
+        self.original_data = data.copy()
+        self.filtered_data = data.copy()
+        self.date_str = date_str
+        self.search_var = tk.StringVar()
+
+        self._create_widgets()
+        self._populate_treeview()
+
+    def _create_widgets(self):
+        """Create the widgets for the date details window."""
+        # Top controls frame
+        controls_frame = ttk.Frame(self.parent)
+        controls_frame.pack(fill=tk.X, padx=10, pady=(10, 5))
+
+        # Left side - search
+        search_frame = ttk.Frame(controls_frame)
+        search_frame.pack(side=tk.LEFT)
+
+        ttk.Label(search_frame, text="Filter:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT, padx=(0, 5))
+        search_entry = ttk.Entry(search_frame, textvariable=self.search_var, width=25)
+        search_entry.pack(side=tk.LEFT, padx=(0, 5))
+        search_entry.bind("<KeyRelease>", lambda e: self._filter_tenders())
+        ttk.Button(search_frame, text="Clear", command=self._clear_filter, width=8).pack(side=tk.LEFT)
+
+        # Right side - export buttons
+        export_frame = ttk.Frame(controls_frame)
+        export_frame.pack(side=tk.RIGHT)
+
+        ttk.Button(export_frame, text="📄 Export Excel", command=self._export_excel, width=12).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(export_frame, text="📊 Export CSV", command=self._export_csv, width=12).pack(side=tk.LEFT)
+
+        # Treeview frame
+        tree_frame = ttk.Frame(self.parent)
+        tree_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+
+        # Create treeview
+        self.tree = ttk.Treeview(tree_frame, show='headings', height=25)
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Add scrollbars
+        v_scrollbar = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
+        h_scrollbar = ttk.Scrollbar(tree_frame, orient="horizontal", command=self.tree.xview)
+        self.tree.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+
+        v_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        h_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
+
+        # Status label
+        self.status_var = tk.StringVar(value=f"Showing {len(self.filtered_data)} tenders for {self.date_str}")
+        status_label = ttk.Label(self.parent, textvariable=self.status_var, font=('TkDefaultFont', 9, 'bold'))
+        status_label.pack(pady=(0, 10))
+
+    def _populate_treeview(self):
+        """Populate the treeview with tender data."""
+        # Configure columns
+        columns = list(self.filtered_data.columns)
+        self.tree["columns"] = columns
+
+        for col in columns:
+            width = 120  # Default width
+            if any(kw in col.lower() for kw in ['title', 'description', 'summary']):
+                width = 250
+            elif any(kw in col.lower() for kw in ['department', 'ministry', 'agency']):
+                width = 150
+            elif any(kw in col.lower() for kw in ['date', 'time', 'closing', 'close', 'due', 'deadline', 'end']):
+                width = 100
+
+            self.tree.column(col, width=width, minwidth=80)
+            self.tree.heading(col, text=col, command=lambda c=col: self._sort_by_column(c))
+
+        # Add data
+        for _, row in self.filtered_data.iterrows():
+            values = [str(row[col]) if pd.notna(row[col]) else "" for col in columns]
+            self.tree.insert("", "end", values=values)
+
+    def _filter_tenders(self):
+        """Filter tenders based on search term."""
+        search_term = self.search_var.get().strip().lower()
+
+        if not search_term:
+            self.filtered_data = self.original_data.copy()
+        else:
+            # Apply filter across all columns
+            mask = None
+            for col in self.original_data.columns:
+                try:
+                    col_mask = self.original_data[col].astype(str).str.lower().str.contains(search_term, na=False, regex=False)
+                    if mask is None:
+                        mask = col_mask
+                    else:
+                        mask = mask | col_mask
+                except Exception:
+                    continue
+
+            if mask is not None:
+                self.filtered_data = self.original_data[mask]
+            else:
+                self.filtered_data = self.original_data.copy()
+
+        # Update display
+        self._refresh_treeview()
+        self.status_var.set(f"Showing {len(self.filtered_data)} of {len(self.original_data)} tenders for {self.date_str}")
+
+    def _clear_filter(self):
+        """Clear the search filter."""
+        self.search_var.set("")
+        self._filter_tenders()
+
+    def _refresh_treeview(self):
+        """Refresh the treeview with current filtered data."""
+        # Clear existing items
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+        # Add filtered data
+        for _, row in self.filtered_data.iterrows():
+            values = [str(row[col]) if pd.notna(row[col]) else "" for col in self.filtered_data.columns]
+            self.tree.insert("", "end", values=values)
+
+    def _sort_by_column(self, col):
+        """Sort the treeview by the specified column."""
+        try:
+            # Toggle sort direction
+            if not hasattr(self, '_sort_reverse'):
+                self._sort_reverse = {}
+
+            if col not in self._sort_reverse:
+                self._sort_reverse[col] = False
+
+            self._sort_reverse[col] = not self._sort_reverse[col]
+            reverse = self._sort_reverse[col]
+
+            # Sort the data
+            def sort_key(row):
+                val = row[col]
+                if pd.isna(val):
+                    return "" if not reverse else "~~~"  # Handle NaN values
+                return str(val).lower()
+
+            sorted_data = sorted(self.filtered_data.iterrows(),
+                               key=lambda x: sort_key(x[1]),
+                               reverse=reverse)
+
+            # Update treeview
+            for item in self.tree.get_children():
+                self.tree.delete(item)
+
+            for _, row in sorted_data:
+                values = [str(row[c]) if pd.notna(row[c]) else "" for c in self.filtered_data.columns]
+                self.tree.insert("", "end", values=values)
+
+        except Exception as e:
+            logger.error(f"Error sorting by column {col}: {e}")
+
+    def _export_excel(self):
+        """Export filtered data to Excel."""
+        try:
+            from tkinter import filedialog
+
+            file_path = filedialog.asksaveasfilename(
+                title="Export Tenders to Excel",
+                defaultextension=".xlsx",
+                filetypes=[("Excel Files", "*.xlsx"), ("All Files", "*.*")],
+                initialfile=f"tenders_{self.date_str.replace('-', '_')}.xlsx"
+            )
+
+            if not file_path:
+                return
+
+            self.filtered_data.to_excel(file_path, index=False)
+            messagebox.showinfo("Export Successful", f"Data exported to:\n{file_path}")
+
+        except Exception as e:
+            logger.error(f"Error exporting to Excel: {e}")
+            messagebox.showerror("Export Error", f"Failed to export: {str(e)}")
+
+    def _export_csv(self):
+        """Export filtered data to CSV."""
+        try:
+            from tkinter import filedialog
+
+            file_path = filedialog.asksaveasfilename(
+                title="Export Tenders to CSV",
+                defaultextension=".csv",
+                filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")],
+                initialfile=f"tenders_{self.date_str.replace('-', '_')}.csv"
+            )
+
+            if not file_path:
+                return
+
+            self.filtered_data.to_csv(file_path, index=False, encoding='utf-8')
+            messagebox.showinfo("Export Successful", f"Data exported to:\n{file_path}")
+
+        except Exception as e:
+            logger.error(f"Error exporting to CSV: {e}")
+            messagebox.showerror("Export Error", f"Failed to export: {str(e)}")
