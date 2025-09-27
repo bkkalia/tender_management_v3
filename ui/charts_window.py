@@ -1272,6 +1272,12 @@ class ChartsWindow:
                         # Try another common format
                         dates = pd.to_datetime(self.data[date_col], errors='coerce', format='%d/%m/%Y')
                     if dates.isna().all():
+                        # Try DD-MM-YYYY format
+                        dates = pd.to_datetime(self.data[date_col], errors='coerce', format='%d-%m-%Y')
+                    if dates.isna().all():
+                        # Try MM/DD/YYYY format
+                        dates = pd.to_datetime(self.data[date_col], errors='coerce', format='%m/%d/%Y')
+                    if dates.isna().all():
                         # Fall back to inferring format
                         dates = pd.to_datetime(self.data[date_col], errors='coerce')
                 except Exception:

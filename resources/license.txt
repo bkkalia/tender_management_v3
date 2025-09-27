@@ -1,21 +1,40 @@
-MIT License
+Tender Management Utility License Agreement
 
-Copyright (c) 2025 Your Name or Company
+Copyright (c) 2025 Cloud84
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This license agreement governs the use of Tender Management Utility (the "Software").
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. DEFINITIONS
+   - "Personal/Non-Commercial Use": Use by individuals, educational institutions, non-profit organizations, or research institutions for non-commercial purposes only.
+   - "Commercial Use": Any use in business operations, government deployments, revenue-generating activities, or any for-profit endeavors.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. FREE LICENSE FOR NON-COMMERCIAL USE
+   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to use the Software for Personal/Non-Commercial Use only, subject to the following conditions:
+   - The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   - The Software may not be used for any Commercial Use without obtaining a commercial license.
+
+3. COMMERCIAL LICENSE REQUIREMENT
+   Commercial use of the Software requires a separate commercial license agreement with Cloud84. Commercial licenses start from $499/year and include:
+   - Unlimited commercial use
+   - Priority technical support
+   - Custom modifications available
+   - Professional services
+   - Volume discounts available
+   - Enterprise deployment support
+
+4. RESTRICTIONS
+   - Commercial use without a valid commercial license is strictly prohibited.
+   - Redistribution for commercial purposes requires explicit written permission.
+   - Modification and redistribution must maintain this license agreement.
+
+5. WARRANTY AND LIABILITY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+6. CONTACT INFORMATION
+   For commercial licensing inquiries: licensing@cloud84.com
+   Website: https://cloud84.com
+
+7. TERMINATION
+   This license is effective until terminated. Your rights under this license will terminate automatically without notice if you fail to comply with any term(s) of this license.
+
+Last updated: September 27, 2025
