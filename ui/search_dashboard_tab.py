@@ -51,71 +51,137 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+class AutoDismissMessageDialog(tk.Toplevel):
+    """Auto-dismissing message dialog that closes after 3 seconds or on click anywhere."""
+
+    def __init__(self, parent, title, message):
+        super().__init__(parent)
+        self.title(title)
+
+        # Make it non-modal (no grab_set, no transient)
+        # Position it near the parent window
+        self.geometry("+%d+%d" % (parent.winfo_rootx() + 100, parent.winfo_rooty() + 100))
+
+        # Create the message label
+        message_label = ttk.Label(self, text=message, padding=20, font=('TkDefaultFont', 10))
+        message_label.pack()
+
+        # Auto-dismiss after 3 seconds
+        self.after(3000, self.destroy)
+
+        # Bind click anywhere to dismiss
+        self.bind('<Button-1>', lambda e: self.destroy())
+        # Also bind to the root window to catch clicks outside the dialog
+        self.parent = parent
+        self.parent.bind('<Button-1>', lambda e: self._check_click_outside(e), add='+')
+
+        # Clean up binding when dialog is destroyed
+        self.protocol("WM_DELETE_WINDOW", self._on_destroy)
+
+    def _check_click_outside(self, event):
+        """Check if click was outside the dialog."""
+        # Get dialog geometry
+        dialog_x = self.winfo_rootx()
+        dialog_y = self.winfo_rooty()
+        dialog_width = self.winfo_width()
+        dialog_height = self.winfo_height()
+
+        # Check if click is outside dialog bounds
+        if not (dialog_x <= event.x_root <= dialog_x + dialog_width and
+                dialog_y <= event.y_root <= dialog_y + dialog_height):
+            self.destroy()
+
+    def _on_destroy(self):
+        """Clean up when dialog is destroyed."""
+        try:
+            # Remove the binding from parent
+            self.parent.unbind('<Button-1>')
+        except:
+            pass
+        self.destroy()
+
+
+# Test function to verify the dialog works
+def test_auto_dismiss_dialog():
+    """Test the auto-dismiss dialog functionality."""
+    root = tk.Tk()
+    root.title("Test Auto Dismiss Dialog")
+    root.geometry("400x300")
+
+    def show_test_dialog():
+        AutoDismissMessageDialog(root, "Test Message", "This dialog will auto-dismiss in 3 seconds or when you click anywhere!")
+
+    test_btn = ttk.Button(root, text="Test Auto Dismiss Dialog", command=show_test_dialog)
+    test_btn.pack(pady=50)
+
+    root.mainloop()
+
+
 class RemoteUrlDialog(tk.Toplevel):
     """Dialog for entering remote URL and credentials."""
-    
+
     def __init__(self, parent, remote_loader):
         super().__init__(parent)
         self.parent = parent
         self.remote_loader = remote_loader
         self.result = None
-        
+
         self.title("Add Remote URL")
         self.geometry("400x300")
         self.transient(parent)
         self.grab_set()
-        
+
         # Center the dialog
         self.geometry("+%d+%d" % (parent.winfo_rootx() + 50, parent.winfo_rooty() + 50))
-        
+
         self._create_widgets()
-        
+
     def _create_widgets(self):
         main_frame = ttk.Frame(self)
         main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
+
         # URL field
         ttk.Label(main_frame, text="URL:").pack(anchor=tk.W)
         self.url_var = tk.StringVar()
         url_entry = ttk.Entry(main_frame, textvariable=self.url_var, width=50)
         url_entry.pack(fill=tk.X, pady=(0, 10))
         url_entry.focus()
-        
+
         # Username field
         ttk.Label(main_frame, text="Username (optional):").pack(anchor=tk.W)
         self.username_var = tk.StringVar()
         username_entry = ttk.Entry(main_frame, textvariable=self.username_var, width=50)
         username_entry.pack(fill=tk.X, pady=(0, 10))
-        
+
         # Password field
         ttk.Label(main_frame, text="Password (optional):").pack(anchor=tk.W)
         self.password_var = tk.StringVar()
         password_entry = ttk.Entry(main_frame, textvariable=self.password_var, width=50, show="*")
         password_entry.pack(fill=tk.X, pady=(0, 20))
-        
+
         # Buttons
         button_frame = ttk.Frame(main_frame)
         button_frame.pack(fill=tk.X)
-        
+
         ttk.Button(button_frame, text="Cancel", command=self._cancel).pack(side=tk.RIGHT, padx=(10, 0))
         ttk.Button(button_frame, text="OK", command=self._ok).pack(side=tk.RIGHT)
-        
+
         # Bind Enter key to OK
         self.bind('<Return>', lambda e: self._ok())
         self.bind('<Escape>', lambda e: self._cancel())
-        
+
     def _ok(self):
         url = self.url_var.get().strip()
         if not url:
             messagebox.showwarning("Missing URL", "Please enter a URL.")
             return
-            
+
         username = self.username_var.get().strip() or None
         password = self.password_var.get().strip() or None
-        
+
         self.result = (url, username, password)
         self.destroy()
-        
+
     def _cancel(self):
         self.result = None
         self.destroy()
@@ -2153,7 +2219,8 @@ class SearchDashboardTab(ttk.Frame):
             # Apply the search filters
             self._apply_filters()
 
-            messagebox.showinfo("Search Loaded", f"Search '{search_name}' loaded successfully.")
+            # Show auto-dismissing success message
+            AutoDismissMessageDialog(self, "Search Loaded", f"Search '{search_name}' loaded successfully.")
             self.logger.info(f"Loaded search configuration: {search_name}")
 
         except Exception as e:
