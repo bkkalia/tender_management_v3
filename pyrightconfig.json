@@ -1,0 +1,23 @@
+{
+  "include": [
+    "."
+  ],
+  "exclude": [
+    "__pycache__",
+    "build",
+    "dist",
+    ".git",
+    "logs"
+  ],
+  "pythonVersion": "3.8",
+  "typeCheckingMode": "basic",
+  "reportMissingImports": "warning",
+  "reportMissingTypeStubs": "none",
+  "pythonPath": "python",
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "pythonVersion": "3.8"
+    }
+  ]
+}

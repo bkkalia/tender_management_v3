@@ -27,7 +27,7 @@ from ui.calendar_tab import CalendarTab  # Import the CalendarTab class
 # Note: TenderTasksTab is still placeholder
 from ui.tender_tasks_tab import TenderTasksTab
 try:
-    from ui.performance_tab import PerformanceTab
+    from ui.performance_tab import PerformanceTab  # type: ignore
 except ImportError:
     PerformanceTab = None
 

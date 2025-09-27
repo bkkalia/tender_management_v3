@@ -509,7 +509,7 @@ class PerformanceTab(ttk.Frame):
                 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
                 if parent_dir not in sys.path:
                     sys.path.insert(0, parent_dir)
-                from dummy_data_generator import generate_multiple_files
+                from dummy_data_generator import generate_multiple_files  # type: ignore
             except ImportError as e:
                 messagebox.showerror("Import Error", f"Could not import dummy data generator: {e}")
                 return
