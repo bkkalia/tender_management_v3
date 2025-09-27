@@ -38,6 +38,9 @@ class ChartsWindow:
         # Set smart default column and chart type
         self._set_smart_defaults()
 
+        # Initialize data hash for change detection
+        self._update_data_hash(self.data)
+
         # Initial chart
         self._update_chart()
 
@@ -218,6 +221,7 @@ class ChartsWindow:
                     data_changed = self._has_data_changed(new_data)
                     if data_changed:
                         self.data = new_data.copy()
+                        self._update_data_hash(new_data)  # Update hash for next comparison
                         self._filter_relevant_columns()  # Re-filter columns after data refresh
                         self._update_chart()
                         # Only log when data actually changes
@@ -392,13 +396,44 @@ class ChartsWindow:
     def _prepare_chart_data(self, column):
         """Prepare data for charting by aggregating values."""
         try:
+            # Check if this is a date-related column that might be stored as string
+            col_lower = str(column).lower()
+            is_date_column = any(kw in col_lower for kw in ['date', 'time', 'closing', 'close', 'due', 'deadline', 'end', 'publish', 'created', 'opening'])
+
+            # Get current chart type to determine how to handle date columns
+            chart_type = self.current_chart_type.get()
+
             # Handle different data types
             if pd.api.types.is_numeric_dtype(self.data[column]):
                 # For numeric columns, create value distribution
                 return self._prepare_numeric_data(column)
             elif pd.api.types.is_datetime64_dtype(self.data[column]):
-                # For datetime columns, create time series
-                return self._prepare_datetime_data(column)
+                # For datetime columns, handle based on chart type
+                if chart_type == "line":
+                    # Line charts work well with time series
+                    return self._prepare_datetime_data(column)
+                else:
+                    # For pie/bar/histogram, convert datetime to categorical periods
+                    return self._prepare_datetime_as_categorical(column)
+            elif is_date_column:
+                # Try to convert date-like columns to datetime
+                try:
+                    # Attempt to convert to datetime
+                    temp_data = pd.to_datetime(self.data[column], errors='coerce')
+                    if temp_data.notna().any():
+                        # Successfully converted some dates
+                        if chart_type == "line":
+                            # Line charts work well with time series
+                            self.data = self.data.copy()  # Avoid modifying original
+                            self.data[column] = temp_data
+                            return self._prepare_datetime_data(column)
+                        else:
+                            # For pie/bar/histogram, convert to categorical periods
+                            return self._prepare_datetime_as_categorical_from_series(temp_data)
+                except Exception:
+                    pass
+                # Fall back to categorical if conversion fails
+                return self._prepare_categorical_data(column)
             else:
                 # For categorical/text columns, create frequency counts
                 return self._prepare_categorical_data(column)
@@ -463,6 +498,54 @@ class ChartsWindow:
             })
         except Exception as e:
             logger.error(f"Error preparing datetime data: {e}")
+            return None
+
+    def _prepare_datetime_as_categorical(self, column):
+        """Prepare datetime data as categorical periods for pie/bar/histogram charts."""
+        try:
+            # Convert datetime to categorical periods (e.g., months, quarters)
+            dt_series = self.data[column].dropna()
+
+            if len(dt_series) == 0:
+                return None
+
+            # Group by month-year periods for better categorization
+            period_counts = dt_series.dt.to_period('M').value_counts().sort_index()
+
+            # Convert periods to readable strings
+            categories = [str(period) for period in period_counts.index]
+            counts = period_counts.values
+
+            return pd.DataFrame({
+                'Category': categories,
+                'Count': counts
+            })
+        except Exception as e:
+            logger.error(f"Error preparing datetime as categorical: {e}")
+            return None
+
+    def _prepare_datetime_as_categorical_from_series(self, dt_series):
+        """Prepare datetime series as categorical periods for pie/bar/histogram charts."""
+        try:
+            # Convert datetime to categorical periods (e.g., months, quarters)
+            dt_series = dt_series.dropna()
+
+            if len(dt_series) == 0:
+                return None
+
+            # Group by month-year periods for better categorization
+            period_counts = dt_series.dt.to_period('M').value_counts().sort_index()
+
+            # Convert periods to readable strings
+            categories = [str(period) for period in period_counts.index]
+            counts = period_counts.values
+
+            return pd.DataFrame({
+                'Category': categories,
+                'Count': counts
+            })
+        except Exception as e:
+            logger.error(f"Error preparing datetime series as categorical: {e}")
             return None
 
     def _create_bar_chart(self, chart_data, column):
