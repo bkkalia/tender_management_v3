@@ -13,7 +13,7 @@
         "Value"
     ],
     "last_loaded_files": [
-        "G:/My Drive/0dev/Search Utility v3/tender_management_v3/data/merged_data\\hptenders_gov_in_consolidated_master.xlsx"
+        "export_test_data.xlsx"
     ],
     "merger_preferred_unique_keys": [
         "Tender ID (Extracted)",
