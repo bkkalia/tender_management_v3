@@ -2153,7 +2153,7 @@ class SearchDashboardTab(ttk.Frame):
             # Apply the search filters
             self._apply_filters()
 
-            messagebox.showinfo("Search Loaded", f"Search terms for '{search_name}' loaded successfully.")
+            messagebox.showinfo("Search Loaded", f"Search '{search_name}' loaded successfully.")
             self.logger.info(f"Loaded search configuration: {search_name}")
 
         except Exception as e:
@@ -2319,7 +2319,7 @@ class SearchDashboardTab(ttk.Frame):
                 del saved_searches_data[search_name]
 
             if search_name in saved_searches_list:
-                del saved_searches_list[search_name]
+                saved_searches_list.remove(search_name)
 
             # Update the config
             self.main_app.global_config.set("saved_searches_data", saved_searches_data)

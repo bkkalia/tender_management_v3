@@ -23,23 +23,15 @@
     "merger_max_backups": 5,
     "version": "3.1",
     "saved_searches": [
-        "pwd una",
-        "PWD Una"
+        "una pwd 2"
     ],
     "saved_searches_data": {
-        "pwd una": {
+        "una pwd 2": {
             "dept_filter": "pwd",
             "global_search": "una",
             "dept_operator": "OR",
             "global_operator": "AND",
-            "saved_date": "2025-09-26 14:26:13"
-        },
-        "PWD Una": {
-            "dept_filter": "PWD",
-            "global_search": "una",
-            "dept_operator": "OR",
-            "global_operator": "AND",
-            "saved_date": "2025-09-25 20:01:52"
+            "saved_date": "2025-09-27 10:55:05"
         }
     },
     "treeview_column_settings": {

@@ -54,8 +54,8 @@ class ChartsWindow:
         self.window.resizable(True, True)
         self.window.minsize(800, 600)
 
-        # Center the window
-        self.window.transient(self.parent)
+        # Center the window (removed transient setting to allow minimization)
+        # self.window.transient(self.parent)
 
         # Handle window close
         self.window.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -468,12 +468,17 @@ class ChartsWindow:
     def _create_bar_chart(self, chart_data, column):
         """Create a bar chart."""
         try:
-            if 'Range' in chart_data.columns:
+            # Validate chart_data
+            if chart_data is None or chart_data.empty:
+                self._show_error_message("No data available for bar chart")
+                return
+
+            if 'Range' in chart_data.columns and 'Count' in chart_data.columns:
                 # Numeric histogram
                 self.ax.bar(range(len(chart_data)), chart_data['Count'])
                 self.ax.set_xlabel('Value Ranges')
                 self.ax.set_title(f'Distribution of {column}')
-            else:
+            elif 'Category' in chart_data.columns and 'Count' in chart_data.columns:
                 # Categorical data
                 categories = chart_data['Category'].astype(str)
                 counts = chart_data['Count']
@@ -490,6 +495,9 @@ class ChartsWindow:
                 # Set x-axis labels
                 self.ax.set_xticks(range(len(categories)))
                 self.ax.set_xticklabels(categories, rotation=45, ha='right')
+            else:
+                self._show_error_message("Invalid data format for bar chart")
+                return
 
             self.ax.set_ylabel('Count')
             self.ax.grid(True, alpha=0.3)
@@ -501,9 +509,20 @@ class ChartsWindow:
     def _create_pie_chart(self, chart_data, column):
         """Create a pie chart with both percentages and absolute numbers."""
         try:
+            # Validate chart_data
+            if chart_data is None or chart_data.empty:
+                self._show_error_message("No data available for pie chart")
+                return
+
             # Ensure chart_data has the required columns
             if 'Category' not in chart_data.columns or 'Count' not in chart_data.columns:
                 self._show_error_message("Invalid data format for pie chart")
+                return
+
+            # Filter out zero or negative counts
+            chart_data = chart_data[chart_data['Count'] > 0]
+            if chart_data.empty:
+                self._show_error_message("No valid data for pie chart")
                 return
 
             if len(chart_data) > 10:
@@ -549,7 +568,12 @@ class ChartsWindow:
     def _create_line_chart(self, chart_data, column):
         """Create a line chart."""
         try:
-            if 'Date' in chart_data.columns:
+            # Validate chart_data
+            if chart_data is None or chart_data.empty:
+                self._show_error_message("No data available for line chart")
+                return
+
+            if 'Date' in chart_data.columns and 'Count' in chart_data.columns:
                 # Time series data
                 dates = chart_data['Date']
                 values = chart_data['Count']
@@ -557,7 +581,7 @@ class ChartsWindow:
                 self.ax.plot(dates, values, marker='o', linewidth=2, markersize=4)
                 self.ax.set_xlabel('Date')
                 self.ax.set_title(f'Time Series of {column}')
-            else:
+            elif 'Count' in chart_data.columns:
                 # Regular line chart
                 x = range(len(chart_data))
                 y = chart_data['Count']
@@ -571,6 +595,9 @@ class ChartsWindow:
                     categories = chart_data['Category'].astype(str)
                     self.ax.set_xticks(x)
                     self.ax.set_xticklabels(categories, rotation=45, ha='right')
+            else:
+                self._show_error_message("Invalid data format for line chart")
+                return
 
             self.ax.set_ylabel('Count')
             self.ax.grid(True, alpha=0.3)
@@ -582,6 +609,11 @@ class ChartsWindow:
     def _create_histogram(self, chart_data, column):
         """Create a histogram."""
         try:
+            # Validate chart_data
+            if chart_data is None or chart_data.empty:
+                self._show_error_message("No data available for histogram")
+                return
+
             if 'Count' in chart_data.columns:
                 # Use the prepared histogram data
                 counts = chart_data['Count']
@@ -590,15 +622,21 @@ class ChartsWindow:
                     self.ax.hist(counts, bins=20, alpha=0.7, edgecolor='black')
                     self.ax.set_xlabel('Frequency')
                     self.ax.set_title(f'Histogram of {column} Distribution')
-                else:
+                elif 'Category' in chart_data.columns:
                     # Categorical histogram
                     categories = chart_data['Category']
                     self.ax.hist(categories, alpha=0.7, edgecolor='black')
                     self.ax.set_xlabel('Categories')
                     self.ax.set_title(f'Histogram of {column}')
+                else:
+                    self._show_error_message("Invalid data format for histogram")
+                    return
             else:
                 # Direct histogram from data
                 data_clean = self.data[column].dropna()
+                if len(data_clean) == 0:
+                    self._show_error_message("No data available for histogram")
+                    return
                 self.ax.hist(data_clean, bins=20, alpha=0.7, edgecolor='black')
                 self.ax.set_xlabel(column)
                 self.ax.set_title(f'Histogram of {column}')
@@ -708,19 +746,31 @@ class ChartsWindow:
         if not hasattr(self.data, 'columns') or self.data.columns is None:
             return
 
-        # Find the best column to visualize
-        date_columns = [col for col in self.data.columns
-                       if any(kw in col.lower() for kw in ['date', 'time', 'closing', 'close', 'due', 'deadline', 'end'])]
+        # Find the best column to visualize - prioritize closing date columns
+        closing_date_columns = [col for col in self.data.columns
+                               if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+
+        other_date_columns = [col for col in self.data.columns
+                             if any(kw in col.lower() for kw in ['date', 'time']) and col not in closing_date_columns]
 
         dept_columns = [col for col in self.data.columns
                        if any(kw in col.lower() for kw in ['department', 'dept', 'agency', 'organisation', 'ministry'])]
 
-        # Prioritize: Date columns > Department columns > First column
-        if date_columns:
-            self.selected_column.set(date_columns[0])
+        # Prioritize: Closing date columns > Other date columns > Department columns > First column
+        if closing_date_columns:
+            self.selected_column.set(closing_date_columns[0])
             # For date columns, line chart is often most useful
-            if pd.api.types.is_datetime64_dtype(self.data[date_columns[0]]):
+            if pd.api.types.is_datetime64_dtype(self.data[closing_date_columns[0]]):
                 self.current_chart_type.set("line")
+            else:
+                self.current_chart_type.set("bar")
+        elif other_date_columns:
+            self.selected_column.set(other_date_columns[0])
+            # For date columns, line chart is often most useful
+            if pd.api.types.is_datetime64_dtype(self.data[other_date_columns[0]]):
+                self.current_chart_type.set("line")
+            else:
+                self.current_chart_type.set("bar")
         elif dept_columns:
             self.selected_column.set(dept_columns[0])
             # For department columns, pie chart shows distribution well
@@ -806,20 +856,36 @@ class ChartsWindow:
                 if event.widget is not canvas_widget:
                     return
 
-                # Calculate pan distance
-                curr = self.ax.transData.transform([(event.x, event.y)])
-                if curr is not None and len(curr) > 0:
-                    dx = curr[0][0] - self._pan_prev[0][0]
-                    dy = curr[0][1] - self._pan_prev[0][1]
+                try:
+                    # Calculate pan distance
+                    curr = self.ax.transData.transform([(event.x, event.y)])
+                    if curr is not None and len(curr) > 0 and len(curr[0]) >= 2:
+                        dx = curr[0][0] - self._pan_prev[0][0]
+                        dy = curr[0][1] - self._pan_prev[0][1]
 
-                    # Apply pan
-                    xlim = self.ax.get_xlim()
-                    ylim = self.ax.get_ylim()
-                    self.ax.set_xlim(xlim[0] - dx, xlim[1] - dx)
-                    self.ax.set_ylim(ylim[0] - dy, ylim[1] - dy)
+                        # Validate dx and dy are not NaN or Inf
+                        if not (np.isfinite(dx) and np.isfinite(dy)):
+                            return
 
-                    self.canvas.draw()
-                    self._pan_prev = curr
+                        # Apply pan
+                        xlim = self.ax.get_xlim()
+                        ylim = self.ax.get_ylim()
+
+                        # Calculate new limits and validate they are finite
+                        new_xlim_left = xlim[0] - dx
+                        new_xlim_right = xlim[1] - dx
+                        new_ylim_bottom = ylim[0] - dy
+                        new_ylim_top = ylim[1] - dy
+
+                        if all(np.isfinite([new_xlim_left, new_xlim_right, new_ylim_bottom, new_ylim_top])):
+                            self.ax.set_xlim(new_xlim_left, new_xlim_right)
+                            self.ax.set_ylim(new_ylim_bottom, new_ylim_top)
+                            self.canvas.draw()
+                            self._pan_prev = curr
+                except Exception as e:
+                    # Silently handle pan errors to prevent crashes
+                    logger.debug(f"Pan error: {e}")
+                    pass
 
             def on_mouse_release(event):
                 self._pan_start = None
