@@ -232,6 +232,7 @@ class ChartsWindow:
                         self._update_data_hash(new_data)  # Update hash for next comparison
                         self._filter_relevant_columns()  # Re-filter columns after data refresh
                         self._update_chart()
+                        self._update_calendar()  # Update calendar with new data counts
                         # Only log when data actually changes
                         self.status_var.set("Chart updated")
                         logger.info("Charts data refreshed from Tree view")

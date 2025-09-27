@@ -2599,6 +2599,45 @@ class SearchDashboardTab(ttk.Frame):
             self.logger.error(f"Error importing saved searches: {e}")
             messagebox.showerror("Import Error", f"Failed to import searches: {str(e)}")
 
+    def load_initial_data_if_any(self):
+        """Load initial data if any was previously loaded (called on app startup)."""
+        try:
+            # Check if there's a last loaded file in the config
+            last_loaded_files = self.main_app.global_config.get("last_loaded_files", [])
+
+            if last_loaded_files and isinstance(last_loaded_files, list) and len(last_loaded_files) > 0:
+                last_file = last_loaded_files[0]  # Get the most recent one
+
+                # Check if the file exists
+                if os.path.exists(last_file):
+                    self.logger.info(f"Loading last used data source: {last_file}")
+
+                    # Show loading message
+                    self.results_count_var.set("Loading last used data source...")
+                    self.update_idletasks()
+
+                    # Load the file
+                    self._load_merged_file_from_path(last_file)
+
+                    # Show success message briefly
+                    self.results_count_var.set(f"Loaded last used data: {os.path.basename(last_file)}")
+                    self.after(2000, lambda: self.results_count_var.set(f"Showing all {len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0} records"))
+
+                    self.logger.info(f"Successfully loaded last used data source: {last_file}")
+                else:
+                    self.logger.warning(f"Last used data source not found: {last_file}")
+                    # Remove the invalid entry from config
+                    if last_file in last_loaded_files:
+                        last_loaded_files.remove(last_file)
+                        self.main_app.global_config.set("last_loaded_files", last_loaded_files)
+                        self.main_app.global_config.save_config()
+            else:
+                self.logger.info("No last used data source found, starting with empty state")
+
+        except Exception as e:
+            self.logger.error(f"Error loading initial data: {e}")
+            # Don't show error dialog on startup, just log it
+
     def _clean_corrupted_searches(self):
         """Clean up corrupted saved searches."""
         try:
