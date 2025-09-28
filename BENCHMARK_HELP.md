@@ -27,6 +27,28 @@ The **Performance Benchmark Monitor** is a comprehensive tool for evaluating and
 - Duration 5-15 seconds = Good performance
 - Duration > 30 seconds = Consider CPU upgrade
 
+#### 📈 Data Processing Performance
+
+**What it tests**: Evaluates application-specific data processing capabilities using real tender data scenarios.
+
+**How it works**:
+- Loads and processes sample tender datasets (configurable size)
+- Performs filtering, sorting, and aggregation operations
+- Tests search functionality with various query types
+
+**Key Metrics**:
+- **Load Time Seconds**: Time to load and parse data files
+- **Filter Time Seconds**: Time to apply complex filter operations
+- **Search Time Seconds**: Time to perform text-based searches
+- **Memory Usage MB**: RAM consumption during processing
+- **Records Processed**: Number of data rows successfully handled
+
+**Interpretation**:
+- Load time < 5 seconds = Excellent data loading performance
+- Filter time < 10 seconds = Good filtering performance
+- Search time < 2 seconds = Excellent search responsiveness
+- Memory usage < 500MB = Efficient memory utilization
+
 #### 🧠 Memory Bandwidth Test
 
 **What it tests**: Evaluates RAM read/write speeds and overall memory subsystem performance.

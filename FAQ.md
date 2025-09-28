@@ -32,6 +32,10 @@ Version 3.1 includes significant performance enhancements:
 - Improved memory management and multi-threaded processing
 - Enhanced user interface with real-time dashboard updates
 - Saved search profiles with export/import functionality
+- Comprehensive performance monitoring system with real-time metrics
+- Advanced dummy data generator for testing with 50K+ records
+- GUI-based performance testing suite with automated workflows
+- Rich markdown performance reports with system specifications
 
 ---
 

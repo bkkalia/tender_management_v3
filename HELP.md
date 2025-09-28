@@ -27,6 +27,10 @@ The **Tender Management Utility V3** is a comprehensive desktop application for 
 - **Real-time Dashboard**: Live metrics and statistics
 - **Data Visualization**: Charts and visual representations
 - **Remote Data Integration**: Support for cloud-based data sources
+- **Performance Monitoring**: Real-time system metrics and performance tracking
+- **Advanced Dummy Data Generator**: Generate test data with 50K+ records
+- **GUI Performance Testing**: Built-in benchmark testing suite
+- **Rich Performance Reports**: Professional markdown reports with system specs
 
 ### System Requirements
 

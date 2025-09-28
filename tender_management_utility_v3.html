@@ -108,6 +108,18 @@
             opacity: 0.9;
         }
 
+        .version-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
         .cta-button {
             display: inline-block;
             background: #3498db;
@@ -537,8 +549,9 @@
 
     <section class="hero">
         <div class="container">
+            <div class="version-badge">Latest Version: v3.1</div>
             <h1>Professional Tender Data Management</h1>
-            <p>Automate your tender management with our advanced desktop application. Load, search, filter, visualize, and manage tender data with unparalleled efficiency and accuracy.</p>
+            <p>Automate your tender management with our advanced desktop application. Load, search, filter, visualize, and manage tender data with unparalleled efficiency and accuracy. Now featuring comprehensive performance monitoring, advanced dummy data generation, and GUI-based benchmark testing.</p>
             <a href="#download" class="cta-button">Get Started Free</a>
         </div>
     </section>
@@ -620,12 +633,22 @@
                 <div class="feature-card">
                     <div class="feature-icon">📊</div>
                     <h3 class="feature-title">Performance Monitoring</h3>
-                    <p>Real-time performance tracking with live metrics, system monitoring, and comprehensive benchmarking tools integrated into the GUI.</p>
+                    <p>Real-time system performance tracking with live CPU, memory, and disk usage metrics. Integrated status bar shows RAM usage, data records, and last operation tracking with automatic updates every 2 seconds.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🧪</div>
-                    <h3 class="feature-title">Testing Suite</h3>
-                    <p>Built-in performance testing with dummy data generation, automated import/testing workflows, and rich markdown reports.</p>
+                    <h3 class="feature-title">Advanced Testing Suite</h3>
+                    <p>Comprehensive GUI-based performance testing with advanced dummy data generator (50K+ records), automated import/testing workflows, and professional markdown reports with system specifications and optimization recommendations.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3 class="feature-title">Advanced Search Architecture</h3>
+                    <p>In-memory inverted token indexing for large datasets (5K+ rows) with set intersection operations for AND/OR logic in global search, automatic fallback to DataFrame scanning for smaller datasets.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">Optimized Performance</h3>
+                    <p>Debounced asynchronous filtering (250ms delay) for large datasets, multi-threaded processing, cached lowercased columns for case-insensitive search, and precompiled regex patterns for improved responsiveness.</p>
                 </div>
             </div>
         </div>
@@ -667,6 +690,158 @@
                     <div style="font-size: 3rem; margin-bottom: 0.5rem;">☁️</div>
                     <div style="font-weight: bold; color: #2c3e50;">Cloud</div>
                     <div style="font-size: 0.9rem; color: #666;">Ready</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="technology-stack" style="background: white;">
+        <div class="container">
+            <h2 class="section-title">Technology Stack</h2>
+            <p style="text-align: center; font-size: 1.1rem; color: #666; margin-bottom: 3rem;">
+                Built with cutting-edge technologies for maximum performance, reliability, and user experience
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+                <!-- Core Technologies -->
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 0.5rem;">🐍</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Python 3.7+</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Core programming language</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Type hints, async/await, rich ecosystem
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 0.5rem;">🖼️</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Tkinter + Ttk</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">GUI framework</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Native Windows UI, theming, responsive design
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 0.5rem;">📊</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Pandas</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Data processing engine</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> DataFrame operations, Excel/CSV I/O, advanced filtering
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 0.5rem;">📈</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Matplotlib</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Data visualization</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Interactive charts, statistical plots, export capabilities
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 0.5rem;">📅</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">TkCalendar</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Date picker widgets</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Interactive calendars, date validation, custom formatting
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 0.5rem;">📁</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">OpenPyXL</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Excel file processing</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Read/write Excel files, formatting preservation, large file support
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Technologies -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚡</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Psutil</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">System performance monitoring</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> CPU, memory, disk usage tracking, cross-platform compatibility
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔒</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Filelock</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">File locking for safety</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Network drive safety, concurrent access protection, Google Drive compatibility
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">📅</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">iCalendar</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Calendar export/import</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Standard calendar formats, Outlook/Google compatibility, event management
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔍</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Advanced Algorithms</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Search optimization</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Inverted indexing, debounced filtering, multi-threaded processing, memory optimization
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Architecture Highlights -->
+            <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 2rem; border-radius: 10px; margin-bottom: 2rem;">
+                <h3 style="text-align: center; color: #2c3e50; margin-bottom: 1.5rem;">🏗️ Architecture Highlights</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                    <div style="text-align: center; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎯</div>
+                        <h4 style="color: #2c3e50; margin-bottom: 0.5rem;">MVC Architecture</h4>
+                        <p style="font-size: 0.9rem; color: #666;">Clean separation of concerns with Model-View-Controller pattern</p>
+                    </div>
+                    <div style="text-align: center; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⚡</div>
+                        <h4 style="color: #2c3e50; margin-bottom: 0.5rem;">Asynchronous Processing</h4>
+                        <p style="font-size: 0.9rem; color: #666;">Non-blocking UI with background thread processing</p>
+                    </div>
+                    <div style="text-align: center; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔧</div>
+                        <h4 style="color: #2c3e50; margin-bottom: 0.5rem;">Modular Design</h4>
+                        <p style="font-size: 0.9rem; color: #666;">Easily extensible architecture with plugin support</p>
+                    </div>
+                    <div style="text-align: center; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📊</div>
+                        <h4 style="color: #2c3e50; margin-bottom: 0.5rem;">Performance Optimized</h4>
+                        <p style="font-size: 0.9rem; color: #666;">Memory-efficient processing for large datasets</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -804,7 +979,7 @@
             <div class="footer-content">
                 <div>
                     <p>&copy; 2025 Cloud84. All rights reserved.</p>
-                    <p>Tender Management Utility v3.1</p>
+                    <p>Tender Management Utility v3.1 - Advanced Performance Monitoring & Testing Suite</p>
                 </div>
                 <div class="footer-links">
                     <a href="#summary">About</a>

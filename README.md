@@ -4,13 +4,18 @@
 Desktop application (Tkinter) to load, search, filter, visualize, merge and manage tender data with calendar & task integration.
 
 ## Recent Updates
-(NEW) Visual active date filter buttons (dark green highlight)  
-(NEW) Reset All Filters restores original button colors  
-(NEW) Treeview column sorting (chronological for dates, numeric & text fallback)  
-(NEW) Export (Excel / CSV) retained  
-(NEW) Build script (PyInstaller) with optional UPX compression  
-(NEW) Settings Tab improvements & propagation of configuration changes  
-(NEW) Debounced & asynchronous filtering for large datasets (performance)  
+(NEW) Visual active date filter buttons (dark green highlight)
+(NEW) Reset All Filters restores original button colors
+(NEW) Treeview column sorting (chronological for dates, numeric & text fallback)
+(NEW) Export (Excel / CSV) retained
+(NEW) Build script (PyInstaller) with optional UPX compression
+(NEW) Settings Tab improvements & propagation of configuration changes
+(NEW) Debounced & asynchronous filtering for large datasets (performance)
+(NEW) Comprehensive performance monitoring system with real-time metrics
+(NEW) Advanced dummy data generator with proper column headers
+(NEW) GUI-based performance testing suite with automated workflows
+(NEW) Rich markdown performance reports with system specifications
+(NEW) Enhanced status bar with live RAM, records, and operation tracking
 
 ## Implemented Performance Enhancements (v3.1)
 - Debounced live search (250 ms) to prevent a full filter pass on every keystroke.
@@ -23,6 +28,9 @@ Desktop application (Tkinter) to load, search, filter, visualize, merge and mana
 - Safe fallbacks for empty / non-scalar cell values preventing render-time exceptions.
 - Prepared scaffolding for future indexing & virtualization (clean points for extension).
 - NEW (experimental) In‑memory inverted token index (built for large datasets) speeds Global Search (AND/OR) by set intersections instead of full DataFrame scans.
+- NEW Performance monitoring system with real-time CPU, memory, and disk usage tracking
+- NEW Advanced dummy data generator with 50K+ records for testing
+- NEW GUI-based benchmark testing with automated workflows and detailed reporting
 
 ## Notes on Search Architecture
 Current baseline search operates fully in memory using pandas DataFrame boolean masks.  

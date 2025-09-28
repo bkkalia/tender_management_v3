@@ -35,6 +35,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Performance testing with automated workflows
   - System information with hardware specifications
   - Comprehensive testing suite with progress feedback
+- **Advanced Search Architecture**: In-memory inverted token indexing for large datasets
+  - Automatic index building for datasets ≥ 5,000 rows
+  - Set intersection operations for AND/OR logic in global search
+  - Fallback to DataFrame scanning for smaller datasets
+  - Performance optimization for text-heavy columns
 
 ### Fixed
 - Date parsing warnings in dummy data generator (now uses datetime objects)
