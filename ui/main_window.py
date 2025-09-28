@@ -509,13 +509,8 @@ India - 174303"""
             self.notebook.add(settings_tab, text="Settings")
             self.tabs["Settings"] = settings_tab
             
-            # Performance Tab
-            if PerformanceTab is not None:
-                performance_tab = PerformanceTab(self.notebook, self)
-                self.notebook.add(performance_tab, text="Performance")
-                self.tabs["Performance"] = performance_tab
-            else:
-                self.logger.warning("PerformanceTab not available - skipping this tab")
+            # Removed: Performance Tab now available as separate Benchmark window from Settings tab
+            # Users can access performance monitoring via Settings > Open Benchmark Monitor
 
             # Logs Tab
             logs_tab = LogsTab(self.notebook, self)

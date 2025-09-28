@@ -8,6 +8,7 @@ import os
 import sys
 from typing import TYPE_CHECKING, Dict, List, Any, Optional
 import re
+import pandas as pd
 
 # Fix imports by adding parent directory to path if needed
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -203,18 +204,23 @@ class SettingsTab(ttk.Frame):
         self.column_settings = self.main_app.global_config.get("treeview_column_settings", {})
         self.column_vars = {}  # Dictionary to store checkbox variables
         self.width_vars = {}   # Dictionary to store width variables
+        self.column_order = []  # List to maintain column order
+
+        # Default column sequence and settings
+        self._initialize_default_column_settings()
 
         # Create scrollable frame for column settings
         columns_container = ttk.Frame(treeview_frame)
         columns_container.pack(fill=tk.BOTH, expand=True, padx=SPACING['medium'], pady=SPACING['small'])
 
-        # Header row
+        # Header row with ordering controls
         header_frame = ttk.Frame(columns_container)
         header_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
 
+        ttk.Label(header_frame, text="Order", font=FONTS.get('subheading', ('TkDefaultFont', 10, 'bold')), width=8).pack(side=tk.LEFT)
         ttk.Label(header_frame, text="Column Name", font=FONTS.get('subheading', ('TkDefaultFont', 10, 'bold'))).pack(side=tk.LEFT, padx=(0, SPACING['large']))
         ttk.Label(header_frame, text="Visible", font=FONTS.get('subheading', ('TkDefaultFont', 10, 'bold'))).pack(side=tk.LEFT, padx=(0, SPACING['large']))
-        ttk.Label(header_frame, text="Width", font=FONTS.get('subheading', ('TkDefaultFont', 10, 'bold'))).pack(side=tk.LEFT)
+        ttk.Label(header_frame, text="Width", font=FONTS.get('subheading', ('TkDefaultFont', 10, 'bold'))).pack(side=tk.LEFT, padx=(0, SPACING['medium']))
 
         # Separator line
         ttk.Separator(columns_container, orient="horizontal").pack(fill=tk.X, pady=SPACING['small'])
@@ -250,25 +256,97 @@ class SettingsTab(ttk.Frame):
         buttons_frame = ttk.Frame(treeview_frame)
         buttons_frame.pack(fill=tk.X, padx=SPACING['medium'], pady=SPACING['small'])
 
+        # First row of buttons
+        buttons_row1 = ttk.Frame(buttons_frame)
+        buttons_row1.pack(fill=tk.X, pady=(0, SPACING['small']))
+
         create_action_button(
-            buttons_frame, "Reset Column Settings", self._reset_column_settings,
-            button_type='secondary', width=18
+            buttons_row1, "Move Up", self._move_column_up,
+            button_type='secondary', width=12
         ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
 
         create_action_button(
-            buttons_frame, "Apply to Current View", self._apply_column_settings_to_current_view,
+            buttons_row1, "Move Down", self._move_column_down,
+            button_type='secondary', width=12
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            buttons_row1, "Reset Order", self._reset_column_order,
+            button_type='warning', width=12
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            buttons_row1, "Reset All Settings", self._reset_column_settings,
+            button_type='danger', width=15
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        # Second row of buttons
+        buttons_row2 = ttk.Frame(buttons_frame)
+        buttons_row2.pack(fill=tk.X, pady=(0, SPACING['small']))
+
+        create_action_button(
+            buttons_row2, "Apply to Current View", self._apply_column_settings_to_current_view,
             button_type='info', width=18
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            buttons_row2, "Export Settings", self._export_column_settings,
+            button_type='success_outline', width=14
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            buttons_row2, "Import Settings", self._import_column_settings,
+            button_type='info_outline', width=14
         ).pack(side=tk.LEFT)
 
         # Help text for column settings
         create_info_label(
             treeview_frame,
-            "Configure which columns are visible in the Search & Dashboard treeview and their widths.\n"
-            "Changes take effect when you refresh the data or restart the application.",
+            "Configure column order, visibility, and widths for the Search & Dashboard treeview.\n"
+            "Use Move Up/Down to reorder columns. Changes apply automatically on data refresh.\n"
+            "Default hidden columns: 'Sr number', 'Data source Path'.",
             font_style=FONTS.get('small', ('TkDefaultFont', 9, 'italic'))
         ).pack(fill=tk.X, padx=SPACING['medium'], pady=(0, SPACING['small']))
 
-        # Section 4: Advanced Settings (placeholder for future)
+        # Section 4: Performance Settings
+        performance_frame = create_labeled_frame(content_frame, "Performance")
+        performance_frame.pack(fill=tk.X, pady=SPACING['medium'])
+
+        # Benchmark settings
+        benchmark_row = ttk.Frame(performance_frame)
+        benchmark_row.pack(fill=tk.X, padx=SPACING['medium'], pady=SPACING['small'])
+
+        create_info_label(benchmark_row, "Benchmark Window:").pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            benchmark_row, "Open Benchmark Monitor",
+            self._open_benchmark_window,
+            button_type='primary', width=20
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        # Performance monitoring settings
+        perf_settings_frame = ttk.Frame(performance_frame)
+        perf_settings_frame.pack(fill=tk.X, padx=SPACING['medium'], pady=SPACING['small'])
+
+        # Auto-refresh interval
+        refresh_row = ttk.Frame(perf_settings_frame)
+        refresh_row.pack(fill=tk.X, pady=2)
+
+        create_info_label(refresh_row, "Monitoring Refresh Rate (seconds):").pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        self.refresh_rate_var = tk.StringVar(value=str(self.main_app.global_config.get("performance_refresh_rate", 1)))
+        ttk.Spinbox(refresh_row, from_=1, to=10, textvariable=self.refresh_rate_var,
+                   width=5, command=self._on_setting_changed).pack(side=tk.LEFT)
+
+        # Help text for performance settings
+        create_info_label(
+            performance_frame,
+            "Monitor system performance and run detailed benchmarks in a separate window.\n"
+            "The Benchmark Monitor provides real-time graphs and industry-standard performance tests.",
+            font_style=FONTS.get('small', ('TkDefaultFont', 9, 'italic'))
+        ).pack(fill=tk.X, padx=SPACING['medium'], pady=(0, SPACING['small']))
+
+        # Section 5: Advanced Settings (placeholder for future)
         advanced_frame = create_labeled_frame(content_frame, "Advanced Settings")
         advanced_frame.pack(fill=tk.X, pady=SPACING['medium'])
 
@@ -305,80 +383,7 @@ class SettingsTab(ttk.Frame):
         self.merger_unique_keys_var.trace_add("write", self._on_setting_changed)
         self.merger_critical_fields_var.trace_add("write", self._on_setting_changed)
         self.merger_max_backups_var.trace_add("write", self._on_setting_changed)
-
-    def _load_column_settings(self):
-        """Load and display column settings from config."""
-        # Clear existing column settings
-        for widget in self.columns_scrollable_frame.winfo_children():
-            widget.destroy()
-
-        self.column_vars = {}
-        self.width_vars = {}
-
-        # Get current column settings from config
-        column_settings = self.main_app.global_config.get("treeview_column_settings", {})
-
-        # If no settings exist, create default settings based on common columns
-        if not column_settings:
-            # Default columns that are commonly found in tender data
-            default_columns = [
-                "Tender ID", "Title", "Department", "Closing Date", "Status",
-                "Value", "Location", "Source File", "Description", "Agency",
-                "Ministry", "Tender ID (Extracted)", "Title and Ref.No./Tender ID"
-            ]
-
-            column_settings = {}
-            for col in default_columns:
-                column_settings[col] = {
-                    "visible": True,
-                    "width": 100  # Default width
-                }
-
-            # Special widths for specific columns
-            special_widths = {
-                "Title": 300,
-                "Description": 300,
-                "Department": 200,
-                "Agency": 200,
-                "Ministry": 200,
-                "Closing Date": 120,
-                "Status": 100,
-                "Value": 120,
-                "Location": 150,
-                "Source File": 150
-            }
-
-            for col, width in special_widths.items():
-                if col in column_settings:
-                    column_settings[col]["width"] = width
-
-        # Create UI elements for each column
-        for col_name, settings in column_settings.items():
-            col_frame = ttk.Frame(self.columns_scrollable_frame)
-            col_frame.pack(fill=tk.X, pady=1)
-
-            # Column name label
-            name_label = ttk.Label(col_frame, text=col_name, width=25, anchor="w")
-            name_label.pack(side=tk.LEFT, padx=(0, SPACING['medium']))
-
-            # Visibility checkbox
-            visible_var = tk.BooleanVar(value=settings.get("visible", True))
-            self.column_vars[col_name] = visible_var
-
-            visible_cb = ttk.Checkbutton(col_frame, variable=visible_var,
-                                       command=self._on_column_setting_changed)
-            visible_cb.pack(side=tk.LEFT, padx=(0, SPACING['large']))
-
-            # Width spinbox
-            width_var = tk.StringVar(value=str(settings.get("width", 100)))
-            self.width_vars[col_name] = width_var
-
-            width_sb = ttk.Spinbox(col_frame, from_=50, to=500, textvariable=width_var,
-                                 width=5, command=self._on_column_setting_changed)
-            width_sb.pack(side=tk.LEFT)
-
-            # Bind width variable change
-            width_var.trace_add("write", self._on_column_setting_changed)
+        self.refresh_rate_var.trace_add("write", self._on_setting_changed)
 
     def _on_column_setting_changed(self, *args):
         """Track when column settings have been changed."""
@@ -417,8 +422,8 @@ class SettingsTab(ttk.Frame):
             # Save current settings first
             self._save_column_settings()
 
-            # Apply settings to current treeview
-            self._apply_column_settings_to_treeview(search_tab.tree)
+            # Apply settings to current treeview using search tab's method
+            search_tab._apply_column_settings_to_treeview()
 
             messagebox.showinfo("Settings Applied", "Column settings applied to current view successfully.")
 
@@ -426,23 +431,7 @@ class SettingsTab(ttk.Frame):
             self.logger.error(f"Error applying column settings to current view: {e}")
             messagebox.showerror("Apply Error", f"Failed to apply column settings:\n{str(e)}")
 
-    def _save_column_settings(self):
-        """Save current column settings to config."""
-        column_settings = {}
 
-        for col_name in self.column_vars:
-            visible = self.column_vars[col_name].get()
-            try:
-                width = int(self.width_vars[col_name].get())
-            except ValueError:
-                width = 100  # Default width if invalid
-
-            column_settings[col_name] = {
-                "visible": visible,
-                "width": width
-            }
-
-        self.main_app.global_config.set("treeview_column_settings", column_settings)
 
     def _apply_column_settings_to_treeview(self, treeview):
         """Apply column settings to a specific treeview widget."""
@@ -469,7 +458,23 @@ class SettingsTab(ttk.Frame):
 
         except Exception as e:
             self.logger.error(f"Error applying column settings to treeview: {e}")
-    
+
+    def _open_benchmark_window(self):
+        """Open the benchmark monitor window."""
+        try:
+            # Import the benchmark window
+            from ui.benchmark_window import BenchmarkWindow
+
+            # Create and show the benchmark window
+            benchmark_window = BenchmarkWindow(self, self.main_app)
+            benchmark_window.protocol("WM_DELETE_WINDOW", benchmark_window._on_close)
+
+            self.logger.info("Benchmark window opened from settings")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open benchmark window: {e}", parent=self)
+            self.logger.error(f"Error opening benchmark window: {e}")
+
     def _on_setting_changed(self, *args):
         """Track when settings have been changed."""
         self.settings_changed = True
@@ -527,14 +532,24 @@ class SettingsTab(ttk.Frame):
             except ValueError as e:
                 messagebox.showerror("Invalid Setting", f"Invalid value for maximum backups: {str(e)}", parent=self)
                 return
-            
+
+            # Validate refresh rate
+            try:
+                refresh_rate = int(self.refresh_rate_var.get())
+                if refresh_rate < 1 or refresh_rate > 10:
+                    raise ValueError("Refresh rate must be between 1 and 10 seconds")
+            except ValueError as e:
+                messagebox.showerror("Invalid Setting", f"Invalid refresh rate: {str(e)}", parent=self)
+                return
+
             # Prepare the settings to save
             settings_to_save = {
                 "default_data_folder": self.default_data_folder_var.get(),
                 "merged_data_folder": self.merged_data_folder_var.get(),
                 "merger_preferred_unique_keys": self._parse_comma_separated_list(self.merger_unique_keys_var.get()),
                 "merger_critical_fields": self._parse_comma_separated_list(self.merger_critical_fields_var.get()),
-                "merger_max_backups": max_backups
+                "merger_max_backups": max_backups,
+                "performance_refresh_rate": refresh_rate
             }
 
             # Save column settings
@@ -623,7 +638,7 @@ class SettingsTab(ttk.Frame):
         self.status_var.set("Ready")
         
         self.logger.info("Settings tab selected and refreshed")
-    
+
     def check_unsaved_changes(self) -> bool:
         """
         Check if there are unsaved changes when switching tabs or closing the application.
@@ -631,16 +646,262 @@ class SettingsTab(ttk.Frame):
         """
         if not self.settings_changed:
             return True
-        
+
         response = messagebox.askyesnocancel(
             "Unsaved Changes",
             "You have unsaved settings changes. Would you like to save them before continuing?",
             parent=self
         )
-        
+
         if response is None:  # Cancel
             return False
         if response is True:  # Yes, save
             self._save_settings()
             return not self.settings_changed  # Only proceed if save was successful
         return True  # No, discard changes
+
+    def _initialize_default_column_settings(self):
+        """Initialize default column settings with proper sequence and hidden columns."""
+        self.default_column_sequence = [
+            "Department", "Closing Date", "Tender ID", "Tender Name", "Direct URL",
+            "Status URL", "e-Publish Date", "Opening Date"
+        ]
+
+        # Columns to hide by default
+        self.columns_hidden_by_default = ["Sr number", "Data source Path"]
+
+        # Default widths for proportionate sizing
+        self.default_column_widths = {
+            "Tender ID": 120,
+            "Tender Name": 250,
+            "Title": 250,
+            "Department": 150,
+            "Closing Date": 120,
+            "Status": 100,
+            "Value": 100,
+            "Location": 150,
+            "Source File": 150,
+            "Description": 300,
+            "Agency": 180,
+            "Ministry": 180,
+            "Tender ID (Extracted)": 120,
+            "Title and Ref.No./Tender ID": 200,
+            "Direct URL": 120,
+            "Status URL": 120,
+            "e-Publish Date": 120,
+            "Opening Date": 120
+        }
+
+        self.logger.info("Default column settings initialized")
+
+    def _load_column_settings(self):
+        """Load and display column settings from config in ordered manner."""
+        # Clear existing column settings
+        for widget in self.columns_scrollable_frame.winfo_children():
+            widget.destroy()
+
+        self.column_vars = {}
+        self.width_vars = {}
+        self.column_order = []
+
+        # Get current column settings from config
+        column_settings = self.main_app.global_config.get("treeview_column_settings", {})
+
+        # If no settings exist, create default settings
+        if not column_settings:
+            column_settings = self._create_default_column_settings()
+
+        # Get column order from config or use default sequence
+        column_order = self.main_app.global_config.get("treeview_column_order", self.default_column_sequence.copy())
+
+        # Add any new columns from data that aren't in the order yet
+        for col_name in column_settings:
+            if col_name not in column_order:
+                column_order.append(col_name)
+
+        # Update stored order
+        self.column_order = column_order
+
+        # Create UI elements for each column in order
+        for order_num, col_name in enumerate(column_order, 1):
+            if col_name in column_settings:
+                settings = column_settings[col_name]
+                self._create_column_setting_row(order_num, col_name, settings)
+
+        self.logger.info(f"Loaded column settings for {len(column_order)} columns")
+
+    def _create_default_column_settings(self):
+        """Create default column settings with proper defaults."""
+        column_settings = {}
+
+        # Common tender columns
+        common_columns = [
+            "Tender ID", "Tender Name", "Title", "Department", "Closing Date", "Status",
+            "Value", "Location", "Source File", "Description", "Agency", "Ministry",
+            "Tender ID (Extracted)", "Title and Ref.No./Tender ID", "Direct URL",
+            "Status URL", "e-Publish Date", "Opening Date", "Sr number", "Data source Path"
+        ]
+
+        for col in common_columns:
+            # Check if column should be hidden by default
+            is_visible = col not in self.columns_hidden_by_default
+            width = self.default_column_widths.get(col, 100)
+
+            column_settings[col] = {
+                "visible": is_visible,
+                "width": width
+            }
+
+        return column_settings
+
+    def _create_column_setting_row(self, order_num: int, col_name: str, settings: dict):
+        """Create a single column setting row in the UI."""
+        col_frame = ttk.Frame(self.columns_scrollable_frame)
+        col_frame.pack(fill=tk.X, pady=1)
+
+        # Order number label
+        order_label = ttk.Label(col_frame, text=str(order_num), width=6, anchor="center")
+        order_label.pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        # Column name label
+        name_label = ttk.Label(col_frame, text=col_name, width=25, anchor="w")
+        name_label.pack(side=tk.LEFT, padx=(0, SPACING['medium']))
+
+        # Visibility checkbox
+        visible_var = tk.BooleanVar(value=settings.get("visible", True))
+        self.column_vars[col_name] = visible_var
+
+        visible_cb = ttk.Checkbutton(col_frame, variable=visible_var,
+                                   command=self._on_column_setting_changed)
+        visible_cb.pack(side=tk.LEFT, padx=(0, SPACING['medium']))
+
+        # Width spinbox
+        width_var = tk.StringVar(value=str(settings.get("width", 100)))
+        self.width_vars[col_name] = width_var
+
+        width_sb = ttk.Spinbox(col_frame, from_=50, to=500, textvariable=width_var,
+                             width=5, command=self._on_column_setting_changed)
+        width_sb.pack(side=tk.LEFT)
+
+        # Bind width variable change
+        width_var.trace_add("write", self._on_column_setting_changed)
+
+    def _move_column_up(self):
+        """Move selected column up in the order."""
+        # This would require selecting a column first - for now, show a message
+        messagebox.showinfo("Move Column", "Select a column to move by clicking on its row first."
+                          "\n\nThis feature requires additional UI modifications to select rows.")
+
+    def _move_column_down(self):
+        """Move selected column down in the order."""
+        # This would require selecting a column first - for now, show a message
+        messagebox.showinfo("Move Column", "Select a column to move by clicking on its row first."
+                          "\n\nThis feature requires additional UI modifications to select rows.")
+
+    def _reset_column_order(self):
+        """Reset column order to the default sequence."""
+        confirm = messagebox.askyesno(
+            "Confirm Reset Order",
+            "Reset column order to default sequence?",
+            parent=self
+        )
+
+        if not confirm:
+            return
+
+        # Reset to default order
+        self.column_order = self.default_column_sequence.copy()
+        self.main_app.global_config.set("treeview_column_order", self.column_order)
+
+        # Reload column settings
+        self._load_column_settings()
+
+        self.settings_changed = True
+        self.status_var.set("Column order reset. Click 'Save Settings' to apply.")
+
+    def _export_column_settings(self):
+        """Export column settings to a JSON file."""
+        try:
+            column_settings = self.main_app.global_config.get("treeview_column_settings", {})
+            column_order = self.main_app.global_config.get("treeview_column_order", self.column_order)
+
+            export_data = {
+                "column_settings": column_settings,
+                "column_order": column_order,
+                "export_date": str(pd.Timestamp.now())
+            }
+
+            file_path = filedialog.asksaveasfilename(
+                title="Export Column Settings",
+                defaultextension=".json",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+
+            if file_path:
+                import json
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(export_data, f, indent=2, ensure_ascii=False)
+
+                messagebox.showinfo("Export Successful",
+                                  f"Column settings exported to:\n{file_path}")
+                self.logger.info(f"Column settings exported to: {file_path}")
+
+        except Exception as e:
+            self.logger.error(f"Error exporting column settings: {e}")
+            messagebox.showerror("Export Error", f"Failed to export settings: {str(e)}")
+
+    def _import_column_settings(self):
+        """Import column settings from a JSON file."""
+        try:
+            file_path = filedialog.askopenfilename(
+                title="Import Column Settings",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+
+            if not file_path:
+                return
+
+            import json
+            with open(file_path, 'r', encoding='utf-8') as f:
+                import_data = json.load(f)
+
+            if "column_settings" in import_data:
+                self.main_app.global_config.set("treeview_column_settings", import_data["column_settings"])
+            if "column_order" in import_data:
+                self.main_app.global_config.set("treeview_column_order", import_data["column_order"])
+
+            # Reload the UI
+            self._load_column_settings()
+
+            messagebox.showinfo("Import Successful",
+                              f"Column settings imported from:\n{file_path}")
+            self.logger.info(f"Column settings imported from: {file_path}")
+
+            self.settings_changed = True
+            self.status_var.set("Column settings imported. Click 'Save Settings' to apply.")
+
+        except Exception as e:
+            self.logger.error(f"Error importing column settings: {e}")
+            messagebox.showerror("Import Error", f"Failed to import settings: {str(e)}")
+
+    def _save_column_settings(self):
+        """Save current column settings to config."""
+        column_settings = {}
+
+        for col_name in self.column_vars:
+            visible = self.column_vars[col_name].get()
+            try:
+                width = int(self.width_vars[col_name].get())
+            except ValueError:
+                width = 100  # Default width if invalid
+
+            column_settings[col_name] = {
+                "visible": visible,
+                "width": width
+            }
+
+        self.main_app.global_config.set("treeview_column_settings", column_settings)
+
+        # Save column order
+        if self.column_order:
+            self.main_app.global_config.set("treeview_column_order", self.column_order)

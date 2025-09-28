@@ -1014,6 +1014,9 @@ class SearchDashboardTab(ttk.Frame):
                 sort_indicator = " ▲" if col == self.sort_column and self.sort_ascending else " ▼" if col == self.sort_column else ""
                 self.tree.heading(col, text=col + sort_indicator, command=lambda c=col: self._sort_by_column(c))
 
+            # Apply column settings from config to the treeview
+            self._apply_column_settings_to_treeview()
+
             # Insert data rows - limit for performance
             max_rows = 1000
             display_df = df.head(max_rows) if len(df) > max_rows else df
@@ -1072,6 +1075,50 @@ class SearchDashboardTab(ttk.Frame):
         except Exception as e:
             self.logger.error(f"Error refreshing tree data: {e}")
             self.results_count_var.set("Error displaying data")
+
+    def _apply_column_settings_to_treeview(self):
+        """Apply column settings from config to the current treeview."""
+        if not self.tree:
+            return
+
+        try:
+            column_settings = self.main_app.global_config.get("treeview_column_settings", {})
+            column_order = self.main_app.global_config.get("treeview_column_order", [])
+
+            # Get current columns from treeview
+            current_columns = list(self.tree['columns']) if self.tree['columns'] else []
+
+            # If we have a defined column order, reorder the treeview columns
+            if column_order and len(column_order) > 0:
+                # Filter column_order to only include columns that exist in current data
+                ordered_columns = [col for col in column_order if col in current_columns]
+                # Add any columns from current data that aren't in the order yet
+                for col in current_columns:
+                    if col not in ordered_columns:
+                        ordered_columns.append(col)
+
+                # Update treeview column order
+                if ordered_columns:
+                    self.tree["columns"] = ordered_columns
+                    current_columns = ordered_columns
+
+            # Apply visibility and width settings
+            for col in current_columns:
+                settings = column_settings.get(col, {})
+
+                # Set visibility (hide/show column)
+                if not settings.get("visible", True):
+                    # Hide column by setting width to 0
+                    self.tree.column(col, width=0, minwidth=0)
+                else:
+                    # Show column with configured width
+                    width = settings.get("width", 100)
+                    self.tree.column(col, width=width, minwidth=50)
+
+            self.logger.info(f"Applied column settings to treeview: {len(current_columns)} columns")
+
+        except Exception as e:
+            self.logger.error(f"Error applying column settings to treeview: {e}")
 
     def update_dashboard(self):
         """Update the dashboard metrics."""
