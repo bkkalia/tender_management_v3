@@ -35,3 +35,6 @@
 2025-09-28 14:35:11 - ui.settings_tab.SettingsTab - INFO - Benchmark window opened from settings
 2025-09-28 14:35:25 - ui.benchmark_window.BenchmarkWindow - INFO - Real-time monitoring started
 2025-09-28 14:53:28 - ui.benchmark_window.BenchmarkWindow - INFO - Benchmark window closed
+2025-09-28 14:57:45 - ui.benchmark_window.BenchmarkWindow - INFO - Matplotlib charts initialized successfully
+2025-09-28 14:57:45 - ui.benchmark_window.BenchmarkWindow - INFO - Benchmark window initialized
+2025-09-28 14:57:45 - ui.settings_tab.SettingsTab - INFO - Benchmark window opened from settings

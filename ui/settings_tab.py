@@ -99,9 +99,38 @@ class SettingsTab(ttk.Frame):
         # Main container with scrolling capability
         main_frame = ttk.Frame(self)
         main_frame.pack(fill=tk.BOTH, expand=True, padx=SPACING['medium'], pady=SPACING['medium'])
-        
-        # Main settings content
-        content_frame = ttk.Frame(main_frame)
+
+        # Create canvas and scrollbars for main content area
+        self.canvas = tk.Canvas(main_frame, borderwidth=0, highlightthickness=0)
+        self.v_scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=self.canvas.yview)
+
+        # Create main scrollable frame
+        self.scrollable_frame = ttk.Frame(self.canvas)
+
+        # Configure canvas scrolling
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
+
+        # Create window in canvas
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+        # Configure canvas scrolling
+        self.canvas.configure(yscrollcommand=self.v_scrollbar.set)
+
+        # Pack the canvas and scrollbar
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.v_scrollbar.pack(side="right", fill="y")
+
+        # Bind mouse wheel to canvas
+        main_frame.bind("<Enter>", lambda e: self._bind_to_mousewheel())
+        main_frame.bind("<Leave>", lambda e: self._unbind_to_mousewheel())
+        self.canvas.bind("<Enter>", lambda e: self._bind_to_mousewheel())
+        self.canvas.bind("<Leave>", lambda e: self._unbind_to_mousewheel())
+
+        # Main settings content inside scrollable frame
+        content_frame = ttk.Frame(self.scrollable_frame)
         content_frame.pack(fill=tk.BOTH, expand=True)
         
         # Section 1: File Paths Settings
@@ -404,6 +433,32 @@ class SettingsTab(ttk.Frame):
         self.merger_critical_fields_var.trace_add("write", self._on_setting_changed)
         self.merger_max_backups_var.trace_add("write", self._on_setting_changed)
         self.refresh_rate_var.trace_add("write", self._on_setting_changed)
+
+    def _bind_to_mousewheel(self, event=None):
+        """Bind mouse wheel to canvas scrolling."""
+        try:
+            # Bind mouse wheel events to scroll the canvas
+            if hasattr(self, 'canvas'):
+                self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        except Exception as e:
+            self.logger.debug(f"Error binding mouse wheel: {e}")
+
+    def _unbind_to_mousewheel(self, event=None):
+        """Unbind mouse wheel from canvas scrolling."""
+        try:
+            if hasattr(self, 'canvas'):
+                self.canvas.unbind_all("<MouseWheel>")
+        except Exception as e:
+            self.logger.debug(f"Error unbinding mouse wheel: {e}")
+
+    def _on_mousewheel(self, event):
+        """Handle mouse wheel scrolling for the canvas."""
+        try:
+            # Scroll the canvas vertically based on mouse wheel
+            if hasattr(self, 'canvas'):
+                self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        except Exception as e:
+            self.logger.debug(f"Error handling mouse wheel: {e}")
 
     def _on_column_setting_changed(self, *args):
         """Track when column settings have been changed."""

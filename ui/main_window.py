@@ -130,21 +130,21 @@ class MainApplication(tk.Tk):
     def _configure_styles(self):
         """Configure global styles for the application."""
         style = ttk.Style()
-        
+
         # Set the theme
         try:
             style.theme_use('clam')  # More modern look that supports better styling
         except:
             logger.warning("Could not set theme to 'clam'. Using default theme.")
-        
+
         # Configure default button style to use royal blue with WHITE TEXT
-        style.configure('TButton', 
+        style.configure('TButton',
                        background=COLORS.get('primary', '#4169E1'),  # Royal blue
                        foreground=COLORS.get('white', '#FFFFFF'),    # WHITE text
-                       padding=(5, 2),
+                       padding=(8, 4),
                        relief='raised',
-                       font=FONTS.get('button', ('TkDefaultFont', 10)))
-        
+                       font=FONTS.get('button', ('TkDefaultFont', 10, 'bold')))
+
         # Make sure hover/active state is also properly colored
         style.map('TButton',
                  background=[('active', COLORS.get('primary_dark', '#1A237E')),
@@ -152,19 +152,44 @@ class MainApplication(tk.Tk):
                  foreground=[('active', COLORS.get('white', '#FFFFFF')),
                             ('disabled', COLORS.get('gray', '#9E9E9E'))],
                  relief=[('pressed', 'sunken')])
-        
+
         # Configure other common elements for better visibility
-        style.configure('TEntry', padding=(5, 2))
-        style.configure('TCombobox', padding=(5, 2))
-        
+        style.configure('TEntry', padding=(5, 3))
+        style.configure('TCombobox', padding=(5, 3))
+
+        # PROFESSIONAL NOTEBOOK TABS STYLING - Much more visible and professional
+        # Main tab style with larger fonts and better colors
+        style.configure('TNotebook.Tab',
+                       font=('TkDefaultFont', 11, 'bold'),
+                       padding=(15, 8),
+                       background='#E3F2FD',  # Light blue background
+                       foreground='#1565C0',  # Dark blue text
+                       borderwidth=1)
+
+        # Selected tab appearance - more prominent
+        style.map('TNotebook.Tab',
+                 background=[('selected', '#2196F3'),  # Bright blue for selected
+                            ('active', '#BBDEFB'),     # Light blue on hover
+                            ('!selected', '#E3F2FD')],  # Light blue for unselected
+                 foreground=[('selected', '#FFFFFF'), # White text for selected tab
+                            ('active', '#0D47A1'),     # Dark blue on hover
+                            ('!selected', '#1565C0')], # Dark blue for unselected
+                 borderwidth=[('selected', 2)])
+
+        # Remove any margins around tabs for cleaner look
+        style.configure('TNotebook',
+                       tabmargins=[2, 5, 2, 0],
+                       padding=(0, 0))
+
         # Specifically style dialog buttons to ensure they're visible
         style.configure('Dialog.TButton',
                        background=COLORS.get('primary', '#4169E1'),
                        foreground=COLORS.get('white', '#FFFFFF'),
-                       padding=(10, 5),
-                       font=FONTS.get('button', ('TkDefaultFont', 10, 'bold')))
-                       
-        logger.info("Global styles configured")
+                       padding=(12, 6),
+                       font=FONTS.get('button', ('TkDefaultFont', 11, 'bold')),
+                       relief='raised')
+
+        logger.info("Global styles configured with professional tab styling")
 
     def _create_header(self):
         """Create the header area with logo and title."""
