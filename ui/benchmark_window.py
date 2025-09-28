@@ -29,6 +29,15 @@ class BenchmarkWindow:
         self.benchmark_thread = None
         self.benchmark_results = {}
 
+        # Real-time monitoring data
+        self.monitoring_active = False
+        self.monitoring_data = {
+            'timestamps': [],
+            'cpu_usage': [],
+            'memory_usage': [],
+            'disk_usage': []
+        }
+
         # Performance tester
         try:
             from utils.performance_tester import PerformanceTester
@@ -80,8 +89,14 @@ class BenchmarkWindow:
         # System Information tab
         self._create_system_tab()
 
+        # Real-time Monitoring tab
+        self._create_monitoring_tab()
+
         # Results tab
         self._create_results_tab()
+
+        # Help tab
+        self._create_help_tab()
 
     def _create_benchmark_tab(self):
         """Create the benchmark tests interface."""
@@ -191,6 +206,315 @@ class BenchmarkWindow:
         # Initial system info update
         self._update_system_info()
 
+    def _create_monitoring_tab(self):
+        """Create the real-time monitoring tab with charts."""
+        monitoring_frame = ttk.Frame(self.notebook)
+        self.notebook.add(monitoring_frame, text="📈 Real-time Monitor")
+
+        # Control buttons
+        control_frame = ttk.Frame(monitoring_frame)
+        control_frame.pack(fill=tk.X, pady=(0, 10))
+
+        self.monitor_btn = ttk.Button(control_frame, text="▶️ Start Monitoring",
+                                    command=self._toggle_monitoring)
+        self.monitor_btn.pack(side=tk.LEFT, padx=(0, 10))
+
+        ttk.Button(control_frame, text="🧹 Clear Charts",
+                  command=self._clear_charts).pack(side=tk.LEFT, padx=(0, 10))
+
+        ttk.Button(control_frame, text="💾 Export Chart Data",
+                  command=self._export_chart_data).pack(side=tk.LEFT)
+
+        # Current metrics display
+        metrics_frame = ttk.LabelFrame(monitoring_frame, text="Current System Metrics", padding=10)
+        metrics_frame.pack(fill=tk.X, pady=(0, 10))
+
+        # Create metric labels
+        self.monitor_metric_vars = {}
+        metrics = [
+            ('CPU Usage', 'cpu_usage'),
+            ('Memory Usage', 'memory_usage'),
+            ('Disk Usage', 'disk_usage'),
+            ('Active Operations', 'active_ops')
+        ]
+
+        cols = 4
+        for i, (label, var_name) in enumerate(metrics):
+            row = i // cols
+            col = i % cols
+            ttk.Label(metrics_frame, text=f"{label}:").grid(row=row, column=col*2, sticky=tk.W, padx=(0, 5), pady=2)
+            self.monitor_metric_vars[var_name] = tk.StringVar(value="--")
+            ttk.Label(metrics_frame, textvariable=self.monitor_metric_vars[var_name],
+                     font=('TkDefaultFont', 10, 'bold')).grid(row=row, column=col*2+1, sticky=tk.W, pady=2)
+
+        # Charts frame
+        charts_frame = ttk.LabelFrame(monitoring_frame, text="Performance Charts", padding=10)
+        charts_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Check if matplotlib is available
+        try:
+            import matplotlib
+            matplotlib.use('TkAgg')
+            from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+            from matplotlib.figure import Figure
+            import matplotlib.pyplot as plt
+
+            # Create figure with subplots
+            self.monitor_figure = Figure(figsize=(10, 6), dpi=100)
+            self.monitor_figure.suptitle('System Performance Monitoring', fontsize=12, fontweight='bold')
+
+            # Create subplots
+            self.cpu_ax = self.monitor_figure.add_subplot(221)
+            self.memory_ax = self.monitor_figure.add_subplot(222)
+            self.disk_ax = self.monitor_figure.add_subplot(223)
+            # Bottom right for combined chart or additional metrics
+            self.combined_ax = self.monitor_figure.add_subplot(224)
+
+            # Setup axes
+            self.cpu_ax.set_title('CPU Usage (%)', fontsize=10)
+            self.cpu_ax.set_ylim(0, 100)
+            self.cpu_ax.grid(True, alpha=0.3)
+
+            self.memory_ax.set_title('Memory Usage (%)', fontsize=10)
+            self.memory_ax.set_ylim(0, 100)
+            self.memory_ax.grid(True, alpha=0.3)
+
+            self.disk_ax.set_title('Disk Usage (%)', fontsize=10)
+            self.disk_ax.set_ylim(0, 100)
+            self.disk_ax.grid(True, alpha=0.3)
+
+            self.combined_ax.set_title('Performance Summary', fontsize=10)
+            self.combined_ax.grid(True, alpha=0.3)
+
+            # Create canvas
+            self.monitor_canvas = FigureCanvasTkAgg(self.monitor_figure, master=charts_frame)
+            self.monitor_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+            # Initialize empty lines for real-time plotting
+            self.cpu_line, = self.cpu_ax.plot([], [], 'r-', linewidth=2, label='CPU')
+            self.memory_line, = self.memory_ax.plot([], [], 'b-', linewidth=2, label='Memory')
+            self.disk_line, = self.disk_ax.plot([], [], 'g-', linewidth=2, label='Disk')
+            self.summary_line, = self.combined_ax.plot([], [], 'purple', linewidth=2, label='Avg System Load')
+
+            self.logger.info("Matplotlib charts initialized successfully")
+
+        except ImportError as e:
+            # Fallback if matplotlib is not available
+            self.logger.warning(f"Matplotlib not available for charts: {e}")
+            fallback_label = tk.Label(charts_frame,
+                                    text="📊 Real-time charts require matplotlib.\n\n"
+                                         "To enable charts, install matplotlib:\n"
+                                         "pip install matplotlib",
+                                    font=('TkDefaultFont', 10),
+                                    justify=tk.LEFT,
+                                    padx=20, pady=20)
+            fallback_label.pack(fill=tk.BOTH, expand=True)
+
+    def _toggle_monitoring(self):
+        """Toggle real-time performance monitoring."""
+        if self.monitoring_active:
+            self._stop_monitoring()
+        else:
+            self._start_monitoring()
+
+    def _start_monitoring(self):
+        """Start real-time performance monitoring."""
+        if not hasattr(self, 'monitor_figure'):
+            messagebox.showwarning("Charts Unavailable", "Real-time monitoring requires matplotlib.")
+            return
+
+        self.monitoring_active = True
+        self.monitor_btn.config(text="⏹️ Stop Monitoring")
+
+        # Clear previous data
+        self.monitoring_data = {
+            'timestamps': [],
+            'cpu_usage': [],
+            'memory_usage': [],
+            'disk_usage': []
+        }
+
+        # Start monitoring thread
+        self.monitoring_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
+        self.monitoring_thread.start()
+
+        self.logger.info("Real-time monitoring started")
+
+    def _stop_monitoring(self):
+        """Stop real-time performance monitoring."""
+        self.monitoring_active = False
+        self.monitor_btn.config(text="▶️ Start Monitoring")
+
+        if hasattr(self, 'monitoring_thread') and self.monitoring_thread and self.monitoring_thread.is_alive():
+            self.monitoring_thread.join(timeout=1.0)
+
+        self.logger.info("Real-time monitoring stopped")
+
+    def _monitoring_loop(self):
+        """Main monitoring loop that runs in background thread."""
+        start_time = time.time()
+
+        while self.monitoring_active:
+            try:
+                current_time = time.time() - start_time
+                elapsed_minutes = current_time / 60  # Convert to minutes
+
+                # Get current system metrics
+                cpu_usage = psutil.cpu_percent(interval=0.5)
+                memory = psutil.virtual_memory()
+                memory_usage = memory.percent
+                disk = psutil.disk_usage('/')
+                disk_usage = disk.percent
+
+                # Update monitoring data
+                self.monitoring_data['timestamps'].append(elapsed_minutes)
+                self.monitoring_data['cpu_usage'].append(cpu_usage)
+                self.monitoring_data['memory_usage'].append(memory_usage)
+                self.monitoring_data['disk_usage'].append(disk_usage)
+
+                # Keep only last 60 data points (30 minutes at 30-second intervals)
+                max_points = 60
+                for key in self.monitoring_data:
+                    if len(self.monitoring_data[key]) > max_points:
+                        self.monitoring_data[key] = self.monitoring_data[key][-max_points:]
+
+                # Update UI on main thread
+                if self.window:
+                    self.window.after(0, lambda: self._update_monitor_display(cpu_usage, memory_usage, disk_usage))
+                    self.window.after(0, self._update_charts)
+
+            except Exception as e:
+                self.logger.error(f"Error in monitoring loop: {e}")
+                break
+
+            time.sleep(30)  # Update every 30 seconds
+
+    def _update_monitor_display(self, cpu_usage, memory_usage, disk_usage):
+        """Update the current metrics display."""
+        try:
+            self.monitor_metric_vars['cpu_usage'].set(f"{cpu_usage:.1f}%")
+            self.monitor_metric_vars['memory_usage'].set(f"{memory_usage:.1f}%")
+            self.monitor_metric_vars['disk_usage'].set(f"{disk_usage:.1f}%")
+            self.monitor_metric_vars['active_ops'].set("Monitoring")
+        except Exception as e:
+            self.logger.debug(f"Error updating monitor display: {e}")
+
+    def _update_charts(self):
+        """Update the matplotlib charts with new data."""
+        try:
+            if not hasattr(self, 'monitor_canvas') or not self.monitoring_data['timestamps']:
+                return
+
+            timestamps = self.monitoring_data['timestamps']
+
+            # Update individual charts
+            self.cpu_line.set_data(timestamps, self.monitoring_data['cpu_usage'])
+            self.memory_line.set_data(timestamps, self.monitoring_data['memory_usage'])
+            self.disk_line.set_data(timestamps, self.monitoring_data['disk_usage'])
+
+            # Calculate combined system load (average of CPU and memory)
+            if self.monitoring_data['cpu_usage'] and self.monitoring_data['memory_usage']:
+                combined_load = [(cpu + mem) / 2 for cpu, mem in zip(
+                    self.monitoring_data['cpu_usage'],
+                    self.monitoring_data['memory_usage']
+                )]
+                self.summary_line.set_data(timestamps, combined_load)
+                self.combined_ax.set_ylim(0, max(max(combined_load) + 10, 50))
+
+            # Update axis limits
+            if timestamps:
+                x_min, x_max = min(timestamps), max(timestamps)
+                margin = (x_max - x_min) * 0.05 if x_max > x_min else 0.5
+
+                for ax in [self.cpu_ax, self.memory_ax, self.disk_ax, self.combined_ax]:
+                    ax.set_xlim(x_min - margin, x_max + margin)
+
+            # Add legends
+            for ax in [self.cpu_ax, self.memory_ax, self.disk_ax, self.combined_ax]:
+                ax.legend(loc='upper right', fontsize=8)
+
+            # Set x-axis labels
+            for ax in [self.cpu_ax, self.memory_ax, self.disk_ax, self.combined_ax]:
+                ax.set_xlabel('Time (minutes)', fontsize=8)
+
+            # Redraw canvas
+            self.monitor_canvas.draw()
+
+        except Exception as e:
+            self.logger.debug(f"Error updating charts: {e}")
+
+    def _clear_charts(self):
+        """Clear chart data and reset displays."""
+        self.monitoring_data = {
+            'timestamps': [],
+            'cpu_usage': [],
+            'memory_usage': [],
+            'disk_usage': []
+        }
+
+        # Reset metric displays
+        for var_name in self.monitor_metric_vars:
+            self.monitor_metric_vars[var_name].set("--")
+
+        # Clear charts if available
+        if hasattr(self, 'monitor_canvas'):
+            try:
+                # Clear all lines
+                self.cpu_line.set_data([], [])
+                self.memory_line.set_data([], [])
+                self.disk_line.set_data([], [])
+                self.summary_line.set_data([], [])
+
+                # Redraw canvas
+                self.monitor_canvas.draw()
+            except Exception as e:
+                self.logger.debug(f"Error clearing charts: {e}")
+
+    def _export_chart_data(self):
+        """Export chart monitoring data to CSV file."""
+        if not self.monitoring_data['timestamps']:
+            messagebox.showwarning("No Data", "No monitoring data to export.")
+            return
+
+        try:
+            import csv
+            from datetime import datetime
+
+            # Prepare data for export
+            data_length = len(self.monitoring_data['timestamps'])
+            export_data = []
+
+            for i in range(data_length):
+                row = {
+                    'time_minutes': self.monitoring_data['timestamps'][i],
+                    'cpu_usage_percent': self.monitoring_data['cpu_usage'][i] if i < len(self.monitoring_data['cpu_usage']) else 0,
+                    'memory_usage_percent': self.monitoring_data['memory_usage'][i] if i < len(self.monitoring_data['memory_usage']) else 0,
+                    'disk_usage_percent': self.monitoring_data['disk_usage'][i] if i < len(self.monitoring_data['disk_usage']) else 0,
+                }
+                export_data.append(row)
+
+            # Save to CSV
+            file_path = filedialog.asksaveasfilename(
+                title="Export Chart Data",
+                defaultextension=".csv",
+                filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")],
+                initialfile=f"monitoring_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            )
+
+            if file_path:
+                with open(file_path, 'w', newline='', encoding='utf-8') as f:
+                    if export_data:
+                        fieldnames = export_data[0].keys()
+                        writer = csv.DictWriter(f, fieldnames=fieldnames)
+                        writer.writeheader()
+                        writer.writerows(export_data)
+
+                messagebox.showinfo("Data Exported", f"Monitoring data saved to:\n{file_path}")
+
+        except Exception as e:
+            messagebox.showerror("Export Error", f"Failed to export chart data: {str(e)}")
+            self.logger.error(f"Error exporting chart data: {e}")
+
     def _create_results_tab(self):
         """Create the benchmark results display tab."""
         results_frame = ttk.Frame(self.notebook)
@@ -232,6 +556,69 @@ class BenchmarkWindow:
 
         ttk.Button(actions_frame, text="📤 Export JSON",
                   command=self._export_json).pack(side=tk.LEFT)
+
+    def _create_help_tab(self):
+        """Create the benchmark help tab."""
+        help_frame = ttk.Frame(self.notebook)
+        self.notebook.add(help_frame, text="📚 Help & Guide")
+
+        # Help content frame
+        help_content_frame = ttk.Frame(help_frame)
+        help_content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Help text widget
+        self.help_text = tk.Text(help_content_frame, wrap=tk.WORD, font=('TkDefaultFont', 10))
+        help_scrollbar = ttk.Scrollbar(help_content_frame, command=self.help_text.yview)
+        self.help_text.configure(yscrollcommand=help_scrollbar.set)
+
+        self.help_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        help_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Load help content
+        self._load_help_content()
+
+        # Control buttons
+        button_frame = ttk.Frame(help_frame)
+        button_frame.pack(fill=tk.X, pady=(5, 0))
+
+        ttk.Button(button_frame, text="🔄 Refresh Help",
+                  command=self._load_help_content).pack(side=tk.LEFT, padx=(0, 10))
+
+        ttk.Button(button_frame, text="🌐 Open Full Help",
+                  command=self._open_full_help).pack(side=tk.LEFT)
+
+    def _load_help_content(self):
+        """Load help content from the BENCHMARK_HELP.md file."""
+        try:
+            help_file_path = os.path.join(os.path.dirname(__file__), '..', 'BENCHMARK_HELP.md')
+            if os.path.exists(help_file_path):
+                with open(help_file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                self.help_text.delete(1.0, tk.END)
+                self.help_text.insert(tk.END, content)
+            else:
+                self.help_text.delete(1.0, tk.END)
+                self.help_text.insert(tk.END, "Help file not found. Please ensure BENCHMARK_HELP.md exists in the project root.")
+        except Exception as e:
+            self.help_text.delete(1.0, tk.END)
+            self.help_text.insert(tk.END, f"Error loading help content: {e}")
+            self.logger.error(f"Error loading benchmark help: {e}")
+
+    def _open_full_help(self):
+        """Open the full help file externally."""
+        try:
+            help_file_path = os.path.join(os.path.dirname(__file__), '..', 'BENCHMARK_HELP.md')
+            if os.path.exists(help_file_path):
+                # Use system default application to open the file
+                import subprocess
+                if os.name == 'nt':  # Windows
+                    os.startfile(help_file_path)
+                elif os.name == 'posix':  # macOS/Linux
+                    subprocess.run(['xdg-open', help_file_path])
+            else:
+                messagebox.showwarning("File Not Found", "BENCHMARK_HELP.md file not found in project directory.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Could not open help file: {e}")
 
     def _run_benchmark(self):
         """Run the selected benchmark tests."""
@@ -362,7 +749,7 @@ class BenchmarkWindow:
 
             return {
                 "score": score,
-                "duration": ".2f",
+                "duration_seconds": round(duration, 2),
                 "primes_found": len(primes)
             }
         except Exception as e:
@@ -394,7 +781,7 @@ class BenchmarkWindow:
 
             return {
                 "score": score,
-                "duration": ".2f",
+                "duration_seconds": round(duration, 2),
                 "cores_used": multiprocessing.cpu_count(),
                 "total_calculations": sum(results)
             }
@@ -426,10 +813,10 @@ class BenchmarkWindow:
 
             return {
                 "score": score,
-                "write_time": ".3f",
-                "read_time": ".3f",
-                "bandwidth": ".1f",
-                "data_size_mb": ".1f"
+                "write_time_seconds": round(write_time, 3),
+                "read_time_seconds": round(read_time, 3),
+                "bandwidth_mb_per_sec": round(bandwidth_mbps, 1),
+                "data_size_mb": round(data_size_mb, 1)
             }
         except Exception as e:
             return {"score": 0, "error": str(e)}
@@ -474,9 +861,9 @@ class BenchmarkWindow:
 
             return {
                 "score": score,
-                "write_speed": ".1f",
-                "read_speed": ".1f",
-                "avg_speed": ".1f",
+                "write_speed_mb_per_sec": round(write_speed, 1),
+                "read_speed_mb_per_sec": round(read_speed, 1),
+                "avg_speed_mb_per_sec": round(avg_speed, 1),
                 "test_file_size_mb": data_size_mb
             }
         except Exception as e:
@@ -523,10 +910,10 @@ class BenchmarkWindow:
 
             return {
                 "score": score,
-                "total_time": ".2f",
-                "operations_time": ".3f",
+                "total_time_seconds": round(total_time, 2),
+                "operations_time_seconds": round(operations_time, 3),
                 "records_processed": len(df),
-                "operations_per_sec": ".0f"
+                "operations_per_second": round(operations_per_sec, 0)
             }
         except Exception as e:
             return {"score": 0, "error": str(e)}
@@ -566,10 +953,10 @@ class BenchmarkWindow:
 
             return {
                 "score": score,
-                "cpu_usage": ".1f",
-                "memory_usage": ".1f",
-                "disk_usage": ".1f",
-                "avg_ui_operation_ms": ".2f"
+                "cpu_usage_percent": round(cpu_usage, 1),
+                "memory_usage_percent": round(memory.percent, 1),
+                "disk_usage_percent": round(disk_usage.percent, 1),
+                "avg_ui_operation_ms": round(avg_ui_operation_time * 1000, 2)
             }
         except Exception as e:
             return {"score": 0, "error": str(e)}
