@@ -1,0 +1,78 @@
+2025-09-28 08:22:42 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250928_082242.log
+2025-09-28 08:22:42 - root - INFO - Application starting...
+2025-09-28 08:22:43 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-28 08:22:43 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-28 08:22:43 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-28 08:22:43 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-28 08:22:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 08:22:44 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-28 08:22:44 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-28 08:22:44 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-28 08:22:44 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-28 08:22:44 - ui.performance_tab.PerformanceTab - ERROR - Error updating system info: 'PerformanceTab' object has no attribute 'performance_tester'
+2025-09-28 08:22:44 - ui.performance_tab.PerformanceTab - INFO - Performance tab initialized
+2025-09-28 08:22:44 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-28 08:22:44 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-28 08:22:44 - ui.main_window - INFO - Main application initialized
+2025-09-28 08:22:44 - root - INFO - Main window initialized
+2025-09-28 08:22:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loading last used data source: export_test_data.xlsx
+2025-09-28 08:22:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: []
+2025-09-28 08:22:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 08:22:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 0 records closing after 2025-09-28 08:22:54.658609
+2025-09-28 08:22:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loaded merged file for analysis: export_test_data.xlsx (15000 records)
+2025-09-28 08:22:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Successfully loaded last used data source: export_test_data.xlsx
+2025-09-28 08:22:54 - ui.main_window.MainApplication - INFO - Initial data loaded for Search tab
+2025-09-28 08:23:23 - ui.logs_tab.LogsTab - INFO - Logs tab selected
+2025-09-28 08:23:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:23:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 08:23:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 08:23:55.859272
+2025-09-28 08:23:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:28:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 08:28:19.787665
+2025-09-28 08:28:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match '2025_PWD_114729_3' with AND logic
+2025-09-28 08:28:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: expired
+2025-09-28 08:28:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Expired tenders filter: 12986 records closed before 2025-09-28 08:28:26.857555
+2025-09-28 08:28:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match '2025_PWD_114729_3' with AND logic
+2025-09-28 08:28:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:28:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=view&page=WebTenderStatusLists&service=direct&sp=SIWwyiejBEV2A7ok6ZJgC1g%3D%3D
+2025-09-28 08:29:17 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Expired tenders filter: 12986 records closed before 2025-09-28 08:29:17.011373
+2025-09-28 08:29:17 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match '2025_PWD_113504_1' with AND logic
+2025-09-28 08:29:17 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:29:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=view&page=WebTenderStatusLists&service=direct&sp=SRLZnWCBPcxu4FsXk9jyqiw%3D%3D
+2025-09-28 08:30:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Expired tenders filter: 12986 records closed before 2025-09-28 08:30:02.345025
+2025-09-28 08:30:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match '2025_PWD_112469_1' with AND logic
+2025-09-28 08:30:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:30:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Expired tenders filter: 12986 records closed before 2025-09-28 08:30:03.372838
+2025-09-28 08:30:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match '2025_PWD_112469_1' with AND logic
+2025-09-28 08:30:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:30:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=view&page=WebTenderStatusLists&service=direct&sp=StWooZ%2FG0hkd9YqPQm%2BeCgg%3D%3D
+2025-09-28 08:30:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Expired tenders filter: 12986 records closed before 2025-09-28 08:30:34.493343
+2025-09-28 08:30:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match '112463' with AND logic
+2025-09-28 08:30:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:30:36 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=view&page=WebTenderStatusLists&service=direct&sp=SanrhibCtJl2H5btuxznEiA%3D%3D
+2025-09-28 08:40:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 08:40:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 08:40:54.324942
+2025-09-28 08:40:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match '112463' with AND logic
+2025-09-28 08:41:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 08:41:00.560502
+2025-09-28 08:41:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:41:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 08:41:03.311517
+2025-09-28 08:41:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 120 records match 'hi' with OR logic
+2025-09-28 08:41:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:41:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 08:41:03.622120
+2025-09-28 08:41:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 99 records match 'him' with OR logic
+2025-09-28 08:41:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:41:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 08:41:03.962685
+2025-09-28 08:41:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 99 records match 'him' with OR logic
+2025-09-28 08:41:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:41:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 08:41:04.352440
+2025-09-28 08:41:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 6 records match 'himu' with OR logic
+2025-09-28 08:41:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:41:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 08:41:08.823097
+2025-09-28 08:41:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 6 records match 'himuda' with OR logic
+2025-09-28 08:41:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:42:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 08:42:35.342566
+2025-09-28 08:42:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 6 records match 'himud' with OR logic
+2025-09-28 08:42:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:43:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 08:43:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 08:43:19.935536
+2025-09-28 08:43:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 08:43:32 - ui.performance_tab.PerformanceTab - INFO - Performance monitoring started

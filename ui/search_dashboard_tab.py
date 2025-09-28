@@ -1025,7 +1025,7 @@ class SearchDashboardTab(ttk.Frame):
 
                     for i, col in enumerate(cols):
                         val = row[col]
-                        display_val = str(val) if pd.notna(val) else ""
+                        display_val = str(val) if pd.notna(val).all() else ""
 
                         # Handle URL columns
                         if col in self.url_columns and display_val:
