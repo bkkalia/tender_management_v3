@@ -39,3 +39,14 @@
 2025-09-28 12:42:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
 2025-09-28 12:42:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
 2025-09-28 12:42:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - OCR successfully filled Global Search with 16 characters
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - WARNING - Clipboard text access failed: CLIPBOARD selection doesn't exist or form "STRING" not defined
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Configured tesseract path: C:\Program Files\Tesseract-OCR\tesseract.exe
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Found PIL image in clipboard
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - OCR successful: extracted 12 characters
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - OCR extracted text from image: 12 characters
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 12:46:05.232846
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'Rising India' with AND logic
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - OCR successfully filled Global Search with 12 characters
+2025-09-28 12:46:26 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-28 12:46:34 - ui.benchmark_window.BenchmarkWindow - INFO - Benchmark window initialized
+2025-09-28 12:46:34 - ui.settings_tab.SettingsTab - INFO - Benchmark window opened from settings
