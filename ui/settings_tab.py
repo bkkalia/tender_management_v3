@@ -35,9 +35,27 @@ class SettingsTab(ttk.Frame):
         self.main_app = main_app
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         
-        # UI variables for paths
-        self.default_data_folder_var = tk.StringVar(value=self.main_app.global_config.get("default_data_folder", ""))
-        self.merged_data_folder_var = tk.StringVar(value=self.main_app.global_config.get("merged_data_folder", ""))
+        # UI variables for paths with appropriate defaults
+        # Default: dummy data for development, production for live use
+        default_dummy_data = r"C:\Users\kalia\Downloads\dummy_data"
+        default_production_data = r"H:\My Drive\CRM T84\0 Live App\Search data\merged_data"
+
+        # Try to determine if we're in development vs production
+        import os
+        current_user = os.environ.get('USERNAME', '')
+        # Check if production paths exist or if username suggests production environment
+        production_paths = [default_production_data, r"H:\My Drive"]
+        is_production = any(os.path.exists(path) for path in production_paths) or current_user.lower() not in ['kalia', 'saleem']
+
+        if is_production and os.path.exists(default_production_data):
+            default_data_default = default_production_data
+            default_merged_default = default_production_data
+        else:
+            default_data_default = default_dummy_data
+            default_merged_default = default_dummy_data
+
+        self.default_data_folder_var = tk.StringVar(value=self.main_app.global_config.get("default_data_folder", default_data_default))
+        self.merged_data_folder_var = tk.StringVar(value=self.main_app.global_config.get("merged_data_folder", default_merged_default))
         
         # UI variables for merger parameters
         self.merger_unique_keys_var = tk.StringVar(value=self._format_list_for_display(
@@ -618,9 +636,26 @@ class SettingsTab(ttk.Frame):
     
     def on_tab_selected(self):
         """Called when this tab is selected."""
-        # Refresh displayed values from current config
-        self.default_data_folder_var.set(self.main_app.global_config.get("default_data_folder", ""))
-        self.merged_data_folder_var.set(self.main_app.global_config.get("merged_data_folder", ""))
+        # Refresh displayed values from current config with smart defaults
+        # Default: dummy data for development, production for live use
+        default_dummy_data = r"C:\Users\kalia\Downloads\dummy_data"
+        default_production_data = r"H:\My Drive\CRM T84\0 Live App\Search data\merged_data"
+
+        # Try to determine if we're in development vs production
+        current_user = os.environ.get('USERNAME', '')
+        # Check if production paths exist or if username suggests production environment
+        production_paths = [default_production_data, r"H:\My Drive"]
+        is_production = any(os.path.exists(path) for path in production_paths) or current_user.lower() not in ['kalia', 'saleem']
+
+        if is_production and os.path.exists(default_production_data):
+            default_data_default = default_production_data
+            default_merged_default = default_production_data
+        else:
+            default_data_default = default_dummy_data
+            default_merged_default = default_dummy_data
+
+        self.default_data_folder_var.set(self.main_app.global_config.get("default_data_folder", default_data_default))
+        self.merged_data_folder_var.set(self.main_app.global_config.get("merged_data_folder", default_merged_default))
         
         self.merger_unique_keys_var.set(self._format_list_for_display(
             self.main_app.global_config.get("merger_preferred_unique_keys", [])

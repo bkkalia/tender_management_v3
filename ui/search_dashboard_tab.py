@@ -67,45 +67,71 @@ class AutoDismissMessageDialog(tk.Toplevel):
     def __init__(self, parent, title, message):
         super().__init__(parent)
         self.title(title)
+        self.parent = parent
 
-        # Make it non-modal (no grab_set, no transient)
-        # Position it near the parent window
-        self.geometry("+%d+%d" % (parent.winfo_rootx() + 100, parent.winfo_rooty() + 100))
+        # Set up window properties
+        self.resizable(False, False)
+        self.overrideredirect(True)  # Remove window borders for clean popup
+        self.attributes('-topmost', True)  # Keep it on top
+
+        # Position it near the parent window center
+        parent_x = parent.winfo_rootx()
+        parent_y = parent.winfo_rooty()
+        parent_width = parent.winfo_width()
+        parent_height = parent.winfo_height()
+
+        # Calculate center position
+        dialog_width = 300
+        dialog_height = 80
+        dialog_x = parent_x + (parent_width // 2) - (dialog_width // 2)
+        dialog_y = parent_y + (parent_height // 2) - (dialog_height // 2)
+
+        self.geometry(f"{dialog_width}x{dialog_height}+{dialog_x}+{dialog_y}")
+
+        # Create background frame with rounded corners effect
+        self.frame = tk.Frame(self, bg='#E3F2FD', highlightbackground='#2196F3',
+                            highlightthickness=2, highlightcolor='#2196F3')
+        self.frame.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
 
         # Create the message label
-        message_label = ttk.Label(self, text=message, padding=20, font=('TkDefaultFont', 10))
-        message_label.pack()
+        message_label = tk.Label(self.frame, text=message, bg='#E3F2FD', fg='#1565C0',
+                               font=('TkDefaultFont', 10, 'bold'),
+                               wraplength=dialog_width-40, justify='center', padx=10, pady=5)
+        message_label.pack(fill=tk.BOTH, expand=True)
 
         # Auto-dismiss after 3 seconds
-        self.after(3000, self.destroy)
+        self._timer_id = self.after(3000, self.destroy)
 
         # Bind click anywhere to dismiss
-        self.bind('<Button-1>', lambda e: self.destroy())
-        # Also bind to the root window to catch clicks outside the dialog
-        self.parent = parent
-        self.parent.bind('<Button-1>', lambda e: self._check_click_outside(e), add='+')
+        self.frame.bind('<Button-1>', self._dismiss)
+        self.frame.bind('<KeyPress>', self._dismiss)
+        self.bind('<FocusOut>', self._dismiss)
+        self.bind('<Button-1>', self._dismiss)
 
-        # Clean up binding when dialog is destroyed
-        self.protocol("WM_DELETE_WINDOW", self._on_destroy)
+        # Focus the dialog to ensure key bindings work
+        self.focus_force()
 
-    def _check_click_outside(self, event):
-        """Check if click was outside the dialog."""
-        # Get dialog geometry
-        dialog_x = self.winfo_rootx()
-        dialog_y = self.winfo_rooty()
-        dialog_width = self.winfo_width()
-        dialog_height = self.winfo_height()
+        # Clean up when dialog is destroyed
+        def on_destroy(event=None):
+            try:
+                if hasattr(self, '_timer_id') and self._timer_id:
+                    self.after_cancel(self._timer_id)
+            except:
+                pass
+            try:
+                if hasattr(self.frame, 'destroy'):
+                    self.frame.destroy()
+            except:
+                pass
 
-        # Check if click is outside dialog bounds
-        if not (dialog_x <= event.x_root <= dialog_x + dialog_width and
-                dialog_y <= event.y_root <= dialog_y + dialog_height):
-            self.destroy()
+        self.protocol("WM_DELETE_WINDOW", on_destroy)
+        self.bind('<Destroy>', on_destroy)
 
-    def _on_destroy(self):
-        """Clean up when dialog is destroyed."""
+    def _dismiss(self, event=None):
+        """Dismiss the dialog."""
         try:
-            # Remove the binding from parent
-            self.parent.unbind('<Button-1>')
+            if hasattr(self, '_timer_id') and self._timer_id:
+                self.after_cancel(self._timer_id)
         except:
             pass
         self.destroy()
@@ -2894,79 +2920,203 @@ class SearchDashboardTab(ttk.Frame):
         try:
             extracted_text = None
 
-            # Try to get text content from clipboard first
+            # First check clipboard contents to determine what type of data is available
             try:
-                # Check if there's text content
+                # Try to get text content from clipboard first
                 clipboard_text = self.clipboard_get()
                 if clipboard_text and clipboard_text.strip():
                     # Plain text found in clipboard
                     extracted_text = clipboard_text.strip()
                     self.logger.info(f"Extracted text from clipboard: {len(extracted_text)} characters")
                 else:
-                    # No plain text, check if we can do OCR on images
-                    if not HAS_PYTESSERACT:
-                        messagebox.showinfo("OCR Not Available",
-                                           "OCR functionality is not available because pytesseract is not installed.\n\n"
-                                           "To enable OCR, install pytesseract using:\n"
-                                           "pip install pytesseract\n\n"
-                                           "You may also need to install the Tesseract OCR engine from:\n"
-                                           "https://github.com/UB-Mannheim/tesseract/wiki")
-                        return
+                    # No plain text available, try OCR on images
+                    self.logger.info("No text found in clipboard, attempting OCR on image...")
+                    extracted_text = self._perform_ocr_on_image()
+                    if extracted_text:
+                        self.logger.info(f"OCR extracted text from image: {len(extracted_text)} characters")
+                    else:
+                        self.logger.info("No text found in clipboard image or OCR failed")
 
-                    if not HAS_PIL:
-                        messagebox.showinfo("PIL Not Available",
-                                           "PIL (Pillow) is required for OCR on images.\n"
-                                           "Install it using: pip install pillow")
-                        return
-
-                    # Try to get image from clipboard for OCR
-                    try:
-                        if ImageGrab and Image:
-                            clipboard_image = ImageGrab.grabclipboard()
-                            if clipboard_image is not None and isinstance(clipboard_image, Image.Image):
-                                # Image found, perform OCR
-                                if pytesseract:
-                                    extracted_text = pytesseract.image_to_string(clipboard_image)
-                                    if extracted_text and extracted_text.strip():
-                                        extracted_text = extracted_text.strip()
-                                        self.logger.info(f"OCR extracted text from image: {len(extracted_text)} characters")
-                                    else:
-                                        messagebox.showinfo("No Text Found",
-                                                           "No readable text was found in the clipboard image.")
-                                        return
-                                else:
-                                    messagebox.showinfo("OCR Error", "Pytesseract not available for OCR processing.")
-                                    return
-                            else:
-                                messagebox.showinfo("No Content",
-                                                   "No text or image content found in clipboard.")
-                                return
-                    except Exception as img_err:
-                        self.logger.error(f"Error processing clipboard image: {img_err}")
-                        messagebox.showerror("OCR Error",
-                                            f"Failed to process clipboard image:\n{str(img_err)}")
-                        return
-
-            except tk.TclError:
-                # Clipboard is empty or not accessible
-                messagebox.showinfo("Clipboard Empty",
-                                   "The clipboard appears to be empty or inaccessible.")
-                return
+            except tk.TclError as clipboard_error:
+                self.logger.warning(f"Clipboard text access failed: {clipboard_error}")
+                # Try OCR on images as fallback
+                extracted_text = self._perform_ocr_on_image()
+                if extracted_text:
+                    self.logger.info(f"OCR extracted text from image: {len(extracted_text)} characters")
+                else:
+                    messagebox.showinfo("Clipboard Inaccessible",
+                                       "Could not access clipboard content. Please try copying again.")
+                    return
 
             # Set the extracted text in the Global Search field
-            if extracted_text:
+            if extracted_text and extracted_text.strip():
                 self.global_search_var.set(extracted_text)
 
                 # Show success message
                 AutoDismissMessageDialog(self, "OCR Complete",
                                         f"Extracted {len(extracted_text)} characters from clipboard.")
 
-                # Optionally trigger search (commented out for now)
-                # self._on_live_search_key()
+                # Automatically trigger the search
+                self._apply_filters()
 
                 self.logger.info(f"OCR successfully filled Global Search with {len(extracted_text)} characters")
+            elif not extracted_text:
+                # No text found at all
+                messagebox.showinfo("No Text Found",
+                                   "No readable text was found in the clipboard.")
+                self.logger.info("No text found in clipboard")
 
         except Exception as e:
             self.logger.error(f"OCR processing error: {e}")
             messagebox.showerror("OCR Error",
                                 f"An error occurred during OCR processing:\n{str(e)}")
+
+    def _perform_ocr_on_image(self):
+        """Perform OCR on image content from clipboard."""
+        try:
+            # Check if required modules are available
+            if not HAS_PYTESSERACT:
+                messagebox.showinfo("OCR Not Available",
+                                   "OCR functionality is not available because pytesseract is not installed.\n\n"
+                                   "To enable OCR, install pytesseract using:\n"
+                                   "pip install pytesseract\n\n"
+                                   "You may also need to install the Tesseract OCR engine from:\n"
+                                   "https://github.com/UB-Mannheim/tesseract/wiki")
+                return None
+
+            if not HAS_PIL:
+                messagebox.showinfo("PIL Not Available",
+                                   "PIL (Pillow) is required for OCR on images.\n"
+                                   "Install it using: pip install pillow")
+                return None
+
+            # Import PIL and pytesseract modules only when needed and available
+            from PIL import Image, ImageGrab
+            import pytesseract
+
+            # Configure tesseract executable path for Windows specifically
+            self._configure_tesseract_path(pytesseract)
+
+            # Try to get image from clipboard
+            clipboard_content = ImageGrab.grabclipboard()
+
+            if clipboard_content is None:
+                self.logger.warning("ImageGrab.grabclipboard() returned None")
+                return None
+
+            # Handle different types of clipboard content
+            if isinstance(clipboard_content, Image.Image):
+                # Direct PIL image
+                clipboard_image = clipboard_content
+                self.logger.info("Found PIL image in clipboard")
+            elif isinstance(clipboard_content, list) and len(clipboard_content) > 0:
+                # Sometimes Windows returns a list with file paths
+                first_item = clipboard_content[0]
+                if isinstance(first_item, str) and os.path.isfile(first_item):
+                    # It's a file path, try to open it as an image
+                    try:
+                        clipboard_image = Image.open(first_item)
+                        self.logger.info("Loaded image from clipboard file path")
+                    except Exception as e:
+                        self.logger.error(f"Failed to load image from path {first_item}: {e}")
+                        return None
+                else:
+                    self.logger.warning(f"Unsupported clipboard list content: {clipboard_content}")
+                    return None
+            else:
+                self.logger.warning(f"Unsupported clipboard content type: {type(clipboard_content)}")
+                return None
+
+            # Perform OCR on the image
+            try:
+                # Optionally convert to RGB if needed
+                if clipboard_image.mode not in ('RGB', 'L'):
+                    clipboard_image = clipboard_image.convert('RGB')
+
+                # Perform OCR
+                extracted_text = pytesseract.image_to_string(
+                    clipboard_image,
+                    config='--psm 6'  # Uniform block of text
+                )
+
+                # Clean up the extracted text
+                if extracted_text and extracted_text.strip():
+                    # Remove extra whitespace and normalize line breaks
+                    cleaned_text = ' '.join(extracted_text.split())
+                    self.logger.info(f"OCR successful: extracted {len(cleaned_text)} characters")
+                    return cleaned_text.strip()
+
+                return None
+
+            except Exception as ocr_err:
+                self.logger.error(f"OCR processing failed: {ocr_err}")
+                # Provide specific help for common tesseract errors
+                if "tesseract is not installed" in str(ocr_err).lower() or "not in path" in str(ocr_err).lower():
+                    messagebox.showerror("Tesseract Not Found", self._get_tesseract_help_message())
+                else:
+                    messagebox.showerror("OCR Error", f"OCR processing failed:\n{str(ocr_err)}")
+                return None
+
+        except Exception as e:
+            self.logger.error(f"Error in OCR image processing: {e}")
+            return None
+
+    def _configure_tesseract_path(self, pytesseract_module):
+        """Configure the tesseract executable path for Windows systems."""
+        try:
+            import platform
+            import subprocess
+
+            # Check if we're on Windows
+            if platform.system() == 'Windows':
+                # First check if tesseract is already in PATH
+                try:
+                    result = subprocess.run(['tesseract', '--version'],
+                                          capture_output=True, text=True, check=True)
+                    self.logger.info("Tesseract found in PATH - no configuration needed")
+                    return
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    pass  # Not in PATH, try to find it
+
+                # Try common tesseract installation paths on Windows
+                possible_paths = [
+                    r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+                    r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+                    r"C:\Users\{}\AppData\Local\Tesseract-OCR\tesseract.exe".format(os.environ.get('USERNAME', '')),
+                    r"C:\tesseract\tesseract.exe",
+                    r"D:\tesseract\tesseract.exe",
+                ]
+
+                for path in possible_paths:
+                    if os.path.exists(path):
+                        try:
+                            pytesseract_module.pytesseract.tesseract_cmd = path
+                            self.logger.info(f"Configured tesseract path: {path}")
+                            return
+                        except Exception as e:
+                            self.logger.warning(f"Failed to configure tesseract path {path}: {e}")
+
+                # If still not found, try to use system's tesseract discovery
+                self.logger.warning("Standard tesseract installation paths not found. You may need to manually configure the path.")
+            else:
+                # For non-Windows systems, let pytesseract use its default discovery
+                pass
+        except Exception as e:
+            self.logger.error(f"Error configuring tesseract path: {e}")
+
+    def _get_tesseract_help_message(self):
+        """Generate a helpful message for tesseract installation issues."""
+        return (
+            "Tesseract OCR engine not found or not properly configured.\n\n"
+            "Here are several ways to fix this:\n\n"
+            "1. If you have tesseract installed in a custom location:\n"
+            "   - Install pytesseract: pip install pytesseract\n"
+            "   - Add tesseract.exe to your Windows PATH environment variable\n\n"
+            "2. Common installation locations to check:\n"
+            "   - C:\\Program Files\\Tesseract-OCR\\\n"
+            "   - C:\\Program Files (x86)\\Tesseract-OCR\\\n"
+            "   - C:\\Users\\<username>\\AppData\\Local\\Tesseract-OCR\\\n\n"
+            "3. Download and install tesseract from:\n"
+            "   https://github.com/UB-Mannheim/tesseract/wiki\n\n"
+            "After installation, restart the application for changes to take effect."
+        )

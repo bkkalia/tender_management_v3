@@ -4,7 +4,7 @@ from tkinter import ttk, messagebox
 import logging
 import os
 import sys
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, TYPE_CHECKING
 
 # Add parent directory to path if needed
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -12,7 +12,13 @@ parent_dir = os.path.dirname(current_dir)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-# Import tabs
+# Import tabs - TYPE_CHECKING for type hints, runtime for actual imports
+if TYPE_CHECKING:
+    from ui.search_dashboard_tab import SearchDashboardTab
+    from ui.portal_merger_tab import PortalDataMergerTab
+    from ui.performance_tab import PerformanceTab
+
+# Runtime imports with graceful fallback
 try:
     from ui.search_dashboard_tab import SearchDashboardTab
 except ImportError:
@@ -27,7 +33,7 @@ from ui.calendar_tab import CalendarTab  # Import the CalendarTab class
 # Note: TenderTasksTab is still placeholder
 from ui.tender_tasks_tab import TenderTasksTab
 try:
-    from ui.performance_tab import PerformanceTab  # type: ignore
+    from ui.performance_tab import PerformanceTab
 except ImportError:
     PerformanceTab = None
 

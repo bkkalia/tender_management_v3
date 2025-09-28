@@ -1,0 +1,94 @@
+2025-09-28 11:51:33 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250928_115133.log
+2025-09-28 11:51:33 - root - INFO - Application starting...
+2025-09-28 11:51:33 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-28 11:51:33 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-28 11:51:33 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-28 11:51:33 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-28 11:51:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 11:51:34 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-28 11:51:34 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-28 11:51:34 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-28 11:51:34 - ui.settings_tab.SettingsTab - INFO - Default column settings initialized
+2025-09-28 11:51:34 - ui.settings_tab.SettingsTab - INFO - Loaded column settings for 18 columns
+2025-09-28 11:51:34 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-28 11:51:34 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-28 11:51:34 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-28 11:51:34 - ui.main_window - INFO - Main application initialized
+2025-09-28 11:51:34 - root - INFO - Main window initialized
+2025-09-28 11:51:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loading last used data source: export_test_data.xlsx
+2025-09-28 11:51:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: []
+2025-09-28 11:51:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 7 columns
+2025-09-28 11:51:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 11:51:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 0 records closing after 2025-09-28 11:51:41.819712
+2025-09-28 11:51:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loaded merged file for analysis: export_test_data.xlsx (15000 records)
+2025-09-28 11:51:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Successfully loaded last used data source: export_test_data.xlsx
+2025-09-28 11:51:41 - ui.main_window.MainApplication - INFO - Initial data loaded for Search tab
+2025-09-28 11:51:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:51:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:51:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 11:51:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:51:51.937632
+2025-09-28 11:51:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:51:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:52:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Extracted text from clipboard: 6 characters
+2025-09-28 11:52:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - OCR successfully filled Global Search with 6 characters
+2025-09-28 11:52:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:52:34.031787
+2025-09-28 11:52:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'Retail' with AND logic
+2025-09-28 11:52:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Extracted text from clipboard: 9 characters
+2025-09-28 11:52:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - OCR successfully filled Global Search with 9 characters
+2025-09-28 11:53:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Extracted text from clipboard: 6 characters
+2025-09-28 11:53:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - OCR successfully filled Global Search with 6 characters
+2025-09-28 11:53:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:53:12.745186
+2025-09-28 11:53:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 101 records match 'Shimla' with AND logic
+2025-09-28 11:53:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:53:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:53:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:53:18.149757
+2025-09-28 11:53:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 101 records match 'Shimla' with AND logic
+2025-09-28 11:53:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:53:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:53:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:53:26.217820
+2025-09-28 11:53:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 101 records match 'Shimla' with AND logic
+2025-09-28 11:53:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:53:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:53:32 - ui.search_dashboard_tab.SearchDashboardTab - WARNING - Clipboard text access failed: CLIPBOARD selection doesn't exist or form "STRING" not defined
+2025-09-28 11:53:32 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Found PIL image in clipboard
+2025-09-28 11:53:32 - ui.search_dashboard_tab.SearchDashboardTab - ERROR - OCR processing failed: tesseract is not installed or it's not in your PATH. See README file for more information.
+2025-09-28 11:53:37 - ui.search_dashboard_tab.SearchDashboardTab - WARNING - Clipboard text access failed: CLIPBOARD selection doesn't exist or form "STRING" not defined
+2025-09-28 11:53:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Found PIL image in clipboard
+2025-09-28 11:53:37 - ui.search_dashboard_tab.SearchDashboardTab - ERROR - OCR processing failed: tesseract is not installed or it's not in your PATH. See README file for more information.
+2025-09-28 11:54:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:54:07.579330
+2025-09-28 11:54:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 101 records match 'Shimla' with AND logic
+2025-09-28 11:54:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:54:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:54:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:54:09.536505
+2025-09-28 11:54:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 101 records match 'Shimla' with AND logic
+2025-09-28 11:54:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:54:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:54:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:54:10.452826
+2025-09-28 11:54:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 101 records match 'Shimla' with AND logic
+2025-09-28 11:54:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:54:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:54:11 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:54:11.302555
+2025-09-28 11:54:11 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 101 records match 'Shimla' with AND logic
+2025-09-28 11:54:11 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:54:11 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:54:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:54:12.875011
+2025-09-28 11:54:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 101 records match 'Shimla' with AND logic
+2025-09-28 11:54:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:54:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:54:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:54:21.646312
+2025-09-28 11:54:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1283 records match 'h' with AND logic
+2025-09-28 11:54:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:54:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:54:22 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:54:22.381563
+2025-09-28 11:54:22 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1283 records match 'hp' with AND logic
+2025-09-28 11:54:22 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:54:22 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:54:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:54:30.543973
+2025-09-28 11:54:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1283 records match 'hp' with AND logic
+2025-09-28 11:54:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:54:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:54:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:54:34.184439
+2025-09-28 11:54:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'hp pc' with AND logic
+2025-09-28 11:54:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:54:39.223194
+2025-09-28 11:54:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:54:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
