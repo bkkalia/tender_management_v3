@@ -83,3 +83,8 @@
 2025-09-28 08:57:13 - ui.logs_tab.LogsTab - INFO - Logs tab selected
 2025-09-28 08:59:05 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
 2025-09-28 09:00:47 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-28 09:59:12 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-09-28 09:59:13 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-28 09:59:17 - ui.logs_tab.LogsTab - INFO - Logs tab selected
+2025-09-28 09:59:22 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-09-28 09:59:22 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed

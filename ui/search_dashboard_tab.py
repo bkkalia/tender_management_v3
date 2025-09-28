@@ -13,16 +13,17 @@ import time as time_module  # Renamed to avoid conflict with datetime.time
 import re
 import tkinter.simpledialog
 
-# Try to import PIL for image creation
+# Try to import PIL for image creation and clipboard access
 try:
-    from PIL import Image, ImageDraw, ImageTk
+    from PIL import Image, ImageDraw, ImageTk, ImageGrab
     HAS_PIL = True
 except ImportError:
     Image = None
     ImageDraw = None
     ImageTk = None
+    ImageGrab = None
     HAS_PIL = False
-    print("Warning: PIL not available. URL icons will use text representation.")
+    print("Warning: PIL not available. URL icons and OCR on images will not be supported.")
 
 # Handle optional imports
 try:
@@ -32,6 +33,15 @@ except ImportError:
     DateEntry = None
     HAS_TKCALENDAR = False
     print("Warning: tkcalendar not available. Date picker features will be limited.")
+
+# Handle optional OCR imports
+try:
+    import pytesseract
+    HAS_PYTESSERACT = True
+except ImportError:
+    pytesseract = None
+    HAS_PYTESSERACT = False
+    print("Warning: pytesseract not available. OCR functionality will be disabled.")
 
 # Fix imports by adding parent directory to path if needed
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -611,15 +621,40 @@ class SearchDashboardTab(ttk.Frame):
         # Global search operator buttons
         global_op_frame = ttk.Frame(global_section)
         global_op_frame.pack(fill=tk.X, pady=(SPACING['small'], 0))
-        
+
         ttk.Label(global_op_frame, text="Match:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT, padx=(0, SPACING['small']))
-        
-        ttk.Radiobutton(global_op_frame, text="Any (OR)", variable=self.global_operator_var, 
+
+        ttk.Radiobutton(global_op_frame, text="Any (OR)", variable=self.global_operator_var,
                        value="OR", command=self._on_live_search_key).pack(side=tk.LEFT, padx=(0, SPACING['small']))
-        ttk.Radiobutton(global_op_frame, text="All (AND)", variable=self.global_operator_var, 
-                       value="AND", command=self._on_live_search_key).pack(side=tk.LEFT)
-        
-        ttk.Label(global_op_frame, text="(use commas to separate terms)", 
+        ttk.Radiobutton(global_op_frame, text="All (AND)", variable=self.global_operator_var,
+                       value="AND", command=self._on_live_search_key).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        # OCR button next to the operators - royal blue, no icon
+        ocr_button = tk.Button(
+            global_op_frame,
+            text="OCR",
+            command=self._perform_ocr_from_clipboard,
+            bg="#4169E1",  # Royal blue
+            fg="white",
+            font=('TkDefaultFont', 9, 'bold'),
+            relief='raised',
+            bd=1,
+            padx=8,
+            pady=2,
+            cursor='hand2',
+            width=6
+        )
+        # Add hover effect
+        def on_enter(e):
+            ocr_button.configure(bg="#1E90FF")  # Dodger blue (lighter royal blue)
+        def on_leave(e):
+            ocr_button.configure(bg="#4169E1")  # Back to royal blue
+        ocr_button.bind("<Enter>", on_enter)
+        ocr_button.bind("<Leave>", on_leave)
+
+        ocr_button.pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        ttk.Label(global_op_frame, text="(use commas to separate terms)",
                  font=('TkDefaultFont', 8), foreground='gray').pack(side=tk.RIGHT)
         
         # Configure custom LabelFrame styles
@@ -1028,7 +1063,12 @@ class SearchDashboardTab(ttk.Frame):
 
                     for i, col in enumerate(cols):
                         val = row[col]
-                        display_val = str(val) if pd.notna(val).all() else ""
+                        # Check if value is not NA - handle both scalars and arrays
+                        pd_notna = pd.notna(val)
+                        if isinstance(pd_notna, (pd.Series, pd.Index)):
+                            display_val = str(val) if pd_notna.all() else ""
+                        else:  # Scalar bool
+                            display_val = str(val) if pd_notna else ""
 
                         # Handle URL columns
                         if col in self.url_columns and display_val:
@@ -1282,9 +1322,17 @@ class SearchDashboardTab(ttk.Frame):
             messagebox.showerror("Filter Error", f"Error filtering by date: {str(e)}")
 
     def _on_live_search_key(self, event=None):
-        """Handle key press in search fields with debouncing to avoid excessive filtering."""
+        """Handle key press in search fields with debouncing and visual feedback."""
         if hasattr(self, '_filter_after_id') and self._filter_after_id:
             self.after_cancel(self._filter_after_id)
+
+        # Show search indicator
+        if hasattr(self, 'results_count_var'):
+            original_text = self.results_count_var.get()
+            if not original_text.startswith("Searching"):
+                self._original_search_text = original_text
+                self.results_count_var.set("Searching...")
+
         self._filter_after_id = self.after(self.filter_delay_ms, self._apply_filters)
 
     def _apply_filters(self):
@@ -1292,11 +1340,14 @@ class SearchDashboardTab(ttk.Frame):
         if (not hasattr(self.data_processor, 'raw_data') or
             self.data_processor.raw_data is None or
             self.data_processor.raw_data.empty):
+            # Restore original text if no data
+            if hasattr(self, '_original_search_text'):
+                self.results_count_var.set(self._original_search_text)
             return
 
         # Start with raw data
         df = self.data_processor.raw_data.copy()
-        
+
         # Apply status filter first (live/expired/all)
         current_status = getattr(self, 'status_filter_var', tk.StringVar()).get()
         if current_status == "live":
@@ -1324,10 +1375,15 @@ class SearchDashboardTab(ttk.Frame):
         # Update filtered data - ensure df is not None before assignment
         if df is not None:
             self.data_processor.filtered_data = df
-        
+
         # Refresh display
         self._refresh_tree_data()
         self.update_dashboard()
+
+        # Restore original search text after filtering is complete
+        if hasattr(self, '_original_search_text'):
+            self.results_count_var.set(self._original_search_text)
+            del self._original_search_text
 
     def _apply_time_filter(self, preset):
         """Apply a time-based filter preset."""
@@ -2127,10 +2183,38 @@ class SearchDashboardTab(ttk.Frame):
         if date_cols:
             date_col = date_cols[0]
             
-            # Convert to datetime if needed
+            # Convert to datetime if needed - try multiple formats to avoid parsing warnings
             if not pd.api.types.is_datetime64_dtype(df[date_col]):
                 df = df.copy()  # Avoid modifying original
-                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+                # Try parsing with common date formats first
+                date_formats = [
+                    '%Y-%m-%d %H:%M:%S',
+                    '%Y-%m-%d',
+                    '%d/%m/%Y %H:%M:%S',
+                    '%d/%m/%Y',
+                    '%m/%d/%Y %H:%M:%S',
+                    '%m/%d/%Y',
+                    '%d-%m-%Y %H:%M:%S',
+                    '%d-%m-%Y',
+                    '%Y/%m/%d %H:%M:%S',
+                    '%Y/%m/%d'
+                ]
+
+                # Try each format in order
+                for fmt in date_formats:
+                    try:
+                        temp_dt = pd.to_datetime(df[date_col], format=fmt, errors='coerce')
+                        if temp_dt.notna().any():
+                            df[date_col] = temp_dt
+                            break
+                    except Exception:
+                        continue
+                else:
+                    # If no format worked, fall back to infer (but suppress the warning)
+                    import warnings
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
             
             # Filter for dates/times in the future (live tenders)
             current_datetime = pd.Timestamp.now()
@@ -2165,10 +2249,38 @@ class SearchDashboardTab(ttk.Frame):
         if date_cols:
             date_col = date_cols[0]
             
-            # Convert to datetime if needed
+            # Convert to datetime if needed - try multiple formats to avoid parsing warnings
             if not pd.api.types.is_datetime64_dtype(df[date_col]):
                 df = df.copy()  # Avoid modifying original
-                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+                # Try parsing with common date formats first
+                date_formats = [
+                    '%Y-%m-%d %H:%M:%S',
+                    '%Y-%m-%d',
+                    '%d/%m/%Y %H:%M:%S',
+                    '%d/%m/%Y',
+                    '%m/%d/%Y %H:%M:%S',
+                    '%m/%d/%Y',
+                    '%d-%m-%Y %H:%M:%S',
+                    '%d-%m-%Y',
+                    '%Y/%m/%d %H:%M:%S',
+                    '%Y/%m/%d'
+                ]
+
+                # Try each format in order
+                for fmt in date_formats:
+                    try:
+                        temp_dt = pd.to_datetime(df[date_col], format=fmt, errors='coerce')
+                        if temp_dt.notna().any():
+                            df[date_col] = temp_dt
+                            break
+                    except Exception:
+                        continue
+                else:
+                    # If no format worked, fall back to infer (but suppress the warning)
+                    import warnings
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
             
             # Filter for dates/times in the past (expired tenders)
             current_datetime = pd.Timestamp.now()
@@ -2205,10 +2317,38 @@ class SearchDashboardTab(ttk.Frame):
         
         date_col = date_cols[0]
         
-        # Convert to datetime if needed
+        # Convert to datetime if needed - try multiple formats to avoid parsing warnings
         if not pd.api.types.is_datetime64_dtype(df[date_col]):
             df = df.copy()
-            df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+            # Try parsing with common date formats first
+            date_formats = [
+                '%Y-%m-%d %H:%M:%S',
+                '%Y-%m-%d',
+                '%d/%m/%Y %H:%M:%S',
+                '%d/%m/%Y',
+                '%m/%d/%Y %H:%M:%S',
+                '%m/%d/%Y',
+                '%d-%m-%Y %H:%M:%S',
+                '%d-%m-%Y',
+                '%Y/%m/%d %H:%M:%S',
+                '%Y/%m/%d'
+            ]
+
+            # Try each format in order
+            for fmt in date_formats:
+                try:
+                    temp_dt = pd.to_datetime(df[date_col], format=fmt, errors='coerce')
+                    if temp_dt.notna().any():
+                        df[date_col] = temp_dt
+                        break
+                except Exception:
+                    continue
+            else:
+                # If no format worked, fall back to infer (but suppress the warning)
+                import warnings
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
         
         # Calculate date ranges using current datetime for precise filtering
         current_datetime = pd.Timestamp.now()
@@ -2748,3 +2888,85 @@ class SearchDashboardTab(ttk.Frame):
         except Exception as e:
             self.logger.error(f"Error cleaning saved searches: {e}")
             messagebox.showerror("Cleanup Error", f"Failed to clean searches: {str(e)}")
+
+    def _perform_ocr_from_clipboard(self):
+        """Extract text from clipboard content (text or image) and fill the Global Search field."""
+        try:
+            extracted_text = None
+
+            # Try to get text content from clipboard first
+            try:
+                # Check if there's text content
+                clipboard_text = self.clipboard_get()
+                if clipboard_text and clipboard_text.strip():
+                    # Plain text found in clipboard
+                    extracted_text = clipboard_text.strip()
+                    self.logger.info(f"Extracted text from clipboard: {len(extracted_text)} characters")
+                else:
+                    # No plain text, check if we can do OCR on images
+                    if not HAS_PYTESSERACT:
+                        messagebox.showinfo("OCR Not Available",
+                                           "OCR functionality is not available because pytesseract is not installed.\n\n"
+                                           "To enable OCR, install pytesseract using:\n"
+                                           "pip install pytesseract\n\n"
+                                           "You may also need to install the Tesseract OCR engine from:\n"
+                                           "https://github.com/UB-Mannheim/tesseract/wiki")
+                        return
+
+                    if not HAS_PIL:
+                        messagebox.showinfo("PIL Not Available",
+                                           "PIL (Pillow) is required for OCR on images.\n"
+                                           "Install it using: pip install pillow")
+                        return
+
+                    # Try to get image from clipboard for OCR
+                    try:
+                        if ImageGrab and Image:
+                            clipboard_image = ImageGrab.grabclipboard()
+                            if clipboard_image is not None and isinstance(clipboard_image, Image.Image):
+                                # Image found, perform OCR
+                                if pytesseract:
+                                    extracted_text = pytesseract.image_to_string(clipboard_image)
+                                    if extracted_text and extracted_text.strip():
+                                        extracted_text = extracted_text.strip()
+                                        self.logger.info(f"OCR extracted text from image: {len(extracted_text)} characters")
+                                    else:
+                                        messagebox.showinfo("No Text Found",
+                                                           "No readable text was found in the clipboard image.")
+                                        return
+                                else:
+                                    messagebox.showinfo("OCR Error", "Pytesseract not available for OCR processing.")
+                                    return
+                            else:
+                                messagebox.showinfo("No Content",
+                                                   "No text or image content found in clipboard.")
+                                return
+                    except Exception as img_err:
+                        self.logger.error(f"Error processing clipboard image: {img_err}")
+                        messagebox.showerror("OCR Error",
+                                            f"Failed to process clipboard image:\n{str(img_err)}")
+                        return
+
+            except tk.TclError:
+                # Clipboard is empty or not accessible
+                messagebox.showinfo("Clipboard Empty",
+                                   "The clipboard appears to be empty or inaccessible.")
+                return
+
+            # Set the extracted text in the Global Search field
+            if extracted_text:
+                self.global_search_var.set(extracted_text)
+
+                # Show success message
+                AutoDismissMessageDialog(self, "OCR Complete",
+                                        f"Extracted {len(extracted_text)} characters from clipboard.")
+
+                # Optionally trigger search (commented out for now)
+                # self._on_live_search_key()
+
+                self.logger.info(f"OCR successfully filled Global Search with {len(extracted_text)} characters")
+
+        except Exception as e:
+            self.logger.error(f"OCR processing error: {e}")
+            messagebox.showerror("OCR Error",
+                                f"An error occurred during OCR processing:\n{str(e)}")

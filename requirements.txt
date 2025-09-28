@@ -10,6 +10,9 @@ filelock>=3.0.0
 icalendar>=4.0.0
 numpy>=1.21.0
 
+# Optional: OCR functionality for image text extraction
+pytesseract>=0.3.10  # OCR support - install tesseract engine separately if needed
+
 # Development and utility packages
 setuptools>=40.0.0
 wheel>=0.30.0
