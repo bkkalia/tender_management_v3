@@ -205,6 +205,8 @@ class SettingsTab(ttk.Frame):
         self.column_vars = {}  # Dictionary to store checkbox variables
         self.width_vars = {}   # Dictionary to store width variables
         self.column_order = []  # List to maintain column order
+        self.selected_column = None  # Currently selected column for moving
+        self.column_frames = {}  # Dictionary to store frame references
 
         # Default column sequence and settings
         self._initialize_default_column_settings()
@@ -467,7 +469,6 @@ class SettingsTab(ttk.Frame):
 
             # Create and show the benchmark window
             benchmark_window = BenchmarkWindow(self, self.main_app)
-            benchmark_window.protocol("WM_DELETE_WINDOW", benchmark_window._on_close)
 
             self.logger.info("Benchmark window opened from settings")
 
@@ -759,13 +760,28 @@ class SettingsTab(ttk.Frame):
         col_frame = ttk.Frame(self.columns_scrollable_frame)
         col_frame.pack(fill=tk.X, pady=1)
 
+        # Store the column name and frame reference for selection/movement
+        # Use a custom attribute stored in our own dict instead
+        if not hasattr(self, 'column_frames'):
+            self.column_frames = {}
+        self.column_frames[col_name] = col_frame
+
+        # Make the frame clickable for selection
+        def select_column(event=None, frame=col_frame, name=col_name):
+            self._select_column(name)
+
+        col_frame.bind("<Button-1>", select_column)
+        col_frame.configure(cursor="hand2")  # Change cursor on hover
+
         # Order number label
         order_label = ttk.Label(col_frame, text=str(order_num), width=6, anchor="center")
         order_label.pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        order_label.bind("<Button-1>", select_column)
 
         # Column name label
         name_label = ttk.Label(col_frame, text=col_name, width=25, anchor="w")
         name_label.pack(side=tk.LEFT, padx=(0, SPACING['medium']))
+        name_label.bind("<Button-1>", select_column)
 
         # Visibility checkbox
         visible_var = tk.BooleanVar(value=settings.get("visible", True))
@@ -786,17 +802,65 @@ class SettingsTab(ttk.Frame):
         # Bind width variable change
         width_var.trace_add("write", self._on_column_setting_changed)
 
+    def _select_column(self, col_name: str):
+        """Select a column for movement operations."""
+        # Clear previous selection visual indicator
+        if hasattr(self, 'selected_column') and self.selected_column:
+            if self.selected_column in self.column_frames:
+                frame = self.column_frames[self.selected_column]
+                # Reset background color
+                frame.configure(style="TFrame")
+
+        # Set new selection
+        self.selected_column = col_name
+
+        # Apply selection visual indicator
+        if col_name in self.column_frames:
+            frame = self.column_frames[col_name]
+            # Make it look selected (light blue background)
+            style = ttk.Style()
+            style.configure("Selected.TFrame", background="#e3f2fd")  # Light blue background
+            frame.configure(style="Selected.TFrame")
+
+        self.logger.info(f"Selected column: {col_name}")
+
     def _move_column_up(self):
         """Move selected column up in the order."""
-        # This would require selecting a column first - for now, show a message
-        messagebox.showinfo("Move Column", "Select a column to move by clicking on its row first."
-                          "\n\nThis feature requires additional UI modifications to select rows.")
+        if not self.selected_column or self.selected_column not in self.column_order:
+            messagebox.showwarning("No Column Selected", "Please click on a column row to select it first.")
+            return
+
+        current_index = self.column_order.index(self.selected_column)
+        if current_index > 0:
+            # Swap with the previous item
+            self.column_order[current_index], self.column_order[current_index - 1] = \
+                self.column_order[current_index - 1], self.column_order[current_index]
+
+            # Reload the UI with new order
+            self._load_column_settings()
+            self.settings_changed = True
+            self.status_var.set("Column moved up. Click 'Save Settings' to apply.")
+        else:
+            messagebox.showinfo("Can't Move Up", "This column is already at the top.")
 
     def _move_column_down(self):
         """Move selected column down in the order."""
-        # This would require selecting a column first - for now, show a message
-        messagebox.showinfo("Move Column", "Select a column to move by clicking on its row first."
-                          "\n\nThis feature requires additional UI modifications to select rows.")
+        if not self.selected_column or self.selected_column not in self.column_order:
+            messagebox.showwarning("No Column Selected", "Please click on a column row to select it first.")
+            return
+
+        current_index = self.column_order.index(self.selected_column)
+        if current_index < len(self.column_order) - 1:
+            # Swap with the next item
+            self.column_order[current_index], self.column_order[current_index + 1] = \
+                self.column_order[current_index + 1], self.column_order[current_index]
+
+            # Reload the UI with new order
+            self._load_column_settings()
+            self.settings_changed = True
+            self.status_var.set("Column moved down. Click 'Save Settings' to apply.")
+        else:
+            messagebox.showinfo("Can't Move Down", "This column is already at the bottom.")
 
     def _reset_column_order(self):
         """Reset column order to the default sequence."""

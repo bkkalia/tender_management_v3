@@ -1023,3 +1023,9 @@
 2025-09-28 09:27:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loaded merged file for analysis: export_test_data.xlsx (15000 records)
 2025-09-28 09:27:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Successfully loaded last used data source: export_test_data.xlsx
 2025-09-28 09:27:37 - ui.main_window.MainApplication - INFO - Initial data loaded for Search tab
+2025-09-28 09:34:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: today
+2025-09-28 09:34:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 0 records closing after 2025-09-28 09:34:09.393746
+2025-09-28 09:34:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_3_days
+2025-09-28 09:34:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 0 records closing after 2025-09-28 09:34:12.891915
+2025-09-28 09:34:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_7_days
+2025-09-28 09:34:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 0 records closing after 2025-09-28 09:34:15.113077
