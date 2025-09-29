@@ -89,98 +89,59 @@ class MainApplication(tk.Tk):
         logger.info("Main application initialized")
 
     def _apply_tab_styling(self):
-        """Apply comprehensive tab styling after all components are initialized."""
+        """Apply ultra-minimal tab styling to avoid any height inconsistencies."""
         try:
-            self.logger.info("Applying comprehensive tab styling...")
+            self.logger.info("Applying ultra-minimal tab styling...")
 
             style = ttk.Style()
 
-            # Use a theme that supports better color customization
-            try:
-                style.theme_use('clam')
-            except tk.TclError:
-                self.logger.warning("Could not set theme to 'clam', using default")
-                style.theme_use('default')
+            # Use default theme to avoid any theming issues
+            style.theme_use('default')
 
-            # === COMPREHENSIVE NOTEBOOK STYLING ===
-            # Configure the notebook container
+            # === MINIMAL NOTEBOOK STYLING ===
+            # Only minimal styling to avoid conflicts
             style.configure('TNotebook',
-                           background='#2c3e50',  # Dark blue-gray background
-                           borderwidth=1,
-                           relief='solid',
-                           tabmargins=[0, 0, 0, 0])
+                           background='#ffffff',
+                           borderwidth=0,
+                           relief='flat')
 
-            # === ULTRA-CONSISTENT BASE CONFIGURATION ===
-            # Base configuration that will be inherited by all states
+            # === BASE TAB CONFIGURATION ===
+            # Simple base configuration
             style.configure('TNotebook.Tab',
                            font=('TkDefaultFont', 11, 'bold'),
                            padding=(15, 8),
-                           background='#ecf0f1',
-                           foreground='#2c3e50',
-                           borderwidth=2,
-                           relief='raised',
-                           lightcolor='#bdc3c7',
-                           darkcolor='#95a5a6')
+                           background='#f0f0f0',
+                           foreground='#000000')
 
-            # === FORCE IDENTICAL PROPERTIES FOR ALL STATES ===
-            # This ensures NO property can cause size differences
+            # === ULTRA-MINIMAL STATE MAPPING ===
+            # Only change colors - absolutely no size properties
             style.map('TNotebook.Tab',
-                     # Background colors only - no size-affecting properties
                      background=[
-                         ('selected', '#e74c3c'),      # BRIGHT RED for selected (ACTIVE)
+                         ('selected', '#e74c3c'),      # BRIGHT RED for selected
                          ('active', '#f39c12'),        # BRIGHT ORANGE for hover
                          ('!selected', '#008080')      # DARK TEAL for unselected
                      ],
-                     # Text colors only - no size-affecting properties
                      foreground=[
                          ('selected', '#ffffff'),      # WHITE text on selected
                          ('active', '#ffffff'),        # WHITE text on hover
                          ('!selected', '#ffffff')      # WHITE text on dark teal
                      ])
 
-            # === SIMPLIFIED LAYOUT - NO CUSTOM UNDERLINE ===
-            # Use the standard ttk layout to avoid height inconsistencies
-            style.layout('TNotebook.Tab', [
-                ('Notebook.tab', {
-                    'sticky': 'nswe',
-                    'children': [
-                        ('Notebook.padding', {
-                            'side': 'top',
-                            'sticky': 'we',
-                            'children': [
-                                ('Notebook.focus', {
-                                    'side': 'top',
-                                    'sticky': 'we',
-                                    'children': [
-                                        ('Notebook.label', {'side': 'top', 'sticky': ''})
-                                    ]
-                                })
-                            ]
-                        })
-                    ]
-                })
-            ])
-
-            # === FORCE UPDATE ALL WIDGETS ===
+            # === FORCE COMPLETE UPDATE ===
             if hasattr(self, 'notebook') and self.notebook:
-                # Force complete update
                 self.notebook.update_idletasks()
-
-                # Update all child widgets recursively
+                # Update all child widgets
                 def update_all_widgets(widget):
                     widget.update_idletasks()
                     for child in widget.winfo_children():
                         update_all_widgets(child)
-
                 update_all_widgets(self.notebook)
-
-                # Force complete widget update
                 self.update_idletasks()
 
-            self.logger.info("Comprehensive tab styling applied successfully")
+            self.logger.info("Ultra-minimal tab styling applied successfully")
 
         except Exception as e:
-            self.logger.error(f"Error applying tab styling: {e}")
+            self.logger.error(f"Error applying minimal tab styling: {e}")
             # Try emergency fallback styling
             self._emergency_tab_styling()
 

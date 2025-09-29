@@ -2895,12 +2895,30 @@ class SearchDashboardTab(ttk.Frame):
     def load_initial_data_if_any(self):
         """Load initial data if any was previously loaded (called on app startup)."""
         try:
-            # Check if auto-loading is enabled
+            # PRIORITIZE: Load from MERGED DATA FOLDER setting first
+            merged_data_folder = self.main_app.global_config.get("merged_data_folder", "")
+
+            if merged_data_folder and os.path.exists(merged_data_folder):
+                self.logger.info(f"Loading merged data from settings path: {merged_data_folder}")
+
+                # Show loading message
+                self.results_count_var.set("Loading merged data from settings...")
+                self.update_idletasks()
+
+                # Load all files from the merged data folder
+                self._load_data_from_auto_path(merged_data_folder)
+
+                # Show success message briefly
+                record_count = len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0
+                self.results_count_var.set(f"Loaded merged data: {os.path.basename(merged_data_folder)}")
+                self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
+
+                self.logger.info(f"Successfully loaded merged data from settings: {merged_data_folder}")
+                return
+
+            # SECONDARY: Check if auto-loading is enabled with specific path
             auto_load_enabled = self.main_app.global_config.get("auto_load_enabled", False)
             auto_load_path = self.main_app.global_config.get("auto_load_data_path", "")
-
-            # Check if there's a last loaded file in the config
-            last_loaded_files = self.main_app.global_config.get("last_loaded_files", [])
 
             if auto_load_enabled and auto_load_path and os.path.exists(auto_load_path):
                 self.logger.info(f"Auto-loading data from configured path: {auto_load_path}")
@@ -2918,7 +2936,12 @@ class SearchDashboardTab(ttk.Frame):
                 self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
 
                 self.logger.info(f"Successfully auto-loaded data from: {auto_load_path}")
-            elif last_loaded_files and isinstance(last_loaded_files, list) and len(last_loaded_files) > 0:
+                return
+
+            # TERTIARY: Check if there's a last loaded file in the config
+            last_loaded_files = self.main_app.global_config.get("last_loaded_files", [])
+
+            if last_loaded_files and isinstance(last_loaded_files, list) and len(last_loaded_files) > 0:
                 last_file = last_loaded_files[0]  # Get the most recent one
 
                 # Check if the file exists
@@ -2938,6 +2961,7 @@ class SearchDashboardTab(ttk.Frame):
                     self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
 
                     self.logger.info(f"Successfully loaded last used data source: {last_file}")
+                    return
                 else:
                     self.logger.warning(f"Last used data source not found: {last_file}")
                     # Remove the invalid entry from config
@@ -2945,8 +2969,25 @@ class SearchDashboardTab(ttk.Frame):
                         last_loaded_files.remove(last_file)
                         self.main_app.global_config.set("last_loaded_files", last_loaded_files)
                         self.main_app.global_config.save_config()
-            else:
-                self.logger.info("No auto-load path configured or no last used data source found, starting with empty state")
+
+            # FALLBACK: Try to load from default merged data folder
+            default_merged_path = "./data/merged_data/"
+            if os.path.exists(default_merged_path):
+                self.logger.info(f"Loading from default merged data path: {default_merged_path}")
+
+                self.results_count_var.set("Loading from default merged data folder...")
+                self.update_idletasks()
+
+                self._load_data_from_auto_path(default_merged_path)
+
+                record_count = len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0
+                self.results_count_var.set(f"Loaded default merged data")
+                self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
+
+                self.logger.info(f"Successfully loaded from default merged data path: {default_merged_path}")
+                return
+
+            self.logger.info("No data sources found, starting with empty state")
 
         except Exception as e:
             self.logger.error(f"Error loading initial data: {e}")
