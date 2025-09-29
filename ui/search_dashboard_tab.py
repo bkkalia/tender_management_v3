@@ -226,7 +226,7 @@ class SearchDashboardTab(ttk.Frame):
     """
     Search & Dashboard Tab: Load data, search, filter, and view statistics.
     """
-    def __init__(self, parent: ttk.Notebook, main_app):
+    def __init__(self, parent, main_app):
         super().__init__(parent)
         self.main_app = main_app
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
@@ -1898,6 +1898,86 @@ class SearchDashboardTab(ttk.Frame):
                 self._update_selected_folders_display()
                 messagebox.showinfo("URL Added", f"Remote URL added successfully:\n{url}")
 
+    def _load_data_from_auto_path(self, auto_path):
+        """Load all Excel/CSV files from the auto-configured directory path."""
+        if not auto_path or not os.path.exists(auto_path):
+            self.logger.error(f"Auto-load path is invalid or does not exist: {auto_path}")
+            return
+
+        try:
+            # Get all Excel and CSV files from the directory
+            excel_files = []
+            for file in os.listdir(auto_path):
+                if file.lower().endswith(('.xlsx', '.xls', '.csv')):
+                    excel_files.append(os.path.join(auto_path, file))
+
+            if not excel_files:
+                messagebox.showinfo("No Files Found",
+                                  f"No Excel or CSV files found in the configured directory:\n{auto_path}")
+                return
+
+            # Show loading indicator
+            self.results_count_var.set(f"Loading {len(excel_files)} files from auto-path...")
+            self.update_idletasks()
+
+            # Load data from all files
+            dfs = []
+            loaded_count = 0
+            for file_path in excel_files:
+                try:
+                    if file_path.lower().endswith('.csv'):
+                        df = pd.read_csv(file_path, encoding='utf-8', low_memory=False)
+                    else:
+                        df = pd.read_excel(file_path, engine='openpyxl')
+
+                    if not df.empty:
+                        # Add source file column
+                        df['Source File'] = os.path.basename(file_path)
+                        dfs.append(df)
+                        loaded_count += 1
+                except Exception as e:
+                    self.logger.error(f"Error loading file {file_path}: {e}")
+                    continue
+
+            if not dfs:
+                messagebox.showinfo("No Data", "Could not load any data from the files in the configured directory.")
+                self.results_count_var.set("No data loaded")
+                return
+
+            # Combine all dataframes
+            combined_df = pd.concat(dfs, ignore_index=True)
+
+            # Store in data processor
+            self.data_processor.raw_data = combined_df
+            self.data_processor.filtered_data = combined_df.copy()
+
+            # Update the loaded files list to include the auto-path
+            self.loaded_files = [auto_path]
+            self.remote_urls = []
+            self._update_selected_folders_display()
+
+            # Update record count
+            record_count = len(combined_df)
+            messagebox.showinfo("Auto-Load Complete",
+                              f"Successfully auto-loaded data:\n\n"
+                              f"Directory: {os.path.basename(auto_path)}\n"
+                              f"Files loaded: {loaded_count}/{len(excel_files)}\n"
+                              f"Total records: {record_count}")
+
+            # Refresh the display
+            self._refresh_tree_data()
+            self.update_dashboard()
+
+            # Apply default filter (live tenders)
+            self._apply_status_filter("live")
+
+            self.logger.info(f"Auto-loaded {loaded_count} files with {record_count} total records from: {auto_path}")
+
+        except Exception as e:
+            self.logger.error(f"Error auto-loading data from path: {e}", exc_info=True)
+            messagebox.showerror("Auto-Load Error", f"An error occurred while auto-loading data:\n{str(e)}")
+            self.results_count_var.set("Error auto-loading data")
+
     def _load_merged_file_from_path(self, file_path):
         """Load a single merged file directly into the tree view for analysis using a provided file path."""
         if not file_path or not os.path.exists(file_path):
@@ -2815,10 +2895,30 @@ class SearchDashboardTab(ttk.Frame):
     def load_initial_data_if_any(self):
         """Load initial data if any was previously loaded (called on app startup)."""
         try:
+            # Check if auto-loading is enabled
+            auto_load_enabled = self.main_app.global_config.get("auto_load_enabled", False)
+            auto_load_path = self.main_app.global_config.get("auto_load_data_path", "")
+
             # Check if there's a last loaded file in the config
             last_loaded_files = self.main_app.global_config.get("last_loaded_files", [])
 
-            if last_loaded_files and isinstance(last_loaded_files, list) and len(last_loaded_files) > 0:
+            if auto_load_enabled and auto_load_path and os.path.exists(auto_load_path):
+                self.logger.info(f"Auto-loading data from configured path: {auto_load_path}")
+
+                # Show loading message
+                self.results_count_var.set("Auto-loading data from configured path...")
+                self.update_idletasks()
+
+                # Load all files from the configured directory
+                self._load_data_from_auto_path(auto_load_path)
+
+                # Show success message briefly
+                record_count = len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0
+                self.results_count_var.set(f"Auto-loaded data: {os.path.basename(auto_load_path)}")
+                self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
+
+                self.logger.info(f"Successfully auto-loaded data from: {auto_load_path}")
+            elif last_loaded_files and isinstance(last_loaded_files, list) and len(last_loaded_files) > 0:
                 last_file = last_loaded_files[0]  # Get the most recent one
 
                 # Check if the file exists
@@ -2833,8 +2933,9 @@ class SearchDashboardTab(ttk.Frame):
                     self._load_merged_file_from_path(last_file)
 
                     # Show success message briefly
+                    record_count = len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0
                     self.results_count_var.set(f"Loaded last used data: {os.path.basename(last_file)}")
-                    self.after(2000, lambda: self.results_count_var.set(f"Showing all {len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0} records"))
+                    self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
 
                     self.logger.info(f"Successfully loaded last used data source: {last_file}")
                 else:
@@ -2845,7 +2946,7 @@ class SearchDashboardTab(ttk.Frame):
                         self.main_app.global_config.set("last_loaded_files", last_loaded_files)
                         self.main_app.global_config.save_config()
             else:
-                self.logger.info("No last used data source found, starting with empty state")
+                self.logger.info("No auto-load path configured or no last used data source found, starting with empty state")
 
         except Exception as e:
             self.logger.error(f"Error loading initial data: {e}")

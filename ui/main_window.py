@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 class MainApplication(tk.Tk):
     """Main application window and controller."""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         
         # Initialize logging first
@@ -157,29 +157,37 @@ class MainApplication(tk.Tk):
         style.configure('TEntry', padding=(5, 3))
         style.configure('TCombobox', padding=(5, 3))
 
-        # PROFESSIONAL NOTEBOOK TABS STYLING - Much more visible and professional
-        # Main tab style with larger fonts and better colors
+        # BOOTSTRAP-STYLE NOTEBOOK TABS - Professional and highly visible
+        # Main tab style with larger fonts, better colors, and Bootstrap-like appearance
         style.configure('TNotebook.Tab',
-                       font=('TkDefaultFont', 11, 'bold'),
-                       padding=(15, 8),
-                       background='#E3F2FD',  # Light blue background
-                       foreground='#1565C0',  # Dark blue text
-                       borderwidth=1)
+                       font=('TkDefaultFont', 12, 'bold'),  # Larger font for better visibility
+                       padding=(20, 12),  # More padding for better click targets
+                       background='#f8f9fa',  # Light gray background (Bootstrap style)
+                       foreground='#495057',  # Dark gray text for better readability
+                       borderwidth=1,
+                       relief='raised')  # Raised relief for depth
 
-        # Selected tab appearance - more prominent
+        # Selected tab appearance - Bootstrap primary style with high contrast
         style.map('TNotebook.Tab',
-                 background=[('selected', '#2196F3'),  # Bright blue for selected
-                            ('active', '#BBDEFB'),     # Light blue on hover
-                            ('!selected', '#E3F2FD')],  # Light blue for unselected
-                 foreground=[('selected', '#FFFFFF'), # White text for selected tab
-                            ('active', '#0D47A1'),     # Dark blue on hover
-                            ('!selected', '#1565C0')], # Dark blue for unselected
-                 borderwidth=[('selected', 2)])
+                 background=[('selected', '#007bff'),  # Bootstrap primary blue for selected
+                            ('active', '#e9ecef'),     # Light gray on hover
+                            ('!selected', '#f8f9fa')], # Light gray for unselected
+                 foreground=[('selected', '#ffffff'),  # White text for selected tab (high contrast)
+                            ('active', '#212529'),     # Dark text on hover
+                            ('!selected', '#495057')], # Dark gray for unselected
+                 borderwidth=[('selected', 3)],  # Thicker border for selected tab
+                 relief=[('selected', 'flat'), ('!selected', 'raised')])  # Flat for selected, raised for others
 
-        # Remove any margins around tabs for cleaner look
+        # Notebook container styling
         style.configure('TNotebook',
-                       tabmargins=[2, 5, 2, 0],
-                       padding=(0, 0))
+                       tabmargins=[0, 0, 0, 0],  # Remove margins for cleaner look
+                       padding=(0, 0),
+                       background='#ffffff')  # White background
+
+        # Add tab positioning for better organization
+        style.configure('TNotebook.Tab',
+                       anchor='center',  # Center-align tab text
+                       justify='center')  # Center justify for better appearance
 
         # Specifically style dialog buttons to ensure they're visible
         style.configure('Dialog.TButton',

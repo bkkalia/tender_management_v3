@@ -30,7 +30,7 @@ class SettingsTab(ttk.Frame):
     """
     Settings Tab for configuring application parameters.
     """
-    def __init__(self, parent: ttk.Notebook, main_app: 'MainApplication'):
+    def __init__(self, parent, main_app):
         super().__init__(parent)
         self.main_app = main_app
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
@@ -129,9 +129,14 @@ class SettingsTab(ttk.Frame):
         self.canvas.bind("<Enter>", lambda e: self._bind_to_mousewheel())
         self.canvas.bind("<Leave>", lambda e: self._unbind_to_mousewheel())
 
-        # Main settings content inside scrollable frame
+        # Main settings content inside scrollable frame with improved styling
         content_frame = ttk.Frame(self.scrollable_frame)
-        content_frame.pack(fill=tk.BOTH, expand=True)
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=SPACING['medium'], pady=SPACING['medium'])
+
+        # Configure content frame styling
+        style = ttk.Style()
+        style.configure('Settings.TLabelframe', background='#f8f9fa', borderwidth=2, relief='solid')
+        style.configure('Settings.TLabelframe.Label', background='#007bff', foreground='white', font=('TkDefaultFont', 11, 'bold'))
         
         # Section 1: File Paths Settings
         paths_frame = create_labeled_frame(content_frame, "File Paths")
