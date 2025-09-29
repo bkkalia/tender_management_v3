@@ -85,6 +85,104 @@ class MainApplication(tk.Tk):
         
         logger.info("Main application initialized")
 
+    def _force_tab_styling(self):
+        """Force immediate application of tab styling with direct color application."""
+        try:
+            # Apply styling multiple times to ensure it takes effect
+            for attempt in range(3):
+                try:
+                    style = ttk.Style()
+
+                    # Force theme settings that allow custom colors
+                    style.theme_use('default')  # Use default theme first
+
+                    # Direct configuration of tab appearance
+                    style.configure('TNotebook.Tab',
+                                   font=('TkDefaultFont', 14, 'bold'),  # Larger font
+                                   padding=(30, 18),  # More padding
+                                   background='#f8f9fa',
+                                   foreground='#495057',
+                                   borderwidth=3,
+                                   relief='raised',
+                                   insertwidth=2)
+
+                    # Force color mapping with explicit state settings
+                    style.map('TNotebook.Tab',
+                             background=[
+                                 ('selected', '#32CD32'),      # BRIGHT LIME GREEN for selected
+                                 ('active', '#FF6347'),        # BRIGHT TOMATO for hover
+                                 ('!selected', '#FFEFD5')      # LIGHT PAPAYA for unselected
+                             ],
+                             foreground=[
+                                 ('selected', '#006400'),      # DARK GREEN text for selected
+                                 ('active', '#8B0000'),        # DARK RED text for hover
+                                 ('!selected', '#8B4513')      # DARK TOMATO text for unselected
+                             ],
+                             borderwidth=[
+                                 ('selected', 6),              # THICK border for selected
+                                 ('active', 5),                # Medium border for hover
+                                 ('!selected', 4)              # Standard border for unselected
+                             ],
+                             relief=[
+                                 ('selected', 'flat'),         # Flat for selected
+                                 ('active', 'raised'),         # Raised for hover
+                                 ('!selected', 'raised')       # Raised for unselected
+                             ])
+
+                    # Also configure the notebook itself
+                    style.configure('TNotebook',
+                                   background='#ffffff',
+                                   borderwidth=2,
+                                   relief='solid',
+                                   tabmargins=[0, 0, 0, 0])
+
+                    # Update all widgets
+                    if hasattr(self, 'notebook') and self.notebook:
+                        self.notebook.update()
+                        # Force update of all child widgets
+                        for child in self.notebook.winfo_children():
+                            child.update()
+
+                    self.logger.info(f"Tab styling forcefully applied (attempt {attempt + 1})")
+
+                    # If we succeed, break out of the retry loop
+                    break
+
+                except Exception as style_error:
+                    self.logger.warning(f"Style application attempt {attempt + 1} failed: {style_error}")
+                    if attempt == 2:  # Last attempt
+                        raise style_error
+                    # Wait a bit before retrying
+                    self.after(50, lambda: None)
+
+        except Exception as e:
+            self.logger.error(f"Error forcing tab styling after all attempts: {e}")
+            # Try a fallback approach
+            self._fallback_tab_styling()
+
+    def _fallback_tab_styling(self):
+        """Fallback method to apply basic tab styling if main method fails."""
+        try:
+            self.logger.info("Attempting fallback tab styling...")
+
+            # Simple, direct approach
+            style = ttk.Style()
+            style.theme_use('default')
+
+            # Basic styling that should always work
+            style.configure('TNotebook.Tab',
+                           font=('TkDefaultFont', 12, 'bold'),
+                           padding=(20, 10))
+
+            # Force update
+            if hasattr(self, 'notebook') and self.notebook:
+                self.notebook.update()
+
+            self.logger.info("Fallback tab styling applied successfully")
+
+        except Exception as e:
+            self.logger.error(f"Fallback tab styling also failed: {e}")
+
     def _setup_window(self):
         """Configure the main window properties."""
         # Set window title with version
@@ -131,11 +229,14 @@ class MainApplication(tk.Tk):
         """Configure global styles for the application."""
         style = ttk.Style()
 
-        # Set the theme
+        # Set the theme and force color application
         try:
             style.theme_use('clam')  # More modern look that supports better styling
         except:
             logger.warning("Could not set theme to 'clam'. Using default theme.")
+
+        # Force immediate style application
+        self.after(100, self._force_tab_styling)
 
         # Configure default button style to use royal blue with WHITE TEXT
         style.configure('TButton',
@@ -157,37 +258,73 @@ class MainApplication(tk.Tk):
         style.configure('TEntry', padding=(5, 3))
         style.configure('TCombobox', padding=(5, 3))
 
-        # BOOTSTRAP-STYLE NOTEBOOK TABS - Professional and highly visible
-        # Main tab style with larger fonts, better colors, and Bootstrap-like appearance
+        # PROFESSIONAL NOTEBOOK TAB BUTTONS - Bootstrap-style with enhanced visibility
+        # Enhanced tab styling with professional appearance and better UX
         style.configure('TNotebook.Tab',
-                       font=('TkDefaultFont', 12, 'bold'),  # Larger font for better visibility
-                       padding=(20, 12),  # More padding for better click targets
+                       font=('TkDefaultFont', 13, 'bold'),  # Even larger font for maximum visibility
+                       padding=(25, 15),  # Generous padding for easy clicking
                        background='#f8f9fa',  # Light gray background (Bootstrap style)
-                       foreground='#495057',  # Dark gray text for better readability
-                       borderwidth=1,
-                       relief='raised')  # Raised relief for depth
+                       foreground='#495057',  # Dark gray text for excellent readability
+                       borderwidth=2,  # Slightly thicker border
+                       relief='raised')  # Raised relief for depth and professionalism
 
-        # Selected tab appearance - Bootstrap primary style with high contrast
+        # Enhanced tab state styling with vibrant green/tomato color scheme
         style.map('TNotebook.Tab',
-                 background=[('selected', '#007bff'),  # Bootstrap primary blue for selected
-                            ('active', '#e9ecef'),     # Light gray on hover
-                            ('!selected', '#f8f9fa')], # Light gray for unselected
-                 foreground=[('selected', '#ffffff'),  # White text for selected tab (high contrast)
-                            ('active', '#212529'),     # Dark text on hover
-                            ('!selected', '#495057')], # Dark gray for unselected
-                 borderwidth=[('selected', 3)],  # Thicker border for selected tab
-                 relief=[('selected', 'flat'), ('!selected', 'raised')])  # Flat for selected, raised for others
+                 background=[('selected', '#32CD32'),  # Lime green for selected (active tab) - MORE VIBRANT
+                            ('active', '#FF6347'),     # Tomato red on hover - MORE VIBRANT
+                            ('!selected', '#FFEFD5')], # Papaya whip for unselected - MORE VISIBLE
+                 foreground=[('selected', '#006400'),  # Dark green text for selected (high contrast)
+                            ('active', '#8B0000'),     # Dark red text on hover - MORE VISIBLE
+                            ('!selected', '#8B4513')], # Dark tomato text for unselected - MORE VISIBLE
+                 borderwidth=[('selected', 5),  # Even thicker border for selected tab (more prominent)
+                             ('active', 4),        # Thicker border on hover
+                             ('!selected', 3)],    # Thicker border for unselected
+                 relief=[('selected', 'flat'),     # Flat for selected (modern look)
+                        ('active', 'raised'),    # Raised on hover for interaction feedback
+                        ('!selected', 'raised')]) # Raised for unselected for depth
 
-        # Notebook container styling
+        # Professional notebook container styling
         style.configure('TNotebook',
-                       tabmargins=[0, 0, 0, 0],  # Remove margins for cleaner look
-                       padding=(0, 0),
-                       background='#ffffff')  # White background
+                       tabmargins=[0, 0, 0, 0],  # Remove margins for clean, modern look
+                       padding=(2, 2),           # Small padding for professional appearance
+                       background='#ffffff',     # Clean white background
+                       borderwidth=1,            # Subtle border
+                       relief='solid')           # Solid border for definition
 
-        # Add tab positioning for better organization
+        # Enhanced tab positioning and alignment
         style.configure('TNotebook.Tab',
-                       anchor='center',  # Center-align tab text
-                       justify='center')  # Center justify for better appearance
+                       anchor='center',      # Center-align tab text
+                       justify='center',     # Center justify for balanced appearance
+                       width=18)             # Consistent minimum width for all tabs
+
+        # Enhanced tab layout with professional spacing and visual hierarchy
+        style.layout('TNotebook.Tab', [
+            ('Notebook.tab', {
+                'sticky': 'nswe',
+                'children': [
+                    ('Notebook.padding', {
+                        'side': 'top',
+                        'sticky': 'we',
+                        'children': [
+                            ('Notebook.focus', {
+                                'side': 'top',
+                                'sticky': 'we',
+                                'children': [
+                                    ('Notebook.label', {'side': 'top', 'sticky': ''})
+                                ]
+                            })
+                        ]
+                    })
+                ]
+            })
+        ])
+
+        # Add visual separator between tabs for better definition
+        style.configure('TNotebook.Tab',
+                       borderwidth=1,
+                       relief='raised',
+                       lightcolor='#dee2e6',  # Bootstrap light border color
+                       darkcolor='#dee2e6')    # Consistent border color
 
         # Specifically style dialog buttons to ensure they're visible
         style.configure('Dialog.TButton',
@@ -236,13 +373,35 @@ class MainApplication(tk.Tk):
         help_menu.add_command(label="About", command=self._show_about_dialog)
 
     def _create_notebook(self):
-        """Create the main notebook to hold tabs."""
-        self.notebook = ttk.Notebook(self)
-        self.notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        
+        """Create the main notebook to hold tabs with enhanced styling."""
+        # Create main container frame for better control
+        notebook_container = ttk.Frame(self, style='Notebook.TFrame')
+        notebook_container.pack(fill=tk.BOTH, expand=True, padx=8, pady=8)
+
+        # Configure notebook container styling
+        style = ttk.Style()
+        style.configure('Notebook.TFrame', background='#ffffff', relief='flat')
+
+        # Create the notebook with enhanced styling
+        self.notebook = ttk.Notebook(notebook_container, style='Professional.TNotebook')
+        self.notebook.pack(fill=tk.BOTH, expand=True)
+
+        # Configure professional notebook styling
+        style.configure('Professional.TNotebook',
+                       background='#ffffff',
+                       borderwidth=0,
+                       tabmargins=[0, 0, 0, 0])
+
+        # Enhanced tab positioning for better visual hierarchy
+        style.configure('TNotebook.Tab',
+                       anchor='center',
+                       justify='center',
+                       width=20,  # Minimum width for consistency
+                       expandtab=True)  # Allow tabs to expand for better proportions
+
         # Bind tab change event
         self.notebook.bind("<<NotebookTabChanged>>", self._on_tab_changed)
-        
+
         # Initialize all tabs
         self._initialize_tabs()
 
