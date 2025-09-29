@@ -99,9 +99,9 @@ class MainApplication(tk.Tk):
             style.theme_use('default')
 
             # === MINIMAL NOTEBOOK STYLING ===
-            # Only minimal styling to avoid conflicts
+            # Notebook container with subtle dark gray background
             style.configure('TNotebook',
-                           background='#ffffff',
+                           background='#f5f5f5',  # Light gray background for tab area
                            borderwidth=0,
                            relief='flat')
 
@@ -113,18 +113,24 @@ class MainApplication(tk.Tk):
                            background='#f0f0f0',
                            foreground='#000000')
 
-            # === ULTRA-MINIMAL STATE MAPPING ===
-            # Only change colors - absolutely no size properties
+            # === DYNAMIC COLOR MAPPING FROM SETTINGS ===
+            # Get colors from settings or use defaults
+            color_scheme = self.global_config.get("color_scheme", {})
+            selected_color = color_scheme.get("tab_selected", "#e74c3c")
+            hover_color = color_scheme.get("tab_hover", "#f39c12")
+            unselected_color = color_scheme.get("tab_unselected", "#008080")
+
+            # Apply colors from settings
             style.map('TNotebook.Tab',
                      background=[
-                         ('selected', '#e74c3c'),      # BRIGHT RED for selected
-                         ('active', '#f39c12'),        # BRIGHT ORANGE for hover
-                         ('!selected', '#008080')      # DARK TEAL for unselected
+                         ('selected', selected_color),      # Selected tab color
+                         ('active', hover_color),           # Hover tab color
+                         ('!selected', unselected_color)    # Unselected tab color
                      ],
                      foreground=[
                          ('selected', '#ffffff'),      # WHITE text on selected
                          ('active', '#ffffff'),        # WHITE text on hover
-                         ('!selected', '#ffffff')      # WHITE text on dark teal
+                         ('!selected', '#ffffff')      # WHITE text on unselected
                      ])
 
             # === FORCE COMPLETE UPDATE ===

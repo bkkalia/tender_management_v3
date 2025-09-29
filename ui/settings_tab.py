@@ -2,7 +2,7 @@
 Settings Tab module - UI component for application configuration.
 """
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog, messagebox, colorchooser
 import logging
 import os
 import sys
@@ -400,7 +400,108 @@ class SettingsTab(ttk.Frame):
             font_style=FONTS.get('small', ('TkDefaultFont', 9, 'italic'))
         ).pack(fill=tk.X, padx=SPACING['medium'], pady=(0, SPACING['small']))
 
-        # Section 5: Advanced Settings (placeholder for future)
+        # Section 5: Color Scheme Settings
+        colors_frame = create_labeled_frame(content_frame, "🎨 Color Scheme Settings")
+        colors_frame.pack(fill=tk.X, pady=SPACING['medium'])
+
+        # Color scheme description
+        create_info_label(
+            colors_frame,
+            "Customize the appearance of tabs and UI elements. Changes apply immediately to see the effect.",
+            font_style=FONTS.get('small', ('TkDefaultFont', 9, 'italic'))
+        ).pack(fill=tk.X, padx=SPACING['medium'], pady=(0, SPACING['small']))
+
+        # Tab Colors Section
+        tab_colors_frame = ttk.LabelFrame(colors_frame, text="Tab Colors", padding=SPACING['medium'])
+        tab_colors_frame.pack(fill=tk.X, padx=SPACING['medium'], pady=(0, SPACING['small']))
+
+        # Create color variables with current values
+        self.tab_selected_color_var = tk.StringVar(value="#e74c3c")  # Red for selected
+        self.tab_hover_color_var = tk.StringVar(value="#f39c12")      # Orange for hover
+        self.tab_unselected_color_var = tk.StringVar(value="#008080") # Dark teal for unselected
+
+        # Selected tab color
+        selected_row = ttk.Frame(tab_colors_frame)
+        selected_row.pack(fill=tk.X, pady=SPACING['small'])
+        ttk.Label(selected_row, text="Active Tab:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
+        selected_color_btn = tk.Button(
+            selected_row, text="████", command=lambda: self._choose_color(self.tab_selected_color_var),
+            bg=self.tab_selected_color_var.get(), width=8
+        )
+        selected_color_btn.pack(side=tk.LEFT, padx=SPACING['small'])
+        ttk.Label(selected_row, textvariable=self.tab_selected_color_var).pack(side=tk.LEFT)
+
+        # Hover tab color
+        hover_row = ttk.Frame(tab_colors_frame)
+        hover_row.pack(fill=tk.X, pady=SPACING['small'])
+        ttk.Label(hover_row, text="Hover Tab:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
+        hover_color_btn = tk.Button(
+            hover_row, text="████", command=lambda: self._choose_color(self.tab_hover_color_var),
+            bg=self.tab_hover_color_var.get(), width=8
+        )
+        hover_color_btn.pack(side=tk.LEFT, padx=SPACING['small'])
+        ttk.Label(hover_row, textvariable=self.tab_hover_color_var).pack(side=tk.LEFT)
+
+        # Unselected tab color
+        unselected_row = ttk.Frame(tab_colors_frame)
+        unselected_row.pack(fill=tk.X, pady=SPACING['small'])
+        ttk.Label(unselected_row, text="Inactive Tab:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
+        unselected_color_btn = tk.Button(
+            unselected_row, text="████", command=lambda: self._choose_color(self.tab_unselected_color_var),
+            bg=self.tab_unselected_color_var.get(), width=8
+        )
+        unselected_color_btn.pack(side=tk.LEFT, padx=SPACING['small'])
+        ttk.Label(unselected_row, textvariable=self.tab_unselected_color_var).pack(side=tk.LEFT)
+
+        # Color scheme management buttons
+        color_buttons_row = ttk.Frame(tab_colors_frame)
+        color_buttons_row.pack(fill=tk.X, pady=SPACING['small'])
+
+        create_action_button(
+            color_buttons_row, "Apply Colors", self._apply_color_scheme,
+            button_type='primary', width=12
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            color_buttons_row, "Export Scheme", self._export_color_scheme,
+            button_type='success_outline', width=12
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            color_buttons_row, "Import Scheme", self._import_color_scheme,
+            button_type='info_outline', width=12
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            color_buttons_row, "Reset to Default", self._reset_color_scheme,
+            button_type='warning', width=15
+        ).pack(side=tk.LEFT)
+
+        # Predefined color schemes
+        schemes_row = ttk.Frame(tab_colors_frame)
+        schemes_row.pack(fill=tk.X, pady=SPACING['small'])
+
+        ttk.Label(schemes_row, text="Quick Schemes:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
+
+        # Professional scheme
+        create_action_button(
+            schemes_row, "Professional", lambda: self._apply_quick_scheme("professional"),
+            button_type='secondary', width=12
+        ).pack(side=tk.LEFT, padx=(SPACING['small'], SPACING['small']//2))
+
+        # Vibrant scheme
+        create_action_button(
+            schemes_row, "Vibrant", lambda: self._apply_quick_scheme("vibrant"),
+            button_type='secondary', width=12
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']//2))
+
+        # Monochrome scheme
+        create_action_button(
+            schemes_row, "Monochrome", lambda: self._apply_quick_scheme("monochrome"),
+            button_type='secondary', width=12
+        ).pack(side=tk.LEFT)
+
+        # Section 6: Advanced Settings (placeholder for future)
         advanced_frame = create_labeled_frame(content_frame, "Advanced Settings")
         advanced_frame.pack(fill=tk.X, pady=SPACING['medium'])
 
@@ -1064,3 +1165,226 @@ class SettingsTab(ttk.Frame):
         # Save column order
         if self.column_order:
             self.main_app.global_config.set("treeview_column_order", self.column_order)
+
+    def _choose_color(self, color_var: tk.StringVar):
+        """Open color chooser dialog and update the specified color variable."""
+        try:
+            current_color = color_var.get()
+            chosen_color = colorchooser.askcolor(color=current_color, title="Choose Color")
+
+            if chosen_color and chosen_color[1]:  # chosen_color[1] contains the hex color
+                color_var.set(chosen_color[1])
+                self.settings_changed = True
+                self.status_var.set("Color changed. Click 'Apply Colors' to see the effect.")
+
+        except Exception as e:
+            self.logger.error(f"Error choosing color: {e}")
+            messagebox.showerror("Color Selection Error", f"Failed to select color: {str(e)}")
+
+    def _apply_color_scheme(self):
+        """Apply the current color scheme to the application."""
+        try:
+            # Get the color values
+            selected_color = self.tab_selected_color_var.get()
+            hover_color = self.tab_hover_color_var.get()
+            unselected_color = self.tab_unselected_color_var.get()
+
+            # Validate colors (basic hex color validation)
+            for color_name, color_value in [
+                ("Selected tab", selected_color),
+                ("Hover tab", hover_color),
+                ("Unselected tab", unselected_color)
+            ]:
+                if not self._is_valid_hex_color(color_value):
+                    messagebox.showerror("Invalid Color",
+                                       f"Invalid color format for {color_name}: {color_value}\n"
+                                       "Please use hex format like #RRGGBB")
+                    return
+
+            # Save colors to config
+            color_scheme = {
+                "tab_selected": selected_color,
+                "tab_hover": hover_color,
+                "tab_unselected": unselected_color
+            }
+
+            self.main_app.global_config.set("color_scheme", color_scheme)
+            self.main_app.global_config.save_config()
+
+            # Apply colors immediately by calling the main window's styling method
+            if hasattr(self.main_app, '_apply_tab_styling'):
+                self.main_app._apply_tab_styling()
+
+            self.status_var.set("Color scheme applied successfully!")
+            self.logger.info(f"Applied new color scheme: {color_scheme}")
+
+        except Exception as e:
+            self.logger.error(f"Error applying color scheme: {e}")
+            messagebox.showerror("Apply Error", f"Failed to apply color scheme: {str(e)}")
+
+    def _export_color_scheme(self):
+        """Export the current color scheme to a JSON file."""
+        try:
+            # Get current colors
+            color_scheme = {
+                "tab_selected": self.tab_selected_color_var.get(),
+                "tab_hover": self.tab_hover_color_var.get(),
+                "tab_unselected": self.tab_unselected_color_var.get(),
+                "export_date": str(pd.Timestamp.now()),
+                "description": "Custom color scheme for Tender Management Utility tabs"
+            }
+
+            # Ask for export file location
+            file_path = filedialog.asksaveasfilename(
+                title="Export Color Scheme",
+                defaultextension=".json",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+
+            if not file_path:
+                return
+
+            # Export to JSON
+            import json
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(color_scheme, f, indent=2, ensure_ascii=False)
+
+            messagebox.showinfo("Export Complete", f"Color scheme exported to:\n{file_path}")
+            self.logger.info(f"Color scheme exported to: {file_path}")
+
+        except Exception as e:
+            self.logger.error(f"Error exporting color scheme: {e}")
+            messagebox.showerror("Export Error", f"Failed to export color scheme: {str(e)}")
+
+    def _import_color_scheme(self):
+        """Import a color scheme from a JSON file."""
+        try:
+            # Ask for import file
+            file_path = filedialog.askopenfilename(
+                title="Import Color Scheme",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+
+            if not file_path:
+                return
+
+            import json
+            with open(file_path, 'r', encoding='utf-8') as f:
+                imported_scheme = json.load(f)
+
+            # Validate the imported scheme
+            required_keys = ["tab_selected", "tab_hover", "tab_unselected"]
+            if not all(key in imported_scheme for key in required_keys):
+                messagebox.showerror("Invalid File",
+                                   "The selected file does not contain a valid color scheme.")
+                return
+
+            # Apply the imported colors
+            self.tab_selected_color_var.set(imported_scheme["tab_selected"])
+            self.tab_hover_color_var.set(imported_scheme["tab_hover"])
+            self.tab_unselected_color_var.set(imported_scheme["tab_unselected"])
+
+            # Save to config
+            self.main_app.global_config.set("color_scheme", imported_scheme)
+            self.main_app.global_config.save_config()
+
+            # Apply immediately
+            self._apply_color_scheme()
+
+            messagebox.showinfo("Import Complete", f"Color scheme imported from:\n{file_path}")
+            self.logger.info(f"Color scheme imported from: {file_path}")
+
+        except Exception as e:
+            self.logger.error(f"Error importing color scheme: {e}")
+            messagebox.showerror("Import Error", f"Failed to import color scheme: {str(e)}")
+
+    def _reset_color_scheme(self):
+        """Reset color scheme to default values."""
+        try:
+            # Default color scheme
+            default_colors = {
+                "tab_selected": "#e74c3c",    # Bright red
+                "tab_hover": "#f39c12",       # Bright orange
+                "tab_unselected": "#008080"   # Dark teal
+            }
+
+            # Apply default colors
+            self.tab_selected_color_var.set(default_colors["tab_selected"])
+            self.tab_hover_color_var.set(default_colors["tab_hover"])
+            self.tab_unselected_color_var.set(default_colors["tab_unselected"])
+
+            # Save to config
+            self.main_app.global_config.set("color_scheme", default_colors)
+            self.main_app.global_config.save_config()
+
+            # Apply immediately
+            self._apply_color_scheme()
+
+            messagebox.showinfo("Reset Complete", "Color scheme reset to defaults.")
+            self.logger.info("Color scheme reset to defaults")
+
+        except Exception as e:
+            self.logger.error(f"Error resetting color scheme: {e}")
+            messagebox.showerror("Reset Error", f"Failed to reset color scheme: {str(e)}")
+
+    def _apply_quick_scheme(self, scheme_type: str):
+        """Apply a predefined quick color scheme."""
+        try:
+            schemes = {
+                "professional": {
+                    "tab_selected": "#2c3e50",    # Dark blue-gray
+                    "tab_hover": "#34495e",       # Slightly lighter
+                    "tab_unselected": "#ecf0f1"   # Light gray
+                },
+                "vibrant": {
+                    "tab_selected": "#e74c3c",    # Bright red
+                    "tab_hover": "#9b59b6",       # Purple
+                    "tab_unselected": "#3498db"   # Bright blue
+                },
+                "monochrome": {
+                    "tab_selected": "#2c3e50",    # Dark gray
+                    "tab_hover": "#7f8c8d",       # Medium gray
+                    "tab_unselected": "#bdc3c7"   # Light gray
+                }
+            }
+
+            if scheme_type not in schemes:
+                messagebox.showerror("Invalid Scheme", f"Unknown color scheme: {scheme_type}")
+                return
+
+            scheme = schemes[scheme_type]
+
+            # Apply the scheme colors
+            self.tab_selected_color_var.set(scheme["tab_selected"])
+            self.tab_hover_color_var.set(scheme["tab_hover"])
+            self.tab_unselected_color_var.set(scheme["tab_unselected"])
+
+            # Apply immediately
+            self._apply_color_scheme()
+
+            messagebox.showinfo("Scheme Applied", f"'{scheme_type.title()}' color scheme applied successfully.")
+            self.logger.info(f"Applied quick color scheme: {scheme_type}")
+
+        except Exception as e:
+            self.logger.error(f"Error applying quick scheme: {e}")
+            messagebox.showerror("Scheme Error", f"Failed to apply color scheme: {str(e)}")
+
+    def _is_valid_hex_color(self, color: str) -> bool:
+        """Validate if a string is a valid hex color."""
+        try:
+            if not color or not isinstance(color, str):
+                return False
+
+            # Remove leading # if present
+            color = color.lstrip('#')
+
+            # Check if it's a valid 6-digit hex color
+            if len(color) != 6:
+                return False
+
+            # Try to convert to int
+            int(color, 16)
+            return True
+
+        except (ValueError, TypeError):
+            return False
