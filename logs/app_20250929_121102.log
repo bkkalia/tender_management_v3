@@ -36,3 +36,9 @@
 2025-09-29 12:11:30 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
 2025-09-29 12:11:31 - ui.logs_tab.LogsTab - INFO - Logs tab selected
 2025-09-29 12:11:31 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-29 12:17:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_3_days
+2025-09-29 12:17:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1254 records closing after 2025-09-29 12:17:09.726324
+2025-09-29 12:17:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_3_days) with status (live): 544 records
+2025-09-29 12:17:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 12:17:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 12:17:11 - ui.charts_window - INFO - Charts data refreshed from Tree view

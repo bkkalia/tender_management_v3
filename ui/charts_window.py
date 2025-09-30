@@ -35,6 +35,9 @@ class ChartsWindow:
         self.calendar_search_after_id = None
         self.calendar_search_delay_ms = 300  # 300ms debounce for calendar search
 
+        # Calendar data source option
+        self.calendar_data_source = tk.StringVar(value="filtered_data")  # "all_data" or "filtered_data"
+
         # Set up matplotlib style
         plt.style.use('default')
 
@@ -644,8 +647,9 @@ class ChartsWindow:
                     others_row = pd.DataFrame({'Category': ['Others'], 'Count': [others_sum]})
                     chart_data = pd.concat([top_10, others_row], ignore_index=True)
 
-            labels = chart_data['Category'].astype(str).tolist()  # Convert Series to list
-            sizes = chart_data['Count'].tolist()  # Convert Series to list
+            # Ensure labels are properly converted to strings
+            labels = [str(cat) for cat in chart_data['Category']]  # Convert each category to string
+            sizes = chart_data['Count'].tolist()  # Convert Series to list (can be int or float)
             total = sum(sizes)
 
             # Custom autopct function to show both percentage and absolute number
@@ -849,7 +853,7 @@ class ChartsWindow:
         if relevant_columns:
             self.column_combo['values'] = relevant_columns
             if not self.selected_column.get() or self.selected_column.get() not in relevant_columns:
-                self.selected_column.set(relevant_columns[0])
+                self.selected_column.set(str(relevant_columns[0]))
 
     def _set_smart_defaults(self):
         """Set smart default column and chart type based on data."""
@@ -868,27 +872,27 @@ class ChartsWindow:
 
         # Prioritize: Closing date columns > Other date columns > Department columns > First column
         if closing_date_columns:
-            self.selected_column.set(closing_date_columns[0])
+            self.selected_column.set(str(closing_date_columns[0]))
             # For date columns, line chart is often most useful
             if pd.api.types.is_datetime64_dtype(self.data[closing_date_columns[0]]):
                 self.current_chart_type.set("line")
             else:
                 self.current_chart_type.set("bar")
         elif other_date_columns:
-            self.selected_column.set(other_date_columns[0])
+            self.selected_column.set(str(other_date_columns[0]))
             # For date columns, line chart is often most useful
             if pd.api.types.is_datetime64_dtype(self.data[other_date_columns[0]]):
                 self.current_chart_type.set("line")
             else:
                 self.current_chart_type.set("bar")
         elif dept_columns:
-            self.selected_column.set(dept_columns[0])
+            self.selected_column.set(str(dept_columns[0]))
             # For department columns, pie chart shows distribution well
             self.current_chart_type.set("pie")
         else:
             # Default to first column
             if len(self.data.columns) > 0:
-                self.selected_column.set(self.data.columns[0])
+                self.selected_column.set(str(self.data.columns[0]))
 
     def _start_auto_refresh(self):
         """Start the auto-refresh timer."""
@@ -1148,6 +1152,21 @@ class ChartsWindow:
         search_entry.bind("<KeyRelease>", lambda e: self._debounced_calendar_search())
         ttk.Button(search_frame, text="Clear", command=self._clear_calendar_search, width=6).pack(side=tk.LEFT)
 
+        # Center section - Data source selection
+        center_controls = ttk.Frame(controls_frame)
+        center_controls.pack(side=tk.LEFT, expand=True)
+
+        # Data source selection
+        data_source_frame = ttk.Frame(center_controls)
+        data_source_frame.pack(side=tk.LEFT, padx=(20, 0))
+
+        ttk.Label(data_source_frame, text="Data Source:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
+        data_source_combo = ttk.Combobox(data_source_frame, textvariable=self.calendar_data_source,
+                                       values=["all_data", "filtered_data"],
+                                       state="readonly", width=15, font=('TkDefaultFont', 9))
+        data_source_combo.pack(side=tk.LEFT, padx=(5, 0))
+        data_source_combo.bind("<<ComboboxSelected>>", lambda e: self._update_calendar())
+
         # Right section - Action buttons
         right_controls = ttk.Frame(controls_frame)
         right_controls.pack(side=tk.RIGHT)
@@ -1169,7 +1188,7 @@ class ChartsWindow:
         legend_frame.pack(fill=tk.X, pady=(10, 0))
 
         ttk.Label(legend_frame, text="Legend:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
-        ttk.Label(legend_frame, text="• Number = Tender count for that day", foreground='blue').pack(side=tk.LEFT, padx=(10, 0))
+        ttk.Label(legend_frame, text="• Blue highlight = Days with tenders (shows 'X Tender(s)' format)", foreground='blue').pack(side=tk.LEFT, padx=(10, 0))
 
         # Initial calendar update
         self._update_calendar()
@@ -1235,8 +1254,10 @@ class ChartsWindow:
                         count = tender_counts.get(day_of_month, 0)
 
                         if count > 0:
-                            btn.config(text=f"{day_of_month}\n{count}T",
-                                     bg='#e3f2fd', fg='blue', font=('TkDefaultFont', 10, 'bold'))
+                            # Format: "Day" on first line, "X Tender(s)" on second line
+                            tender_text = f"{count} Tender{'s' if count != 1 else ''}"
+                            btn.config(text=f"{day_of_month}\n{tender_text}",
+                                     bg='#e3f2fd', fg='blue', font=('TkDefaultFont', 8, 'bold'))
                         else:
                             btn.config(text=str(day_of_month), bg='white', fg='black',
                                      font=('TkDefaultFont', 11, 'bold'))
@@ -1251,64 +1272,91 @@ class ChartsWindow:
         try:
             counts = {}
 
-            if self.data is None or self.data.empty:
+            # Determine which data to use - use the same logic as _show_date_details
+            data_source = self.calendar_data_source.get()
+            if data_source == "filtered_data":
+                # Try to get filtered data from parent (treeview data)
+                if hasattr(self.parent, 'data_processor') and hasattr(self.parent.data_processor, 'filtered_data'):
+                    data_to_use = self.parent.data_processor.filtered_data
+                    if data_to_use is None or data_to_use.empty:
+                        data_to_use = self.data  # Fall back to all data if filtered is empty
+                else:
+                    data_to_use = self.data  # Fall back to all data if no filtered data available
+            else:
+                # Use all loaded data
+                data_to_use = self.data
+
+            if data_to_use is None or data_to_use.empty:
+                logger.warning(f"No data available for calendar. Data source: {data_source}")
                 return counts
 
-            # Find date columns
-            date_cols = [col for col in self.data.columns
-                        if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end', 'date', 'time'])]
+            # Debug: Log available columns and data info
+            logger.info(f"Calendar data source: {data_source}")
+            logger.info(f"Available columns: {list(data_to_use.columns)}")
+            logger.info(f"Data shape: {data_to_use.shape}")
+
+            # Find date columns - use the same logic as _show_date_details
+            date_patterns = ['closing', 'close', 'due', 'deadline', 'end', 'date', 'time']
+            date_cols = [col for col in data_to_use.columns
+                        if any(kw in col.lower() for kw in date_patterns)]
+
+            logger.info(f"Found date columns: {date_cols}")
 
             if not date_cols:
+                logger.warning("No date columns found in data")
                 return counts
 
             date_col = date_cols[0]
+            logger.info(f"Using date column: {date_col}")
 
-            # Convert to datetime if needed
-            if not pd.api.types.is_datetime64_dtype(self.data[date_col]):
-                try:
-                    # Try to convert with common formats first, then fall back to infer
-                    dates = pd.to_datetime(self.data[date_col], errors='coerce', format='%Y-%m-%d')
-                    if dates.isna().all():
-                        # Try another common format
-                        dates = pd.to_datetime(self.data[date_col], errors='coerce', format='%d/%m/%Y')
-                    if dates.isna().all():
-                        # Try DD-MM-YYYY format
-                        dates = pd.to_datetime(self.data[date_col], errors='coerce', format='%d-%m-%Y')
-                    if dates.isna().all():
-                        # Try MM/DD/YYYY format
-                        dates = pd.to_datetime(self.data[date_col], errors='coerce', format='%m/%d/%Y')
-                    if dates.isna().all():
-                        # Fall back to inferring format
-                        dates = pd.to_datetime(self.data[date_col], errors='coerce')
-                except Exception:
+            # Use the same date filtering logic as _show_date_details
+            try:
+                if pd.api.types.is_datetime64_dtype(data_to_use[date_col]):
+                    # Already datetime, use directly
+                    dates = data_to_use[date_col]
+                else:
+                    # Try to convert with error handling
+                    try:
+                        dates = pd.to_datetime(data_to_use[date_col], errors='coerce')
+                    except Exception as e:
+                        logger.warning(f"Could not convert {date_col} to datetime: {e}")
+                        return counts
+
+                # Check if we have any valid datetime values
+                if dates.isna().all():
+                    logger.warning(f"All dates in {date_col} are invalid")
                     return counts
-            else:
-                dates = self.data[date_col]
 
-            # Check if we have any valid datetime values
-            if dates.isna().all() or not pd.api.types.is_datetime64_dtype(dates):
-                return counts
+                # Filter for the specified month and count by day
+                target_date = datetime(year, month, 1)
+                month_start = pd.Timestamp(year, month, 1)
+                if month == 12:
+                    month_end = pd.Timestamp(year + 1, 1, 1) - pd.Timedelta(days=1)
+                else:
+                    month_end = pd.Timestamp(year, month + 1, 1) - pd.Timedelta(days=1)
 
-            # Filter for the specified month and count by day
-            month_start = pd.Timestamp(year, month, 1)
-            if month == 12:
-                month_end = pd.Timestamp(year + 1, 1, 1) - pd.Timedelta(days=1)
-            else:
-                month_end = pd.Timestamp(year, month + 1, 1) - pd.Timedelta(days=1)
+                # Filter valid datetime values within the month range
+                valid_dates = dates.dropna()
+                month_data = valid_dates[(valid_dates >= month_start) & (valid_dates <= month_end)]
 
-            # Filter valid datetime values within the month range
-            valid_dates = dates.dropna()
-            month_data = valid_dates[(valid_dates >= month_start) & (valid_dates <= month_end)]
+                logger.info(f"Month {year}-{month}: Found {len(month_data)} tenders")
 
-            # Ensure month_data is still datetime-like before using .dt accessor
-            if len(month_data) > 0 and pd.api.types.is_datetime64_dtype(month_data):
-                day_counts = month_data.dt.day.value_counts()
-                return day_counts.to_dict()
-            else:
+                # Count by day
+                day_counts = {}
+                for timestamp in month_data:
+                    if pd.api.types.is_datetime64_dtype(timestamp):
+                        day = timestamp.day
+                        day_counts[day] = day_counts.get(day, 0) + 1
+
+                logger.info(f"Day counts for {year}-{month}: {day_counts}")
+                return day_counts
+
+            except Exception as e:
+                logger.error(f"Error processing dates in {date_col}: {e}")
                 return counts
 
         except Exception as e:
-            logger.error(f"Error getting tender counts for month: {e}")
+            logger.error(f"Error getting tender counts for month {year}-{month}: {e}")
             return {}
 
     def _prev_month(self):
