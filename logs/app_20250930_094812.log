@@ -35,3 +35,5 @@
 2025-09-30 09:50:37 - ui.logs_tab.LogsTab - INFO - Logs tab selected
 2025-09-30 09:52:35 - ui.main_window.MainApplication - WARNING - Could not load app icon in about dialog: couldn't recognize data in image file "resources\app_icon.ico"
 2025-09-30 09:52:35 - ui.main_window.MainApplication - INFO - Cloud84 logo loaded successfully: resources\cloud84_logo.png
+2025-09-30 15:55:00 - ui.main_window - INFO - Application closing
+2025-09-30 15:55:00 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
