@@ -59,7 +59,7 @@ class MainApplication(tk.Tk):
         try:
             self.global_config = GlobalConfig()
             # --- added: ensure version key reflects bump ---
-            self.global_config.set("version", "3.1")
+            self.global_config.set("version", "3.2")
             self.logger.info("Global configuration loaded successfully")
         except Exception as e:
             self.logger.error(f"Failed to load global configuration: {e}")
@@ -432,7 +432,7 @@ class MainApplication(tk.Tk):
         operation_label.pack(side=tk.LEFT, padx=(0, 10))
 
         # Add version label on right side
-        version_label = ttk.Label(self.status_frame, text="v3.1", padding=(5, 2))
+        version_label = ttk.Label(self.status_frame, text="v3.2", padding=(5, 2))
         version_label.pack(side=tk.RIGHT)
 
         # Start performance monitoring updates
@@ -550,7 +550,7 @@ class MainApplication(tk.Tk):
         # App title and version
         tk.Label(header_frame, text="Tender Management Utility", 
                 font=("Arial", 16, "bold"), bg="white", fg="#333333").pack()
-        tk.Label(header_frame, text="Version 3.1",   # updated from 3.0
+        tk.Label(header_frame, text="Version 3.2",   # updated from 3.1
                 font=("Arial", 12), bg="white", fg="#666666").pack(pady=(5, 0))
         
         # App description
@@ -796,7 +796,7 @@ India - 174303"""
         self.status_bar.pack(side=tk.LEFT, fill=tk.X, expand=True)
         
         # Add version label on right side of status bar
-        version_label = ttk.Label(self.status_frame, text=f"v{self.global_config.get('version', '3.1')}", padding=(5, 2))
+        version_label = ttk.Label(self.status_frame, text=f"v{self.global_config.get('version', '3.2')}", padding=(5, 2))
         version_label.pack(side=tk.RIGHT)
         
         # Initialize the notebook tabs - will be populated in _initialize_tabs

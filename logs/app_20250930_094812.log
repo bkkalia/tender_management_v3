@@ -27,3 +27,11 @@
 2025-09-30 09:48:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Auto-loaded 1 files with 14425 total records from: H:/My Drive/CRM T84/0 Live App/Search data/merged_data
 2025-09-30 09:48:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Successfully loaded merged data from settings: H:/My Drive/CRM T84/0 Live App/Search data/merged_data
 2025-09-30 09:48:23 - ui.main_window.MainApplication - INFO - Initial data loaded for Search tab
+2025-09-30 09:50:25 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-09-30 09:50:28 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-30 09:50:31 - ui.logs_tab.LogsTab - INFO - Logs tab selected
+2025-09-30 09:50:36 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-09-30 09:50:36 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-30 09:50:37 - ui.logs_tab.LogsTab - INFO - Logs tab selected
+2025-09-30 09:52:35 - ui.main_window.MainApplication - WARNING - Could not load app icon in about dialog: couldn't recognize data in image file "resources\app_icon.ico"
+2025-09-30 09:52:35 - ui.main_window.MainApplication - INFO - Cloud84 logo loaded successfully: resources\cloud84_logo.png

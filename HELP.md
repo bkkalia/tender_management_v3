@@ -1,4 +1,4 @@
-# Tender Management Utility V3 - Help & Documentation
+# Tender Management Utility V3.2 - Help & Documentation
 
 ## 📋 Table of Contents
 
@@ -828,11 +828,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📈 Version History
 
-- **v3.1** (Current): Enhanced saved searches, improved UI, better performance
+- **v3.2** (Current): Enhanced saved searches, improved UI, better performance
 - **v3.0**: Complete redesign, new architecture, advanced features
 - **v2.0**: Enhanced functionality, improved stability
 - **v1.0**: Initial release
 
 ---
 
-*Last updated: September 25, 2025*
+*Last updated: September 30, 2025*

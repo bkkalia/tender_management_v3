@@ -56,7 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved layout organization and visual hierarchy
 - Enhanced configuration management system
 
-## [3.1] - 2025-09-25
+## [3.2] - 2025-09-30
 
 ### Added
 - Advanced search and filtering capabilities

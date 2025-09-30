@@ -1,0 +1,122 @@
+2025-09-30 11:15:21,399 - INFO - Collecting system specifications...
+2025-09-30 11:15:26,509 - INFO - System specs collected: 12th Gen Intel(R) Core(TM) i5-12500H, 31.692127227783203GB RAM
+2025-09-30 11:15:26,511 - INFO - Starting comprehensive benchmark suite...
+2025-09-30 11:15:26,512 - INFO - Generating comprehensive test datasets...
+2025-09-30 11:15:26,601 - INFO - Generating small dataset: 50,000 records
+2025-09-30 11:15:37,513 - INFO - Generated: C:\Users\kalia\Downloads\benchmark_test_data\benchmark_small_01.xlsx (50,000 records)
+2025-09-30 11:15:37,514 - INFO - Dataset 'small' complete: 1 files
+2025-09-30 11:15:37,515 - INFO - Generating medium dataset: 150,000 records
+2025-09-30 11:15:58,137 - INFO - Generated: C:\Users\kalia\Downloads\benchmark_test_data\benchmark_medium_01.xlsx (100,000 records)
+2025-09-30 11:15:58,138 - INFO - Dataset 'medium' complete: 1 files
+2025-09-30 11:15:58,138 - INFO - Generating large dataset: 350,000 records
+2025-09-30 11:16:18,919 - INFO - Generated: C:\Users\kalia\Downloads\benchmark_test_data\benchmark_large_01.xlsx (100,000 records)
+2025-09-30 11:16:38,439 - INFO - Generated: C:\Users\kalia\Downloads\benchmark_test_data\benchmark_large_02.xlsx (100,000 records)
+2025-09-30 11:16:57,613 - INFO - Generated: C:\Users\kalia\Downloads\benchmark_test_data\benchmark_large_03.xlsx (100,000 records)
+2025-09-30 11:16:57,614 - INFO - Dataset 'large' complete: 3 files
+2025-09-30 11:16:57,615 - INFO - Generating xlarge dataset: 750,000 records
+2025-09-30 11:17:14,848 - INFO - Generated: C:\Users\kalia\Downloads\benchmark_test_data\benchmark_xlarge_01.xlsx (100,000 records)
+2025-09-30 11:17:29,676 - INFO - Generated: C:\Users\kalia\Downloads\benchmark_test_data\benchmark_xlarge_02.xlsx (100,000 records)
+2025-09-30 11:17:43,205 - INFO - Generated: C:\Users\kalia\Downloads\benchmark_test_data\benchmark_xlarge_03.xlsx (100,000 records)
+2025-09-30 11:17:57,809 - INFO - Generated: C:\Users\kalia\Downloads\benchmark_test_data\benchmark_xlarge_04.xlsx (100,000 records)
+2025-09-30 11:18:12,110 - INFO - Generated: C:\Users\kalia\Downloads\benchmark_test_data\benchmark_xlarge_05.xlsx (100,000 records)
+2025-09-30 11:18:26,527 - INFO - Generated: C:\Users\kalia\Downloads\benchmark_test_data\benchmark_xlarge_06.xlsx (100,000 records)
+2025-09-30 11:18:41,773 - INFO - Generated: C:\Users\kalia\Downloads\benchmark_test_data\benchmark_xlarge_07.xlsx (100,000 records)
+2025-09-30 11:18:41,774 - INFO - Dataset 'xlarge' complete: 7 files
+2025-09-30 11:18:41,778 - INFO - Starting comprehensive data loading benchmarks...
+2025-09-30 11:18:41,844 - INFO - Benchmarking small dataset (1 files)
+2025-09-30 11:18:45,657 - INFO - Starting benchmark: data_loading_small with 50,000 records
+2025-09-30 11:18:45,684 - INFO - Configuration loaded from g:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-30 11:18:45,837 - INFO - Benchmark complete: 0.180s, 0.1MB, 23.6% CPU, 277855 records/s, Category: sub_second
+2025-09-30 11:18:45,839 - INFO - Benchmarking medium dataset (1 files)
+2025-09-30 11:18:53,457 - INFO - Starting benchmark: data_loading_medium with 100,000 records
+2025-09-30 11:18:53,473 - INFO - Configuration loaded from g:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-30 11:18:53,649 - INFO - Benchmark complete: 0.192s, 0.0MB, 25.9% CPU, 521877 records/s, Category: sub_second
+2025-09-30 11:18:53,651 - INFO - Benchmarking large dataset (3 files)
+2025-09-30 11:19:18,320 - INFO - Starting benchmark: data_loading_large with 300,000 records
+2025-09-30 11:19:18,332 - INFO - Configuration loaded from g:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-30 11:19:18,668 - INFO - Benchmark complete: 0.347s, 0.0MB, 25.9% CPU, 864324 records/s, Category: sub_second
+2025-09-30 11:19:18,676 - INFO - Benchmarking xlarge dataset (7 files)
+2025-09-30 11:20:09,223 - INFO - Starting benchmark: data_loading_xlarge with 700,000 records
+2025-09-30 11:20:09,253 - INFO - Configuration loaded from g:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-30 11:20:09,850 - INFO - Benchmark complete: 0.627s, 0.0MB, 18.2% CPU, 1116338 records/s, Category: sub_second
+2025-09-30 11:20:09,959 - INFO - Starting comprehensive query performance benchmarks...
+2025-09-30 11:20:09,960 - INFO - Benchmarking queries for small dataset
+2025-09-30 11:20:13,928 - INFO - Configuration loaded from g:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-30 11:20:13,938 - INFO - Starting benchmark: query_small_simple with 50,000 records
+2025-09-30 11:20:13,992 - INFO - Benchmark complete: 0.054s, 3.4MB, 31.1% CPU, 922877 records/s, Category: sub_second
+2025-09-30 11:20:14,097 - INFO - Starting benchmark: query_small_simple with 50,000 records
+2025-09-30 11:20:14,161 - INFO - Benchmark complete: 0.063s, -3.4MB, 21.2% CPU, 789281 records/s, Category: sub_second
+2025-09-30 11:20:14,164 - INFO - Starting benchmark: query_small_simple with 50,000 records
+2025-09-30 11:20:14,219 - INFO - Benchmark complete: 0.056s, 3.4MB, 35.4% CPU, 893642 records/s, Category: sub_second
+2025-09-30 11:20:14,221 - INFO - Starting benchmark: query_small_medium with 50,000 records
+2025-09-30 11:20:14,291 - INFO - Benchmark complete: 0.070s, -3.2MB, 30.4% CPU, 718346 records/s, Category: sub_second
+2025-09-30 11:20:14,293 - INFO - Starting benchmark: query_small_medium with 50,000 records
+2025-09-30 11:20:14,349 - INFO - Benchmark complete: 0.057s, 3.4MB, 24.6% CPU, 883836 records/s, Category: sub_second
+2025-09-30 11:20:14,350 - INFO - Starting benchmark: query_small_medium with 50,000 records
+2025-09-30 11:20:14,407 - INFO - Benchmark complete: 0.057s, 0.0MB, 15.3% CPU, 875013 records/s, Category: sub_second
+2025-09-30 11:20:14,408 - INFO - Starting benchmark: query_small_complex with 50,000 records
+2025-09-30 11:20:14,474 - INFO - Benchmark complete: 0.066s, -2.2MB, 8.2% CPU, 757639 records/s, Category: sub_second
+2025-09-30 11:20:14,478 - INFO - Benchmarking queries for medium dataset
+2025-09-30 11:20:22,133 - INFO - Configuration loaded from g:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-30 11:20:22,151 - INFO - Starting benchmark: query_medium_simple with 100,000 records
+2025-09-30 11:20:22,212 - INFO - Benchmark complete: 0.061s, 6.5MB, 28.6% CPU, 1650857 records/s, Category: sub_second
+2025-09-30 11:20:22,214 - INFO - Starting benchmark: query_medium_simple with 100,000 records
+2025-09-30 11:20:22,286 - INFO - Benchmark complete: 0.073s, -6.0MB, 22.9% CPU, 1372663 records/s, Category: sub_second
+2025-09-30 11:20:22,288 - INFO - Starting benchmark: query_medium_simple with 100,000 records
+2025-09-30 11:20:22,347 - INFO - Benchmark complete: 0.059s, 6.9MB, 30.0% CPU, 1681998 records/s, Category: sub_second
+2025-09-30 11:20:22,349 - INFO - Starting benchmark: query_medium_medium with 100,000 records
+2025-09-30 11:20:22,435 - INFO - Benchmark complete: 0.086s, -3.7MB, 61.5% CPU, 1165027 records/s, Category: sub_second
+2025-09-30 11:20:22,437 - INFO - Starting benchmark: query_medium_medium with 100,000 records
+2025-09-30 11:20:22,496 - INFO - Benchmark complete: 0.060s, 5.0MB, 31.6% CPU, 1675949 records/s, Category: sub_second
+2025-09-30 11:20:22,497 - INFO - Starting benchmark: query_medium_medium with 100,000 records
+2025-09-30 11:20:22,561 - INFO - Benchmark complete: 0.063s, 0.0MB, 13.8% CPU, 1580585 records/s, Category: sub_second
+2025-09-30 11:20:22,562 - INFO - Starting benchmark: query_medium_complex with 100,000 records
+2025-09-30 11:20:22,642 - INFO - Benchmark complete: 0.080s, -3.3MB, 13.4% CPU, 1248722 records/s, Category: sub_second
+2025-09-30 11:20:22,643 - INFO - Benchmarking queries for large dataset
+2025-09-30 11:20:38,069 - INFO - Configuration loaded from g:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-30 11:20:38,089 - INFO - Starting benchmark: query_large_simple with 200,000 records
+2025-09-30 11:20:38,191 - INFO - Benchmark complete: 0.101s, 11.4MB, 28.8% CPU, 1977412 records/s, Category: sub_second
+2025-09-30 11:20:38,193 - INFO - Starting benchmark: query_large_simple with 200,000 records
+2025-09-30 11:20:38,311 - INFO - Benchmark complete: 0.119s, -15.1MB, 21.0% CPU, 1687398 records/s, Category: sub_second
+2025-09-30 11:20:38,312 - INFO - Starting benchmark: query_large_simple with 200,000 records
+2025-09-30 11:20:38,408 - INFO - Benchmark complete: 0.096s, 15.3MB, 13.2% CPU, 2091540 records/s, Category: sub_second
+2025-09-30 11:20:38,410 - INFO - Starting benchmark: query_large_medium with 200,000 records
+2025-09-30 11:20:38,541 - INFO - Benchmark complete: 0.131s, -8.2MB, 13.9% CPU, 1532379 records/s, Category: sub_second
+2025-09-30 11:20:38,543 - INFO - Starting benchmark: query_large_medium with 200,000 records
+2025-09-30 11:20:38,636 - INFO - Benchmark complete: 0.094s, 9.8MB, 6.3% CPU, 2133135 records/s, Category: sub_second
+2025-09-30 11:20:38,638 - INFO - Starting benchmark: query_large_medium with 200,000 records
+2025-09-30 11:20:38,738 - INFO - Benchmark complete: 0.100s, 0.0MB, 14.2% CPU, 1990495 records/s, Category: sub_second
+2025-09-30 11:20:38,739 - INFO - Starting benchmark: query_large_complex with 200,000 records
+2025-09-30 11:20:38,866 - INFO - Benchmark complete: 0.126s, -7.9MB, 15.2% CPU, 1591900 records/s, Category: sub_second
+2025-09-30 11:20:38,867 - INFO - Benchmarking queries for xlarge dataset
+2025-09-30 11:20:54,332 - INFO - Configuration loaded from g:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-30 11:20:54,368 - INFO - Starting benchmark: query_xlarge_simple with 200,000 records
+2025-09-30 11:20:54,474 - INFO - Benchmark complete: 0.106s, 8.4MB, 17.8% CPU, 1887496 records/s, Category: sub_second
+2025-09-30 11:20:54,475 - INFO - Starting benchmark: query_xlarge_simple with 200,000 records
+2025-09-30 11:20:54,592 - INFO - Benchmark complete: 0.117s, -15.1MB, 27.2% CPU, 1711580 records/s, Category: sub_second
+2025-09-30 11:20:54,593 - INFO - Starting benchmark: query_xlarge_simple with 200,000 records
+2025-09-30 11:20:54,694 - INFO - Benchmark complete: 0.100s, 15.3MB, 4.3% CPU, 1993269 records/s, Category: sub_second
+2025-09-30 11:20:54,695 - INFO - Starting benchmark: query_xlarge_medium with 200,000 records
+2025-09-30 11:20:54,820 - INFO - Benchmark complete: 0.125s, -9.0MB, 10.3% CPU, 1606182 records/s, Category: sub_second
+2025-09-30 11:20:54,821 - INFO - Starting benchmark: query_xlarge_medium with 200,000 records
+2025-09-30 11:20:54,917 - INFO - Benchmark complete: 0.096s, 9.8MB, 14.0% CPU, 2088622 records/s, Category: sub_second
+2025-09-30 11:20:54,919 - INFO - Starting benchmark: query_xlarge_medium with 200,000 records
+2025-09-30 11:20:55,018 - INFO - Benchmark complete: 0.100s, 0.0MB, 4.5% CPU, 2008395 records/s, Category: sub_second
+2025-09-30 11:20:55,019 - INFO - Starting benchmark: query_xlarge_complex with 200,000 records
+2025-09-30 11:20:55,147 - INFO - Benchmark complete: 0.127s, -7.9MB, 14.1% CPU, 1571125 records/s, Category: sub_second
+2025-09-30 11:20:55,180 - INFO - Starting memory usage analysis...
+2025-09-30 11:20:55,181 - INFO - Analyzing memory usage for small dataset
+2025-09-30 11:20:58,857 - INFO - Starting benchmark: memory_analysis_small with 50,000 records
+2025-09-30 11:20:58,901 - INFO - Benchmark complete: 0.043s, 3.7MB, 14.6% CPU, 1150965 records/s, Category: sub_second
+2025-09-30 11:20:58,902 - INFO - Analyzing memory usage for medium dataset
+2025-09-30 11:21:06,050 - INFO - Starting benchmark: memory_analysis_medium with 100,000 records
+2025-09-30 11:21:06,152 - INFO - Benchmark complete: 0.102s, 6.4MB, 19.1% CPU, 981429 records/s, Category: sub_second
+2025-09-30 11:21:06,153 - INFO - Analyzing memory usage for large dataset
+2025-09-30 11:21:27,987 - INFO - Starting benchmark: memory_analysis_large with 300,000 records
+2025-09-30 11:21:28,278 - INFO - Benchmark complete: 0.292s, 18.7MB, 18.4% CPU, 1028094 records/s, Category: sub_second
+2025-09-30 11:21:28,280 - INFO - Analyzing memory usage for xlarge dataset
+2025-09-30 11:21:49,974 - INFO - Starting benchmark: memory_analysis_xlarge with 300,000 records
+2025-09-30 11:21:50,299 - INFO - Benchmark complete: 0.325s, 0.9MB, 18.1% CPU, 924383 records/s, Category: sub_second
+2025-09-30 11:21:50,358 - INFO - Creating performance visualizations...
+2025-09-30 11:21:51,010 - INFO - Performance visualizations created successfully
+2025-09-30 11:21:51,037 - INFO - Comprehensive report saved to: comprehensive_benchmark_report_20250930_112151.json

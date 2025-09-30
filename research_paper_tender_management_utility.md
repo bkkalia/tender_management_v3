@@ -1,4 +1,4 @@
-# Tender Management Utility v3.1: A Comprehensive Desktop Application for Procurement Data Management
+# Tender Management Utility v3.2: A Comprehensive Desktop Application for Procurement Data Management
 
 ## Performance Monitoring, Advanced Search Architecture, and Modern GUI Development
 
@@ -7,7 +7,7 @@
 **Authors:** Cloud84 Development Team
 **Institution:** Cloud84 Software Solutions
 **Date:** September 28, 2025
-**Version:** 3.1
+**Version:** 3.2
 
 ### Abstract
 

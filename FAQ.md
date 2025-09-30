@@ -1,4 +1,4 @@
-# Tender Management Utility v3 - Frequently Asked Questions
+# Tender Management Utility v3.2 - Frequently Asked Questions
 
 ## 📋 Table of Contents
 
@@ -26,7 +26,7 @@ Tender Management Utility v3 is a comprehensive desktop application built with P
 - **Any organization dealing with tender/procurement data**
 
 ### What makes v3 different from previous versions?
-Version 3.1 includes significant performance enhancements:
+Version 3.2 includes significant performance enhancements:
 - Debounced asynchronous filtering for large datasets (50K+ rows)
 - Advanced search with inverted token indexing
 - Improved memory management and multi-threaded processing
@@ -268,7 +268,7 @@ Yes! We specialize in creating tailored Python applications including:
 
 ---
 
-*This FAQ is regularly updated. Last updated: September 27, 2025*
+*This FAQ is regularly updated. Last updated: September 30, 2025*
 
 ---
 

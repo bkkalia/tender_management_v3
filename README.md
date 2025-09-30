@@ -1,4 +1,4 @@
-# Tender Management Utility (v3.1)
+# Tender Management Utility (v3.2)
 
 ## Overview
 Desktop application (Tkinter) to load, search, filter, visualize, merge and manage tender data with calendar & task integration.
