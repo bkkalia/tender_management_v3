@@ -13,16 +13,17 @@ import time as time_module  # Renamed to avoid conflict with datetime.time
 import re
 import tkinter.simpledialog
 
-# Try to import PIL for image creation
+# Try to import PIL for image creation and clipboard access
 try:
-    from PIL import Image, ImageDraw, ImageTk
+    from PIL import Image, ImageDraw, ImageTk, ImageGrab
     HAS_PIL = True
 except ImportError:
     Image = None
     ImageDraw = None
     ImageTk = None
+    ImageGrab = None
     HAS_PIL = False
-    print("Warning: PIL not available. URL icons will use text representation.")
+    print("Warning: PIL not available. URL icons and OCR on images will not be supported.")
 
 # Handle optional imports
 try:
@@ -32,6 +33,15 @@ except ImportError:
     DateEntry = None
     HAS_TKCALENDAR = False
     print("Warning: tkcalendar not available. Date picker features will be limited.")
+
+# Handle optional OCR imports
+try:
+    import pytesseract
+    HAS_PYTESSERACT = True
+except ImportError:
+    pytesseract = None
+    HAS_PYTESSERACT = False
+    print("Warning: pytesseract not available. OCR functionality will be disabled.")
 
 # Fix imports by adding parent directory to path if needed
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -51,71 +61,163 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+class AutoDismissMessageDialog(tk.Toplevel):
+    """Auto-dismissing message dialog that closes after 3 seconds or on click anywhere."""
+
+    def __init__(self, parent, title, message):
+        super().__init__(parent)
+        self.title(title)
+        self.parent = parent
+
+        # Set up window properties
+        self.resizable(False, False)
+        self.overrideredirect(True)  # Remove window borders for clean popup
+        self.attributes('-topmost', True)  # Keep it on top
+
+        # Position it near the parent window center
+        parent_x = parent.winfo_rootx()
+        parent_y = parent.winfo_rooty()
+        parent_width = parent.winfo_width()
+        parent_height = parent.winfo_height()
+
+        # Calculate center position
+        dialog_width = 300
+        dialog_height = 80
+        dialog_x = parent_x + (parent_width // 2) - (dialog_width // 2)
+        dialog_y = parent_y + (parent_height // 2) - (dialog_height // 2)
+
+        self.geometry(f"{dialog_width}x{dialog_height}+{dialog_x}+{dialog_y}")
+
+        # Create background frame with rounded corners effect
+        self.frame = tk.Frame(self, bg='#E3F2FD', highlightbackground='#2196F3',
+                            highlightthickness=2, highlightcolor='#2196F3')
+        self.frame.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
+
+        # Create the message label
+        message_label = tk.Label(self.frame, text=message, bg='#E3F2FD', fg='#1565C0',
+                               font=('TkDefaultFont', 10, 'bold'),
+                               wraplength=dialog_width-40, justify='center', padx=10, pady=5)
+        message_label.pack(fill=tk.BOTH, expand=True)
+
+        # Auto-dismiss after 3 seconds
+        self._timer_id = self.after(3000, self.destroy)
+
+        # Bind click anywhere to dismiss
+        self.frame.bind('<Button-1>', self._dismiss)
+        self.frame.bind('<KeyPress>', self._dismiss)
+        self.bind('<FocusOut>', self._dismiss)
+        self.bind('<Button-1>', self._dismiss)
+
+        # Focus the dialog to ensure key bindings work
+        self.focus_force()
+
+        # Clean up when dialog is destroyed
+        def on_destroy(event=None):
+            try:
+                if hasattr(self, '_timer_id') and self._timer_id:
+                    self.after_cancel(self._timer_id)
+            except:
+                pass
+            try:
+                if hasattr(self.frame, 'destroy'):
+                    self.frame.destroy()
+            except:
+                pass
+
+        self.protocol("WM_DELETE_WINDOW", on_destroy)
+        self.bind('<Destroy>', on_destroy)
+
+    def _dismiss(self, event=None):
+        """Dismiss the dialog."""
+        try:
+            if hasattr(self, '_timer_id') and self._timer_id:
+                self.after_cancel(self._timer_id)
+        except:
+            pass
+        self.destroy()
+
+
+# Test function to verify the dialog works
+def test_auto_dismiss_dialog():
+    """Test the auto-dismiss dialog functionality."""
+    root = tk.Tk()
+    root.title("Test Auto Dismiss Dialog")
+    root.geometry("400x300")
+
+    def show_test_dialog():
+        AutoDismissMessageDialog(root, "Test Message", "This dialog will auto-dismiss in 3 seconds or when you click anywhere!")
+
+    test_btn = ttk.Button(root, text="Test Auto Dismiss Dialog", command=show_test_dialog)
+    test_btn.pack(pady=50)
+
+    root.mainloop()
+
+
 class RemoteUrlDialog(tk.Toplevel):
     """Dialog for entering remote URL and credentials."""
-    
+
     def __init__(self, parent, remote_loader):
         super().__init__(parent)
         self.parent = parent
         self.remote_loader = remote_loader
         self.result = None
-        
+
         self.title("Add Remote URL")
         self.geometry("400x300")
         self.transient(parent)
         self.grab_set()
-        
+
         # Center the dialog
         self.geometry("+%d+%d" % (parent.winfo_rootx() + 50, parent.winfo_rooty() + 50))
-        
+
         self._create_widgets()
-        
+
     def _create_widgets(self):
         main_frame = ttk.Frame(self)
         main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
+
         # URL field
         ttk.Label(main_frame, text="URL:").pack(anchor=tk.W)
         self.url_var = tk.StringVar()
         url_entry = ttk.Entry(main_frame, textvariable=self.url_var, width=50)
         url_entry.pack(fill=tk.X, pady=(0, 10))
         url_entry.focus()
-        
+
         # Username field
         ttk.Label(main_frame, text="Username (optional):").pack(anchor=tk.W)
         self.username_var = tk.StringVar()
         username_entry = ttk.Entry(main_frame, textvariable=self.username_var, width=50)
         username_entry.pack(fill=tk.X, pady=(0, 10))
-        
+
         # Password field
         ttk.Label(main_frame, text="Password (optional):").pack(anchor=tk.W)
         self.password_var = tk.StringVar()
         password_entry = ttk.Entry(main_frame, textvariable=self.password_var, width=50, show="*")
         password_entry.pack(fill=tk.X, pady=(0, 20))
-        
+
         # Buttons
         button_frame = ttk.Frame(main_frame)
         button_frame.pack(fill=tk.X)
-        
+
         ttk.Button(button_frame, text="Cancel", command=self._cancel).pack(side=tk.RIGHT, padx=(10, 0))
         ttk.Button(button_frame, text="OK", command=self._ok).pack(side=tk.RIGHT)
-        
+
         # Bind Enter key to OK
         self.bind('<Return>', lambda e: self._ok())
         self.bind('<Escape>', lambda e: self._cancel())
-        
+
     def _ok(self):
         url = self.url_var.get().strip()
         if not url:
             messagebox.showwarning("Missing URL", "Please enter a URL.")
             return
-            
+
         username = self.username_var.get().strip() or None
         password = self.password_var.get().strip() or None
-        
+
         self.result = (url, username, password)
         self.destroy()
-        
+
     def _cancel(self):
         self.result = None
         self.destroy()
@@ -124,7 +226,7 @@ class SearchDashboardTab(ttk.Frame):
     """
     Search & Dashboard Tab: Load data, search, filter, and view statistics.
     """
-    def __init__(self, parent: ttk.Notebook, main_app):
+    def __init__(self, parent, main_app):
         super().__init__(parent)
         self.main_app = main_app
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
@@ -157,11 +259,12 @@ class SearchDashboardTab(ttk.Frame):
         self.dept_operator_var = tk.StringVar(value="OR")
         self.global_operator_var = tk.StringVar(value="AND")
         self.status_filter_var = tk.StringVar(value="live")
-        
+
         # Add missing saved search variable
         self.saved_search_var = tk.StringVar()
         self.save_search_name_var = tk.StringVar()
-        
+
+
         # --- NEW time vars for custom range ---
         self.start_hour_var = tk.StringVar(value="00")
         self.start_min_var = tk.StringVar(value="00")
@@ -205,6 +308,10 @@ class SearchDashboardTab(ttk.Frame):
         # URL handling attributes
         self.url_columns: List[str] = []
         self.link_icons: Dict[str, tk.PhotoImage] = {}
+
+        # Track open chart windows to limit instances
+        self.open_chart_windows: List[tk.Toplevel] = []
+        self.max_chart_windows = 2
 
         self._create_widgets()
         self._setup_treeview_bindings()
@@ -268,9 +375,6 @@ class SearchDashboardTab(ttk.Frame):
         tender_data_frame = create_labeled_frame(main_pane, "Tender Data")
         main_pane.add(tender_data_frame, height=220, minsize=160)  # Reduced from 260 to 220 to accommodate larger filter section
         self._create_tender_data_widgets(tender_data_frame)
-
-        # Add dedicated saved searches section at the bottom
-        self._create_saved_searches_widgets(self)
 
         # Configure collapse button style - make it more compact
         style = ttk.Style()
@@ -543,15 +647,40 @@ class SearchDashboardTab(ttk.Frame):
         # Global search operator buttons
         global_op_frame = ttk.Frame(global_section)
         global_op_frame.pack(fill=tk.X, pady=(SPACING['small'], 0))
-        
+
         ttk.Label(global_op_frame, text="Match:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT, padx=(0, SPACING['small']))
-        
-        ttk.Radiobutton(global_op_frame, text="Any (OR)", variable=self.global_operator_var, 
+
+        ttk.Radiobutton(global_op_frame, text="Any (OR)", variable=self.global_operator_var,
                        value="OR", command=self._on_live_search_key).pack(side=tk.LEFT, padx=(0, SPACING['small']))
-        ttk.Radiobutton(global_op_frame, text="All (AND)", variable=self.global_operator_var, 
-                       value="AND", command=self._on_live_search_key).pack(side=tk.LEFT)
-        
-        ttk.Label(global_op_frame, text="(use commas to separate terms)", 
+        ttk.Radiobutton(global_op_frame, text="All (AND)", variable=self.global_operator_var,
+                       value="AND", command=self._on_live_search_key).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        # OCR button next to the operators - royal blue, no icon
+        ocr_button = tk.Button(
+            global_op_frame,
+            text="OCR",
+            command=self._perform_ocr_from_clipboard,
+            bg="#4169E1",  # Royal blue
+            fg="white",
+            font=('TkDefaultFont', 9, 'bold'),
+            relief='raised',
+            bd=1,
+            padx=8,
+            pady=2,
+            cursor='hand2',
+            width=6
+        )
+        # Add hover effect
+        def on_enter(e):
+            ocr_button.configure(bg="#1E90FF")  # Dodger blue (lighter royal blue)
+        def on_leave(e):
+            ocr_button.configure(bg="#4169E1")  # Back to royal blue
+        ocr_button.bind("<Enter>", on_enter)
+        ocr_button.bind("<Leave>", on_leave)
+
+        ocr_button.pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        ttk.Label(global_op_frame, text="(use commas to separate terms)",
                  font=('TkDefaultFont', 8), foreground='gray').pack(side=tk.RIGHT)
         
         # Configure custom LabelFrame styles
@@ -566,10 +695,11 @@ class SearchDashboardTab(ttk.Frame):
         date_container = ttk.Frame(parent)
         date_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
 
-        # Configure grid with equal width distribution - all sections 33% each
-        date_container.grid_columnconfigure(0, weight=33, minsize=160)  # Status Filter
-        date_container.grid_columnconfigure(1, weight=33, minsize=160)  # Time Range Filter
-        date_container.grid_columnconfigure(2, weight=34, minsize=160)  # Custom Date Range
+        # Configure grid with equal width distribution - 4 sections
+        date_container.grid_columnconfigure(0, weight=25, minsize=120)  # Status Filter
+        date_container.grid_columnconfigure(1, weight=25, minsize=120)  # Time Range Filter
+        date_container.grid_columnconfigure(2, weight=25, minsize=120)  # Custom Date Range
+        date_container.grid_columnconfigure(3, weight=25, minsize=120)  # Saved Searches
         date_container.grid_rowconfigure(0, weight=1)
 
         # Calculate dynamic spacing based on container width
@@ -784,32 +914,34 @@ class SearchDashboardTab(ttk.Frame):
             if go_btn:
                 go_btn.pack(fill=tk.X, pady=(SPACING['small']//2, 0))
         
+
+        
         # Section 4: Saved Searches (Column 3)
-        saved_section = ttk.LabelFrame(date_container, text="💾 Saved Searches", 
+        saved_section = ttk.LabelFrame(date_container, text="💾 Saved Searches",
                                       padding=internal_padding)
         saved_section.grid(row=0, column=3, sticky="nsew", padx=(section_padding//2, 0))
-        
+
         # Saved content with consistent height
         saved_content = ttk.Frame(saved_section)
         saved_content.pack(fill=tk.BOTH, expand=True)
-        
+
         saved_label = ttk.Label(saved_content, text="Searches:", font=('TkDefaultFont', 9, 'bold'))
         saved_label.pack(anchor=tk.W, pady=(0, SPACING['small']//2))
-        
+
         # Compact combobox
-        self.saved_searches_combo = ttk.Combobox(saved_content, textvariable=self.saved_search_var, 
+        self.saved_searches_combo = ttk.Combobox(saved_content, textvariable=self.saved_search_var,
                                                 width=12, state="readonly", font=('TkDefaultFont', 8))
         self.saved_searches_combo.pack(fill=tk.X, pady=(0, SPACING['small']//2))
         self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
-        
+
         # Compact 2x3 button grid
         buttons_container = ttk.Frame(saved_content)
         buttons_container.pack(fill=tk.X, expand=True)
-        
+
         # Configure button grid for equal distribution
         for i in range(3):
             buttons_container.grid_columnconfigure(i, weight=1)
-        
+
         # Button definitions with shorter labels for space
         button_configs = [
             # Row 0
@@ -821,114 +953,22 @@ class SearchDashboardTab(ttk.Frame):
             ("Import", self._import_saved_searches, 'secondary'),
             ("Clean", self._clean_corrupted_searches, 'warning')
         ]
-        
+
         for i, (text, command, btn_type) in enumerate(button_configs):
             row = i // 3
             col = i % 3
-            btn = create_action_button(buttons_container, text, command, 
+            btn = create_action_button(buttons_container, text, command,
                                      width=5, button_type=btn_type)
             if btn:
                 btn.grid(row=row, column=col, padx=1, pady=1, sticky="ew")
-        
+
         # Update saved searches list
         self._update_saved_searches_list()
-        
+
         # Apply default Live filter
         self._apply_status_filter("live")
 
-    def _create_saved_searches_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
-        """Create dedicated saved searches widgets section."""
-        # Main saved searches container
-        saved_searches_container = ttk.LabelFrame(parent, text="💾 Saved Searches Management",
-                                                 padding=(SPACING['medium'], SPACING['medium']))
-        saved_searches_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
 
-        # Content frame
-        saved_content = ttk.Frame(saved_searches_container)
-        saved_content.pack(fill=tk.BOTH, expand=True)
-
-        # Top row: Load and Save
-        top_row = ttk.Frame(saved_content)
-        top_row.pack(fill=tk.X, pady=(0, SPACING['small']))
-
-        # Left: Load section
-        load_section = ttk.Frame(top_row)
-        load_section.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, SPACING['small']))
-
-        ttk.Label(load_section, text="Load Search:", font=('TkDefaultFont', 9, 'bold')).pack(anchor=tk.W)
-        self.saved_searches_combo = ttk.Combobox(load_section, textvariable=self.saved_search_var,
-                                                width=25, state="readonly", font=('TkDefaultFont', 9))
-        self.saved_searches_combo.pack(fill=tk.X, pady=(2, 0))
-        self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
-
-        # Right: Save section
-        save_section = ttk.Frame(top_row)
-        save_section.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(SPACING['small'], 0))
-
-        ttk.Label(save_section, text="Save Current Search:", font=('TkDefaultFont', 9, 'bold')).pack(anchor=tk.W)
-        save_entry_frame = ttk.Frame(save_section)
-        save_entry_frame.pack(fill=tk.X, pady=(2, 0))
-        self.save_search_name_var = tk.StringVar()
-        save_entry = ttk.Entry(save_entry_frame, textvariable=self.save_search_name_var, font=('TkDefaultFont', 9))
-        save_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        save_btn = create_action_button(save_entry_frame, "Save", self._save_current_search_by_name,
-                                       button_type='success_outline', width=8)
-        if save_btn:
-            save_btn.pack(side=tk.RIGHT, padx=(5, 0))
-
-        # Middle row: Action buttons
-        middle_row = ttk.Frame(saved_content)
-        middle_row.pack(fill=tk.X, pady=SPACING['small'])
-
-        # Delete button
-        del_btn = create_action_button(middle_row, "🗑️ Delete", self._delete_saved_search,
-                                      button_type='danger_outline', width=12)
-        if del_btn:
-            del_btn.pack(side=tk.LEFT, padx=(0, SPACING['small']))
-
-        # Clean button
-        clean_btn = create_action_button(middle_row, "🧹 Clean", self._clean_corrupted_searches,
-                                        button_type='warning', width=12)
-        if clean_btn:
-            clean_btn.pack(side=tk.LEFT)
-
-        # Bottom row: Import/Export buttons
-        bottom_row = ttk.Frame(saved_content)
-        bottom_row.pack(fill=tk.X)
-
-        # Export section
-        export_section = ttk.Frame(bottom_row)
-        export_section.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, SPACING['small']))
-
-        ttk.Label(export_section, text="Export Searches:", font=('TkDefaultFont', 9, 'bold')).pack(anchor=tk.W)
-        export_btn_frame = ttk.Frame(export_section)
-        export_btn_frame.pack(fill=tk.X, pady=(2, 0))
-
-        export_json_btn = create_action_button(export_btn_frame, "JSON", self._export_saved_searches_json,
-                                             button_type='secondary', width=8)
-        if export_json_btn:
-            export_json_btn.pack(side=tk.LEFT, padx=(0, 2))
-
-        export_csv_btn = create_action_button(export_btn_frame, "CSV", self._export_saved_searches_csv,
-                                            button_type='secondary', width=8)
-        if export_csv_btn:
-            export_csv_btn.pack(side=tk.LEFT, padx=(2, 0))
-
-        # Import section
-        import_section = ttk.Frame(bottom_row)
-        import_section.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(SPACING['small'], 0))
-
-        ttk.Label(import_section, text="Import Searches:", font=('TkDefaultFont', 9, 'bold')).pack(anchor=tk.W)
-        import_btn_frame = ttk.Frame(import_section)
-        import_btn_frame.pack(fill=tk.X, pady=(2, 0))
-
-        import_btn = create_action_button(import_btn_frame, "Import", self._import_saved_searches,
-                                        button_type='info_outline', width=12)
-        if import_btn:
-            import_btn.pack()
-
-        # Update saved searches list
-        self._update_saved_searches_list()
 
     def _create_link_icon(self):
         """Create a link icon image for URL display."""
@@ -1035,6 +1075,9 @@ class SearchDashboardTab(ttk.Frame):
                 sort_indicator = " ▲" if col == self.sort_column and self.sort_ascending else " ▼" if col == self.sort_column else ""
                 self.tree.heading(col, text=col + sort_indicator, command=lambda c=col: self._sort_by_column(c))
 
+            # Apply column settings from config to the treeview
+            self._apply_column_settings_to_treeview()
+
             # Insert data rows - limit for performance
             max_rows = 1000
             display_df = df.head(max_rows) if len(df) > max_rows else df
@@ -1046,7 +1089,12 @@ class SearchDashboardTab(ttk.Frame):
 
                     for i, col in enumerate(cols):
                         val = row[col]
-                        display_val = str(val) if pd.notna(val) else ""
+                        # Check if value is not NA - handle both scalars and arrays
+                        pd_notna = pd.notna(val)
+                        if isinstance(pd_notna, (pd.Series, pd.Index)):
+                            display_val = str(val) if pd_notna.all() else ""
+                        else:  # Scalar bool
+                            display_val = str(val) if pd_notna else ""
 
                         # Handle URL columns
                         if col in self.url_columns and display_val:
@@ -1093,6 +1141,50 @@ class SearchDashboardTab(ttk.Frame):
         except Exception as e:
             self.logger.error(f"Error refreshing tree data: {e}")
             self.results_count_var.set("Error displaying data")
+
+    def _apply_column_settings_to_treeview(self):
+        """Apply column settings from config to the current treeview."""
+        if not self.tree:
+            return
+
+        try:
+            column_settings = self.main_app.global_config.get("treeview_column_settings", {})
+            column_order = self.main_app.global_config.get("treeview_column_order", [])
+
+            # Get current columns from treeview
+            current_columns = list(self.tree['columns']) if self.tree['columns'] else []
+
+            # If we have a defined column order, reorder the treeview columns
+            if column_order and len(column_order) > 0:
+                # Filter column_order to only include columns that exist in current data
+                ordered_columns = [col for col in column_order if col in current_columns]
+                # Add any columns from current data that aren't in the order yet
+                for col in current_columns:
+                    if col not in ordered_columns:
+                        ordered_columns.append(col)
+
+                # Update treeview column order
+                if ordered_columns:
+                    self.tree["columns"] = ordered_columns
+                    current_columns = ordered_columns
+
+            # Apply visibility and width settings
+            for col in current_columns:
+                settings = column_settings.get(col, {})
+
+                # Set visibility (hide/show column)
+                if not settings.get("visible", True):
+                    # Hide column by setting width to 0
+                    self.tree.column(col, width=0, minwidth=0)
+                else:
+                    # Show column with configured width
+                    width = settings.get("width", 100)
+                    self.tree.column(col, width=width, minwidth=50)
+
+            self.logger.info(f"Applied column settings to treeview: {len(current_columns)} columns")
+
+        except Exception as e:
+            self.logger.error(f"Error applying column settings to treeview: {e}")
 
     def update_dashboard(self):
         """Update the dashboard metrics."""
@@ -1256,9 +1348,17 @@ class SearchDashboardTab(ttk.Frame):
             messagebox.showerror("Filter Error", f"Error filtering by date: {str(e)}")
 
     def _on_live_search_key(self, event=None):
-        """Handle key press in search fields with debouncing to avoid excessive filtering."""
+        """Handle key press in search fields with debouncing and visual feedback."""
         if hasattr(self, '_filter_after_id') and self._filter_after_id:
             self.after_cancel(self._filter_after_id)
+
+        # Show search indicator
+        if hasattr(self, 'results_count_var'):
+            original_text = self.results_count_var.get()
+            if not original_text.startswith("Searching"):
+                self._original_search_text = original_text
+                self.results_count_var.set("Searching...")
+
         self._filter_after_id = self.after(self.filter_delay_ms, self._apply_filters)
 
     def _apply_filters(self):
@@ -1266,11 +1366,14 @@ class SearchDashboardTab(ttk.Frame):
         if (not hasattr(self.data_processor, 'raw_data') or
             self.data_processor.raw_data is None or
             self.data_processor.raw_data.empty):
+            # Restore original text if no data
+            if hasattr(self, '_original_search_text'):
+                self.results_count_var.set(self._original_search_text)
             return
 
         # Start with raw data
         df = self.data_processor.raw_data.copy()
-        
+
         # Apply status filter first (live/expired/all)
         current_status = getattr(self, 'status_filter_var', tk.StringVar()).get()
         if current_status == "live":
@@ -1298,10 +1401,15 @@ class SearchDashboardTab(ttk.Frame):
         # Update filtered data - ensure df is not None before assignment
         if df is not None:
             self.data_processor.filtered_data = df
-        
+
         # Refresh display
         self._refresh_tree_data()
         self.update_dashboard()
+
+        # Restore original search text after filtering is complete
+        if hasattr(self, '_original_search_text'):
+            self.results_count_var.set(self._original_search_text)
+            del self._original_search_text
 
     def _apply_time_filter(self, preset):
         """Apply a time-based filter preset."""
@@ -1734,8 +1842,32 @@ class SearchDashboardTab(ttk.Frame):
                 messagebox.showinfo("No Data", "No data available to visualize. Please load some data first.")
                 return
 
+            # Check window instance limit
+            if len(self.open_chart_windows) >= self.max_chart_windows:
+                messagebox.showwarning("Window Limit Reached",
+                                     f"Maximum of {self.max_chart_windows} chart windows are already open.\n"
+                                     "Please close an existing chart window before opening a new one.")
+                return
+
             # Create and show the charts window
             charts_window = ChartsWindow(self, self.data_processor.filtered_data.copy())
+
+            # Track the window and add cleanup callback
+            def on_window_close():
+                if charts_window.window in self.open_chart_windows:
+                    self.open_chart_windows.remove(charts_window.window)
+
+            # Override the window's close method to clean up tracking
+            original_close = charts_window._on_close
+            def tracked_close():
+                on_window_close()
+                original_close()
+            charts_window._on_close = tracked_close
+
+            # Add to tracking list
+            if charts_window.window is not None:
+                self.open_chart_windows.append(charts_window.window)
+
             charts_window.show()
 
         except Exception as e:
@@ -1765,6 +1897,86 @@ class SearchDashboardTab(ttk.Frame):
                 self.remote_urls.append(url_with_auth)
                 self._update_selected_folders_display()
                 messagebox.showinfo("URL Added", f"Remote URL added successfully:\n{url}")
+
+    def _load_data_from_auto_path(self, auto_path):
+        """Load all Excel/CSV files from the auto-configured directory path."""
+        if not auto_path or not os.path.exists(auto_path):
+            self.logger.error(f"Auto-load path is invalid or does not exist: {auto_path}")
+            return
+
+        try:
+            # Get all Excel and CSV files from the directory
+            excel_files = []
+            for file in os.listdir(auto_path):
+                if file.lower().endswith(('.xlsx', '.xls', '.csv')):
+                    excel_files.append(os.path.join(auto_path, file))
+
+            if not excel_files:
+                messagebox.showinfo("No Files Found",
+                                  f"No Excel or CSV files found in the configured directory:\n{auto_path}")
+                return
+
+            # Show loading indicator
+            self.results_count_var.set(f"Loading {len(excel_files)} files from auto-path...")
+            self.update_idletasks()
+
+            # Load data from all files
+            dfs = []
+            loaded_count = 0
+            for file_path in excel_files:
+                try:
+                    if file_path.lower().endswith('.csv'):
+                        df = pd.read_csv(file_path, encoding='utf-8', low_memory=False)
+                    else:
+                        df = pd.read_excel(file_path, engine='openpyxl')
+
+                    if not df.empty:
+                        # Add source file column
+                        df['Source File'] = os.path.basename(file_path)
+                        dfs.append(df)
+                        loaded_count += 1
+                except Exception as e:
+                    self.logger.error(f"Error loading file {file_path}: {e}")
+                    continue
+
+            if not dfs:
+                messagebox.showinfo("No Data", "Could not load any data from the files in the configured directory.")
+                self.results_count_var.set("No data loaded")
+                return
+
+            # Combine all dataframes
+            combined_df = pd.concat(dfs, ignore_index=True)
+
+            # Store in data processor
+            self.data_processor.raw_data = combined_df
+            self.data_processor.filtered_data = combined_df.copy()
+
+            # Update the loaded files list to include the auto-path
+            self.loaded_files = [auto_path]
+            self.remote_urls = []
+            self._update_selected_folders_display()
+
+            # Update record count
+            record_count = len(combined_df)
+            messagebox.showinfo("Auto-Load Complete",
+                              f"Successfully auto-loaded data:\n\n"
+                              f"Directory: {os.path.basename(auto_path)}\n"
+                              f"Files loaded: {loaded_count}/{len(excel_files)}\n"
+                              f"Total records: {record_count}")
+
+            # Refresh the display
+            self._refresh_tree_data()
+            self.update_dashboard()
+
+            # Apply default filter (live tenders)
+            self._apply_status_filter("live")
+
+            self.logger.info(f"Auto-loaded {loaded_count} files with {record_count} total records from: {auto_path}")
+
+        except Exception as e:
+            self.logger.error(f"Error auto-loading data from path: {e}", exc_info=True)
+            messagebox.showerror("Auto-Load Error", f"An error occurred while auto-loading data:\n{str(e)}")
+            self.results_count_var.set("Error auto-loading data")
 
     def _load_merged_file_from_path(self, file_path):
         """Load a single merged file directly into the tree view for analysis using a provided file path."""
@@ -1863,13 +2075,7 @@ class SearchDashboardTab(ttk.Frame):
         
         self.selected_folders_var.set(text)
 
-    def _update_saved_searches_list(self):
-        """Update the saved searches dropdown list."""
-        if not hasattr(self, 'saved_searches_combo'):
-            return
-        
-        saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-        self.saved_searches_combo['values'] = saved_searches_list
+
 
     def _clear_time_filter_selection(self):
         """Clear the visual selection of time filter buttons."""
@@ -2083,10 +2289,38 @@ class SearchDashboardTab(ttk.Frame):
         if date_cols:
             date_col = date_cols[0]
             
-            # Convert to datetime if needed
+            # Convert to datetime if needed - try multiple formats to avoid parsing warnings
             if not pd.api.types.is_datetime64_dtype(df[date_col]):
                 df = df.copy()  # Avoid modifying original
-                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+                # Try parsing with common date formats first
+                date_formats = [
+                    '%Y-%m-%d %H:%M:%S',
+                    '%Y-%m-%d',
+                    '%d/%m/%Y %H:%M:%S',
+                    '%d/%m/%Y',
+                    '%m/%d/%Y %H:%M:%S',
+                    '%m/%d/%Y',
+                    '%d-%m-%Y %H:%M:%S',
+                    '%d-%m-%Y',
+                    '%Y/%m/%d %H:%M:%S',
+                    '%Y/%m/%d'
+                ]
+
+                # Try each format in order
+                for fmt in date_formats:
+                    try:
+                        temp_dt = pd.to_datetime(df[date_col], format=fmt, errors='coerce')
+                        if temp_dt.notna().any():
+                            df[date_col] = temp_dt
+                            break
+                    except Exception:
+                        continue
+                else:
+                    # If no format worked, fall back to infer (but suppress the warning)
+                    import warnings
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
             
             # Filter for dates/times in the future (live tenders)
             current_datetime = pd.Timestamp.now()
@@ -2121,10 +2355,38 @@ class SearchDashboardTab(ttk.Frame):
         if date_cols:
             date_col = date_cols[0]
             
-            # Convert to datetime if needed
+            # Convert to datetime if needed - try multiple formats to avoid parsing warnings
             if not pd.api.types.is_datetime64_dtype(df[date_col]):
                 df = df.copy()  # Avoid modifying original
-                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+                # Try parsing with common date formats first
+                date_formats = [
+                    '%Y-%m-%d %H:%M:%S',
+                    '%Y-%m-%d',
+                    '%d/%m/%Y %H:%M:%S',
+                    '%d/%m/%Y',
+                    '%m/%d/%Y %H:%M:%S',
+                    '%m/%d/%Y',
+                    '%d-%m-%Y %H:%M:%S',
+                    '%d-%m-%Y',
+                    '%Y/%m/%d %H:%M:%S',
+                    '%Y/%m/%d'
+                ]
+
+                # Try each format in order
+                for fmt in date_formats:
+                    try:
+                        temp_dt = pd.to_datetime(df[date_col], format=fmt, errors='coerce')
+                        if temp_dt.notna().any():
+                            df[date_col] = temp_dt
+                            break
+                    except Exception:
+                        continue
+                else:
+                    # If no format worked, fall back to infer (but suppress the warning)
+                    import warnings
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
             
             # Filter for dates/times in the past (expired tenders)
             current_datetime = pd.Timestamp.now()
@@ -2161,10 +2423,38 @@ class SearchDashboardTab(ttk.Frame):
         
         date_col = date_cols[0]
         
-        # Convert to datetime if needed
+        # Convert to datetime if needed - try multiple formats to avoid parsing warnings
         if not pd.api.types.is_datetime64_dtype(df[date_col]):
             df = df.copy()
-            df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+            # Try parsing with common date formats first
+            date_formats = [
+                '%Y-%m-%d %H:%M:%S',
+                '%Y-%m-%d',
+                '%d/%m/%Y %H:%M:%S',
+                '%d/%m/%Y',
+                '%m/%d/%Y %H:%M:%S',
+                '%m/%d/%Y',
+                '%d-%m-%Y %H:%M:%S',
+                '%d-%m-%Y',
+                '%Y/%m/%d %H:%M:%S',
+                '%Y/%m/%d'
+            ]
+
+            # Try each format in order
+            for fmt in date_formats:
+                try:
+                    temp_dt = pd.to_datetime(df[date_col], format=fmt, errors='coerce')
+                    if temp_dt.notna().any():
+                        df[date_col] = temp_dt
+                        break
+                except Exception:
+                    continue
+            else:
+                # If no format worked, fall back to infer (but suppress the warning)
+                import warnings
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
         
         # Calculate date ranges using current datetime for precise filtering
         current_datetime = pd.Timestamp.now()
@@ -2211,24 +2501,32 @@ class SearchDashboardTab(ttk.Frame):
         # Apply the date range filter
         df = df[mask]
         self.logger.info(f"Time range filter ({time_range}) with status ({current_status}): {len(df)} records")
-        
+
         return df
+
+    def _update_saved_searches_list(self):
+        """Update the saved searches dropdown list."""
+        if not hasattr(self, 'saved_searches_combo'):
+            return
+
+        saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+        self.saved_searches_combo['values'] = saved_searches_list
 
     def _load_saved_search(self, event=None):
         """Load a saved search configuration."""
         search_name = self.saved_search_var.get()
         if not search_name:
             return
-        
+
         try:
             saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
-            
+
             if search_name not in saved_searches_data:
                 messagebox.showinfo("Not Found", f"Search '{search_name}' not found.")
                 return
-            
+
             search_config = saved_searches_data[search_name]
-            
+
             # Only load text search terms - ignore complex filter data
             if 'dept_filter' in search_config:
                 self.dept_filter_var.set(search_config['dept_filter'])
@@ -2238,13 +2536,14 @@ class SearchDashboardTab(ttk.Frame):
                 self.dept_operator_var.set(search_config['dept_operator'])
             if 'global_operator' in search_config:
                 self.global_operator_var.set(search_config['global_operator'])
-            
+
             # Apply the search filters
             self._apply_filters()
-            
-            messagebox.showinfo("Search Loaded", f"Search terms for '{search_name}' loaded successfully.")
+
+            # Show auto-dismissing success message
+            AutoDismissMessageDialog(self, "Search Loaded", f"Search '{search_name}' loaded successfully.")
             self.logger.info(f"Loaded search configuration: {search_name}")
-            
+
         except Exception as e:
             self.logger.error(f"Error loading saved search: {e}")
             messagebox.showerror("Load Error", f"Error loading search '{search_name}'.\nThis search may be corrupted and should be deleted.")
@@ -2360,8 +2659,12 @@ class SearchDashboardTab(ttk.Frame):
             saved_searches_data[search_name] = search_config
 
             # Update the list of saved search names if needed
-            if search_name not in saved_searches_list:
-                saved_searches_list[search_name] = search_config
+            if isinstance(saved_searches_list, dict):
+                if search_name not in saved_searches_list:
+                    saved_searches_list[search_name] = search_config
+            elif isinstance(saved_searches_list, list):
+                if search_name not in saved_searches_list:
+                    saved_searches_list.append(search_name)
 
             # Update the config
             self.main_app.global_config.set("saved_searches_data", saved_searches_data)
@@ -2384,42 +2687,42 @@ class SearchDashboardTab(ttk.Frame):
     def _delete_saved_search(self):
         """Delete a saved search configuration with better error handling."""
         search_name = self.saved_search_var.get()
-        
+
         if not search_name:
             messagebox.showinfo("No Selection", "Please select a saved search to delete.")
             return
-        
+
         # Confirm deletion
-        if not messagebox.askyesno("Confirm Delete", 
+        if not messagebox.askyesno("Confirm Delete",
                                  f"Are you sure you want to delete the saved search '{search_name}'?"):
             return
-        
+
         try:
             # Get saved searches from config
             saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
             saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-            
+
             # Remove the search
             if search_name in saved_searches_data:
                 del saved_searches_data[search_name]
-            
+
             if search_name in saved_searches_list:
-                del saved_searches_list[search_name]
-            
+                saved_searches_list.remove(search_name)
+
             # Update the config
             self.main_app.global_config.set("saved_searches_data", saved_searches_data)
             self.main_app.global_config.set("saved_searches", saved_searches_list)
-            
+
             # Save the config
             self.main_app.global_config.save_config()
-            
+
             # Update the UI
             self._update_saved_searches_list()
             self.saved_search_var.set("")
-            
+
             messagebox.showinfo("Search Deleted", f"Search '{search_name}' deleted successfully.")
             self.logger.info(f"Deleted search configuration: {search_name}")
-            
+
         except Exception as e:
             self.logger.error(f"Error deleting saved search: {e}")
             messagebox.showerror("Delete Error", f"Failed to delete search: {str(e)}")
@@ -2539,32 +2842,32 @@ class SearchDashboardTab(ttk.Frame):
                 title="Import Saved Searches",
                 filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
             )
-            
+
             if not filename:
                 return
-            
+
             import json
             with open(filename, 'r', encoding='utf-8') as f:
                 imported_searches = json.load(f)
-            
+
             if not isinstance(imported_searches, dict):
                 messagebox.showerror("Invalid File", "Invalid saved searches file format.")
                 return
-            
+
             # Get current saved searches
             current_searches = self.main_app.global_config.get("saved_searches_data", {})
             current_list = self.main_app.global_config.get("saved_searches", [])
-            
+
             # Count new searches
             new_count = 0
             overwritten_count = 0
-            
+
             for search_name, search_config in imported_searches.items():
                 if search_name in current_searches:
                     overwritten_count += 1
                 else:
                     new_count += 1
-                
+
                 current_searches[search_name] = search_config
                 if isinstance(current_list, dict):
                     if search_name not in current_list:
@@ -2572,33 +2875,134 @@ class SearchDashboardTab(ttk.Frame):
                 elif isinstance(current_list, list):
                     if search_name not in current_list:
                         current_list.append(search_name)
-            
+
             # Update config
             self.main_app.global_config.set("saved_searches_data", current_searches)
             self.main_app.global_config.set("saved_searches", current_list)
             self.main_app.global_config.save_config()
-            
+
             # Update UI
             self._update_saved_searches_list()
-            
+
             message = f"Import complete!\n\nNew searches: {new_count}\nOverwritten: {overwritten_count}"
             messagebox.showinfo("Import Complete", message)
             self.logger.info(f"Imported saved searches from: {filename}")
-            
+
         except Exception as e:
             self.logger.error(f"Error importing saved searches: {e}")
             messagebox.showerror("Import Error", f"Failed to import searches: {str(e)}")
+
+    def load_initial_data_if_any(self):
+        """Load initial data if any was previously loaded (called on app startup)."""
+        try:
+            # PRIORITIZE: Load from MERGED DATA FOLDER setting first
+            merged_data_folder = self.main_app.global_config.get("merged_data_folder", "")
+
+            if merged_data_folder and os.path.exists(merged_data_folder):
+                self.logger.info(f"Loading merged data from settings path: {merged_data_folder}")
+
+                # Show loading message
+                self.results_count_var.set("Loading merged data from settings...")
+                self.update_idletasks()
+
+                # Load all files from the merged data folder
+                self._load_data_from_auto_path(merged_data_folder)
+
+                # Show success message briefly
+                record_count = len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0
+                self.results_count_var.set(f"Loaded merged data: {os.path.basename(merged_data_folder)}")
+                self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
+
+                self.logger.info(f"Successfully loaded merged data from settings: {merged_data_folder}")
+                return
+
+            # SECONDARY: Check if auto-loading is enabled with specific path
+            auto_load_enabled = self.main_app.global_config.get("auto_load_enabled", False)
+            auto_load_path = self.main_app.global_config.get("auto_load_data_path", "")
+
+            if auto_load_enabled and auto_load_path and os.path.exists(auto_load_path):
+                self.logger.info(f"Auto-loading data from configured path: {auto_load_path}")
+
+                # Show loading message
+                self.results_count_var.set("Auto-loading data from configured path...")
+                self.update_idletasks()
+
+                # Load all files from the configured directory
+                self._load_data_from_auto_path(auto_load_path)
+
+                # Show success message briefly
+                record_count = len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0
+                self.results_count_var.set(f"Auto-loaded data: {os.path.basename(auto_load_path)}")
+                self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
+
+                self.logger.info(f"Successfully auto-loaded data from: {auto_load_path}")
+                return
+
+            # TERTIARY: Check if there's a last loaded file in the config
+            last_loaded_files = self.main_app.global_config.get("last_loaded_files", [])
+
+            if last_loaded_files and isinstance(last_loaded_files, list) and len(last_loaded_files) > 0:
+                last_file = last_loaded_files[0]  # Get the most recent one
+
+                # Check if the file exists
+                if os.path.exists(last_file):
+                    self.logger.info(f"Loading last used data source: {last_file}")
+
+                    # Show loading message
+                    self.results_count_var.set("Loading last used data source...")
+                    self.update_idletasks()
+
+                    # Load the file
+                    self._load_merged_file_from_path(last_file)
+
+                    # Show success message briefly
+                    record_count = len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0
+                    self.results_count_var.set(f"Loaded last used data: {os.path.basename(last_file)}")
+                    self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
+
+                    self.logger.info(f"Successfully loaded last used data source: {last_file}")
+                    return
+                else:
+                    self.logger.warning(f"Last used data source not found: {last_file}")
+                    # Remove the invalid entry from config
+                    if last_file in last_loaded_files:
+                        last_loaded_files.remove(last_file)
+                        self.main_app.global_config.set("last_loaded_files", last_loaded_files)
+                        self.main_app.global_config.save_config()
+
+            # FALLBACK: Try to load from default merged data folder
+            default_merged_path = "./data/merged_data/"
+            if os.path.exists(default_merged_path):
+                self.logger.info(f"Loading from default merged data path: {default_merged_path}")
+
+                self.results_count_var.set("Loading from default merged data folder...")
+                self.update_idletasks()
+
+                self._load_data_from_auto_path(default_merged_path)
+
+                record_count = len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0
+                self.results_count_var.set(f"Loaded default merged data")
+                self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
+
+                self.logger.info(f"Successfully loaded from default merged data path: {default_merged_path}")
+                return
+
+            self.logger.info("No data sources found, starting with empty state")
+
+        except Exception as e:
+            self.logger.error(f"Error loading initial data: {e}")
+            # Don't show error dialog on startup, just log it
 
     def _clean_corrupted_searches(self):
         """Clean up corrupted saved searches."""
         try:
             saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
             saved_searches_list = self.main_app.global_config.get("saved_searches", [])
-            
+
             cleaned_data = {}
             cleaned_list = []
             removed_count = 0
-            
+
             # Handle both list and dict formats for saved_searches
             if isinstance(saved_searches_list, dict):
                 search_names_to_check = list(saved_searches_list.keys())
@@ -2610,9 +3014,9 @@ class SearchDashboardTab(ttk.Frame):
             for search_name in search_names_to_check:
                 if search_name in saved_searches_data:
                     search_config = saved_searches_data[search_name]
-                    
+
                     # Check if it's a valid, simple search config
-                    if (isinstance(search_config, dict) and 
+                    if (isinstance(search_config, dict) and
                         ('dept_filter' in search_config or 'global_search' in search_config)):
                         # Keep valid searches
                         cleaned_data[search_name] = {
@@ -2631,24 +3035,230 @@ class SearchDashboardTab(ttk.Frame):
                     # Remove references to non-existent searches
                     removed_count += 1
                     self.logger.warning(f"Removed reference to missing search: {search_name}")
-            
+
             # Update config with cleaned data
             self.main_app.global_config.set("saved_searches_data", cleaned_data)
             self.main_app.global_config.set("saved_searches", cleaned_list)
             self.main_app.global_config.save_config()
-            
+
             # Update UI
             self._update_saved_searches_list()
             self.saved_search_var.set("")
-            
+
             if removed_count > 0:
-                messagebox.showinfo("Cleanup Complete", 
+                messagebox.showinfo("Cleanup Complete",
                                   f"Removed {removed_count} corrupted saved search(es).")
             else:
                 messagebox.showinfo("No Issues Found", "All saved searches are valid.")
-            
+
             self.logger.info(f"Cleaned saved searches, removed {removed_count} corrupted entries")
-            
+
         except Exception as e:
             self.logger.error(f"Error cleaning saved searches: {e}")
             messagebox.showerror("Cleanup Error", f"Failed to clean searches: {str(e)}")
+
+    def _perform_ocr_from_clipboard(self):
+        """Extract text from clipboard content (text or image) and fill the Global Search field."""
+        try:
+            extracted_text = None
+
+            # First check clipboard contents to determine what type of data is available
+            try:
+                # Try to get text content from clipboard first
+                clipboard_text = self.clipboard_get()
+                if clipboard_text and clipboard_text.strip():
+                    # Plain text found in clipboard
+                    extracted_text = clipboard_text.strip()
+                    self.logger.info(f"Extracted text from clipboard: {len(extracted_text)} characters")
+                else:
+                    # No plain text available, try OCR on images
+                    self.logger.info("No text found in clipboard, attempting OCR on image...")
+                    extracted_text = self._perform_ocr_on_image()
+                    if extracted_text:
+                        self.logger.info(f"OCR extracted text from image: {len(extracted_text)} characters")
+                    else:
+                        self.logger.info("No text found in clipboard image or OCR failed")
+
+            except tk.TclError as clipboard_error:
+                self.logger.warning(f"Clipboard text access failed: {clipboard_error}")
+                # Try OCR on images as fallback
+                extracted_text = self._perform_ocr_on_image()
+                if extracted_text:
+                    self.logger.info(f"OCR extracted text from image: {len(extracted_text)} characters")
+                else:
+                    messagebox.showinfo("Clipboard Inaccessible",
+                                       "Could not access clipboard content. Please try copying again.")
+                    return
+
+            # Set the extracted text in the Global Search field
+            if extracted_text and extracted_text.strip():
+                self.global_search_var.set(extracted_text)
+
+                # Show success message
+                AutoDismissMessageDialog(self, "OCR Complete",
+                                        f"Extracted {len(extracted_text)} characters from clipboard.")
+
+                # Automatically trigger the search
+                self._apply_filters()
+
+                self.logger.info(f"OCR successfully filled Global Search with {len(extracted_text)} characters")
+            elif not extracted_text:
+                # No text found at all
+                messagebox.showinfo("No Text Found",
+                                   "No readable text was found in the clipboard.")
+                self.logger.info("No text found in clipboard")
+
+        except Exception as e:
+            self.logger.error(f"OCR processing error: {e}")
+            messagebox.showerror("OCR Error",
+                                f"An error occurred during OCR processing:\n{str(e)}")
+
+    def _perform_ocr_on_image(self):
+        """Perform OCR on image content from clipboard."""
+        try:
+            # Check if required modules are available
+            if not HAS_PYTESSERACT:
+                messagebox.showinfo("OCR Not Available",
+                                   "OCR functionality is not available because pytesseract is not installed.\n\n"
+                                   "To enable OCR, install pytesseract using:\n"
+                                   "pip install pytesseract\n\n"
+                                   "You may also need to install the Tesseract OCR engine from:\n"
+                                   "https://github.com/UB-Mannheim/tesseract/wiki")
+                return None
+
+            if not HAS_PIL:
+                messagebox.showinfo("PIL Not Available",
+                                   "PIL (Pillow) is required for OCR on images.\n"
+                                   "Install it using: pip install pillow")
+                return None
+
+            # Import PIL and pytesseract modules only when needed and available
+            from PIL import Image, ImageGrab
+            import pytesseract
+
+            # Configure tesseract executable path for Windows specifically
+            self._configure_tesseract_path(pytesseract)
+
+            # Try to get image from clipboard
+            clipboard_content = ImageGrab.grabclipboard()
+
+            if clipboard_content is None:
+                self.logger.warning("ImageGrab.grabclipboard() returned None")
+                return None
+
+            # Handle different types of clipboard content
+            if isinstance(clipboard_content, Image.Image):
+                # Direct PIL image
+                clipboard_image = clipboard_content
+                self.logger.info("Found PIL image in clipboard")
+            elif isinstance(clipboard_content, list) and len(clipboard_content) > 0:
+                # Sometimes Windows returns a list with file paths
+                first_item = clipboard_content[0]
+                if isinstance(first_item, str) and os.path.isfile(first_item):
+                    # It's a file path, try to open it as an image
+                    try:
+                        clipboard_image = Image.open(first_item)
+                        self.logger.info("Loaded image from clipboard file path")
+                    except Exception as e:
+                        self.logger.error(f"Failed to load image from path {first_item}: {e}")
+                        return None
+                else:
+                    self.logger.warning(f"Unsupported clipboard list content: {clipboard_content}")
+                    return None
+            else:
+                self.logger.warning(f"Unsupported clipboard content type: {type(clipboard_content)}")
+                return None
+
+            # Perform OCR on the image
+            try:
+                # Optionally convert to RGB if needed
+                if clipboard_image.mode not in ('RGB', 'L'):
+                    clipboard_image = clipboard_image.convert('RGB')
+
+                # Perform OCR
+                extracted_text = pytesseract.image_to_string(
+                    clipboard_image,
+                    config='--psm 6'  # Uniform block of text
+                )
+
+                # Clean up the extracted text
+                if extracted_text and extracted_text.strip():
+                    # Remove extra whitespace and normalize line breaks
+                    cleaned_text = ' '.join(extracted_text.split())
+                    self.logger.info(f"OCR successful: extracted {len(cleaned_text)} characters")
+                    return cleaned_text.strip()
+
+                return None
+
+            except Exception as ocr_err:
+                self.logger.error(f"OCR processing failed: {ocr_err}")
+                # Provide specific help for common tesseract errors
+                if "tesseract is not installed" in str(ocr_err).lower() or "not in path" in str(ocr_err).lower():
+                    messagebox.showerror("Tesseract Not Found", self._get_tesseract_help_message())
+                else:
+                    messagebox.showerror("OCR Error", f"OCR processing failed:\n{str(ocr_err)}")
+                return None
+
+        except Exception as e:
+            self.logger.error(f"Error in OCR image processing: {e}")
+            return None
+
+    def _configure_tesseract_path(self, pytesseract_module):
+        """Configure the tesseract executable path for Windows systems."""
+        try:
+            import platform
+            import subprocess
+
+            # Check if we're on Windows
+            if platform.system() == 'Windows':
+                # First check if tesseract is already in PATH
+                try:
+                    result = subprocess.run(['tesseract', '--version'],
+                                          capture_output=True, text=True, check=True)
+                    self.logger.info("Tesseract found in PATH - no configuration needed")
+                    return
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    pass  # Not in PATH, try to find it
+
+                # Try common tesseract installation paths on Windows
+                possible_paths = [
+                    r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+                    r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+                    r"C:\Users\{}\AppData\Local\Tesseract-OCR\tesseract.exe".format(os.environ.get('USERNAME', '')),
+                    r"C:\tesseract\tesseract.exe",
+                    r"D:\tesseract\tesseract.exe",
+                ]
+
+                for path in possible_paths:
+                    if os.path.exists(path):
+                        try:
+                            pytesseract_module.pytesseract.tesseract_cmd = path
+                            self.logger.info(f"Configured tesseract path: {path}")
+                            return
+                        except Exception as e:
+                            self.logger.warning(f"Failed to configure tesseract path {path}: {e}")
+
+                # If still not found, try to use system's tesseract discovery
+                self.logger.warning("Standard tesseract installation paths not found. You may need to manually configure the path.")
+            else:
+                # For non-Windows systems, let pytesseract use its default discovery
+                pass
+        except Exception as e:
+            self.logger.error(f"Error configuring tesseract path: {e}")
+
+    def _get_tesseract_help_message(self):
+        """Generate a helpful message for tesseract installation issues."""
+        return (
+            "Tesseract OCR engine not found or not properly configured.\n\n"
+            "Here are several ways to fix this:\n\n"
+            "1. If you have tesseract installed in a custom location:\n"
+            "   - Install pytesseract: pip install pytesseract\n"
+            "   - Add tesseract.exe to your Windows PATH environment variable\n\n"
+            "2. Common installation locations to check:\n"
+            "   - C:\\Program Files\\Tesseract-OCR\\\n"
+            "   - C:\\Program Files (x86)\\Tesseract-OCR\\\n"
+            "   - C:\\Users\\<username>\\AppData\\Local\\Tesseract-OCR\\\n\n"
+            "3. Download and install tesseract from:\n"
+            "   https://github.com/UB-Mannheim/tesseract/wiki\n\n"
+            "After installation, restart the application for changes to take effect."
+        )
