@@ -1,0 +1,654 @@
+2025-09-26 19:52:51 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250926_195251.log
+2025-09-26 19:52:51 - root - INFO - Application starting...
+2025-09-26 19:52:51 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-26 19:52:51 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-26 19:52:51 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-26 19:52:51 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-26 19:52:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-26 19:52:52 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-26 19:52:52 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-26 19:52:52 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-26 19:52:52 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-26 19:52:52 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-26 19:52:52 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-26 19:52:52 - ui.main_window - INFO - Main application initialized
+2025-09-26 19:52:52 - root - INFO - Main window initialized
+2025-09-26 19:53:16 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-26 19:53:16 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-26 19:53:16 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1375 records closing after 2025-09-26 19:53:16.547971
+2025-09-26 19:53:16 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-26 19:53:24 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:28 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:31 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:39 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:41 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:43 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:47 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:49 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:51 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:53 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:54 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-26 19:53:55 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-26 19:53:55 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:57 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-26 19:53:57 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:53:59 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:02 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:04 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:10 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:12 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:14 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:16 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:16 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:17 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:17 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:17 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:17 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:17 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:17 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:17 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:17 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:17 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:17 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:17 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:17 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:17 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:18 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:20 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:22 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:24 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:28 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:29 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-26 19:54:29 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:30 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-26 19:54:30 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:30 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:32 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-26 19:54:32 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:35 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-26 19:54:35 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:37 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-26 19:54:37 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:38 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_7_days
+2025-09-26 19:54:38 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1375 records closing after 2025-09-26 19:54:38.288893
+2025-09-26 19:54:38 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_7_days) with status (live): 1157 records
+2025-09-26 19:54:38 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-26 19:54:39 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-26 19:54:39 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:39 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:41 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-26 19:54:41 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:41 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:43 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-26 19:54:43 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:43 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:45 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-26 19:54:45 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:47 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-26 19:54:47 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:54:47 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:49 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:51 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:53 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:55 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:57 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:54:59 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:01 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:04 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:10 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:12 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:14 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:18 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:18 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:18 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:18 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:18 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:20 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:20 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:20 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:22 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:24 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:24 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:24 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:24 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:24 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:26 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:26 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:28 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:29 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:29 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:30 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:30 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:30 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:32 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:32 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:35 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:35 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:37 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:37 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:39 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-26 19:55:39 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:39 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-26 19:55:39 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:39 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:41 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-26 19:55:41 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:41 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:43 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:47 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:49 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:50 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:51 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:53 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:54 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:54 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:55 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:55 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:55 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:57 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:57 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:57 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:55:59 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:55:59 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:55:59 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:01 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:01 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:01 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:03 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:03 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:04 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:06 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:06 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:08 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:08 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:10 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:10 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:10 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:12 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:12 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:12 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:14 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:14 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:14 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:16 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:16 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:18 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:18 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:18 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:20 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:20 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:20 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:22 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:22 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:22 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:24 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:24 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:24 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:26 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:26 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:28 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:28 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:28 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:30 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:30 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:31 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:33 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:33 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:35 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:35 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:37 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:37 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:39 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:39 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:39 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:41 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:41 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:41 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:43 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:43 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:43 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:45 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:45 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:47 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:47 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:47 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:49 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:49 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:49 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:51 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:51 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:51 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:53 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:53 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:53 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:55 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:55 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:56 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:56:58 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:56:58 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:56:58 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:00 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:00 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:00 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:02 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:02 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:02 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:04 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:04 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:04 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:06 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:06 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:08 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:08 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:10 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:10 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:10 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:12 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:12 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:12 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:14 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:14 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:14 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:16 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:16 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:18 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:18 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:18 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:21 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:21 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:21 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:23 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:23 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:23 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:25 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:25 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:25 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:27 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:27 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:27 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:29 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:29 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:29 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:31 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:31 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:31 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:33 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:33 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:35 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:35 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:37 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:37 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:39 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:39 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:40 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:42 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:42 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:42 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:44 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:44 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:44 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:46 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:46 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:46 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:48 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:48 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:48 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:50 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:50 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:50 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:52 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:52 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:52 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:54 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:54 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:54 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:56 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:56 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:56 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:57:58 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:57:58 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:57:58 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:00 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:00 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:01 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:03 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:03 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:03 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:05 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:05 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:05 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:07 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:07 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:07 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:09 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:09 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:09 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:11 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:11 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:11 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:13 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:13 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:13 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:15 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:15 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:18 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:18 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:18 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:20 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:20 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:20 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:22 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:22 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:22 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:24 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:24 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:24 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:26 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:26 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:28 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:28 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:28 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:30 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:30 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:30 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:32 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:32 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:32 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:34 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:34 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:37 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:37 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:39 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:39 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:39 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:41 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:41 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:41 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:43 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:43 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:43 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:45 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:45 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:47 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:47 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:47 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:49 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:49 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:49 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:51 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:51 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:51 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:53 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:53 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:54 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:56 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:56 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:56 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:58:58 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:58:58 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:58:58 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:00 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:00 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:00 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:02 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:02 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:02 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:04 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:04 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:04 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:06 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:06 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:08 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:08 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:10 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:10 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:10 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:12 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:12 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:12 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:14 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:14 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:14 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:16 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:16 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:17 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:19 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:19 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:19 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:21 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:21 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:21 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:23 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:23 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:23 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:25 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:25 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:25 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:27 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:27 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:27 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:29 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:29 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:29 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:31 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:31 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:31 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:33 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:33 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:35 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:35 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:37 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:37 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:39 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:39 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:39 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:42 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:42 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:42 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:44 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:44 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:44 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:46 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:46 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:46 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:48 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:48 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:48 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:50 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:50 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:50 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:52 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:52 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:52 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:54 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:54 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:54 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:56 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:56 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:56 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 19:59:58 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 19:59:58 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 19:59:58 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:00 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:00 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:00 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:02 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:02 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:02 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:04 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:04 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:05 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:07 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:07 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:07 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:09 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:09 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:09 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:11 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:11 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:11 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:13 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:13 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:13 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:15 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:15 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:15 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:17 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:17 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:17 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:19 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:19 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:19 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:21 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:21 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:21 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:23 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:23 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:23 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:25 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:25 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:25 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:27 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:27 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:27 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:29 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:29 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:29 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:31 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:32 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:32 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:34 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:34 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:34 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:36 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:36 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:36 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:38 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:38 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:38 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:40 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:40 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:40 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:42 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:42 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:42 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:44 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:44 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:44 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:46 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:46 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:46 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:48 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:48 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:48 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:50 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:50 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:50 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:52 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:52 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:52 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:54 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:54 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:54 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:56 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:57 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:57 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:00:59 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:00:59 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:00:59 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:01 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:01 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:01 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:03 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:03 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:03 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:05 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:05 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:05 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:07 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:07 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:07 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:09 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:09 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:09 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:11 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:11 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:11 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:13 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:13 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:13 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:15 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:15 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:15 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:17 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:17 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:18 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:20 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:20 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:20 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:22 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:22 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:22 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:24 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:24 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:24 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:26 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:26 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:28 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:28 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:28 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:30 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:30 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:30 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:32 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:32 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:32 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-26 20:01:34 - ui.charts_window - ERROR - Error creating pie chart: 'Category'
+2025-09-26 20:01:34 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-26 20:01:34 - ui.charts_window - INFO - Charts data refreshed from Tree view

@@ -1,0 +1,39 @@
+2025-09-30 09:48:12 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250930_094812.log
+2025-09-30 09:48:12 - root - INFO - Application starting...
+2025-09-30 09:48:13 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-30 09:48:13 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-30 09:48:13 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-30 09:48:13 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-30 09:48:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-30 09:48:14 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-30 09:48:14 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-30 09:48:14 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-30 09:48:14 - ui.settings_tab.SettingsTab - INFO - Default column settings initialized
+2025-09-30 09:48:14 - ui.settings_tab.SettingsTab - INFO - Loaded column settings for 18 columns
+2025-09-30 09:48:14 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-30 09:48:14 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-30 09:48:14 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-30 09:48:14 - ui.main_window - INFO - Main application initialized
+2025-09-30 09:48:14 - root - INFO - Main window initialized
+2025-09-30 09:48:14 - ui.main_window.MainApplication - INFO - Applying ultra-minimal tab styling...
+2025-09-30 09:48:14 - ui.main_window.MainApplication - INFO - Ultra-minimal tab styling applied successfully
+2025-09-30 09:48:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loading merged data from settings path: H:/My Drive/CRM T84/0 Live App/Search data/merged_data
+2025-09-30 09:48:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-30 09:48:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-30 09:48:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-30 09:48:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1071 records closing after 2025-09-30 09:48:23.524598
+2025-09-30 09:48:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-30 09:48:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-30 09:48:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Auto-loaded 1 files with 14425 total records from: H:/My Drive/CRM T84/0 Live App/Search data/merged_data
+2025-09-30 09:48:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Successfully loaded merged data from settings: H:/My Drive/CRM T84/0 Live App/Search data/merged_data
+2025-09-30 09:48:23 - ui.main_window.MainApplication - INFO - Initial data loaded for Search tab
+2025-09-30 09:50:25 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-09-30 09:50:28 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-30 09:50:31 - ui.logs_tab.LogsTab - INFO - Logs tab selected
+2025-09-30 09:50:36 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-09-30 09:50:36 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-30 09:50:37 - ui.logs_tab.LogsTab - INFO - Logs tab selected
+2025-09-30 09:52:35 - ui.main_window.MainApplication - WARNING - Could not load app icon in about dialog: couldn't recognize data in image file "resources\app_icon.ico"
+2025-09-30 09:52:35 - ui.main_window.MainApplication - INFO - Cloud84 logo loaded successfully: resources\cloud84_logo.png
+2025-09-30 15:55:00 - ui.main_window - INFO - Application closing
+2025-09-30 15:55:00 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json

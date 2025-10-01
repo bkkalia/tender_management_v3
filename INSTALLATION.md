@@ -28,6 +28,9 @@ This will install the following packages:
 - **matplotlib**: For data visualization charts (optional)
 - **filelock**: For safe file operations across network drives
 - **icalendar**: For calendar import/export functionality
+- **psutil**: For system performance monitoring and metrics
+- **pytesseract**: For OCR functionality (optional)
+- **Pillow (PIL)**: For image processing and OCR support (optional)
 
 ### 3. Run the application
 

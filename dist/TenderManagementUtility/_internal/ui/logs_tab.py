@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 class LogsTab(ttk.Frame):
     """Logs tab for viewing and managing application logs."""
     
-    def __init__(self, parent: ttk.Notebook, main_app: 'MainApplication'):
+    def __init__(self, parent, main_app):
         super().__init__(parent)
         self.main_app = main_app
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
@@ -56,13 +56,19 @@ class LogsTab(ttk.Frame):
         self._start_log_consumer()
         
     def _create_widgets(self):
-        """Create the UI elements."""
-        # Main frame
+        """Create the UI elements with improved Bootstrap-like styling."""
+        # Main frame with improved styling
         main_frame = ttk.Frame(self, padding=SPACING['medium'])
         main_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Controls frame (top)
-        controls_frame = ttk.Frame(main_frame)
+
+        # Configure modern styling
+        style = ttk.Style()
+        style.configure('Logs.TLabelframe', background='#f8f9fa', borderwidth=2, relief='solid')
+        style.configure('Logs.TLabelframe.Label', background='#007bff', foreground='white', font=('TkDefaultFont', 11, 'bold'))
+        style.configure('Logs.TFrame', background='#ffffff')
+
+        # Controls frame (top) with improved layout
+        controls_frame = ttk.Frame(main_frame, style='Logs.TFrame')
         controls_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
         
         # Log level filter
@@ -395,4 +401,3 @@ class LogsTab(ttk.Frame):
             root_logger.removeHandler(self.log_handler)
             
         self.logger.info("Logs tab closing, resources released")
-

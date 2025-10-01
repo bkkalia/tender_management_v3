@@ -41,73 +41,130 @@ def _lighter_color(hex_color, factor=0.3):
     # Convert back to hex
     return f'#{r:02x}{g:02x}{b:02x}'
 
-def create_action_button(parent, text, command, button_type='primary', width=None):
-    """
-    Create a styled action button with proper coloring and hovering effects.
+class FilterButton(tk.Button):
+    """A custom button class that supports active/inactive states for filters."""
     
-    Args:
-        parent: Parent widget
-        text: Button text
-        command: Function to call when button is clicked
-        button_type: Style of button (primary, secondary, success, etc.)
-        width: Optional width of button
+    def __init__(self, parent, text, command, button_type='primary', **kwargs):
+        super().__init__(parent, text=text, command=command, **kwargs)
         
-    Returns:
-        ttk.Button: The created button widget
-    """
-    style_name = f"{button_type}.TButton"
-    
-    # Create unique style for this button if not already created
-    style = ttk.Style()
-    
-    # Get color scheme based on button type
-    bg_color = COLORS.get(button_type, COLORS.get('primary'))
-    fg_color = COLORS.get('white', '#ffffff')
-    
-    # Special handling for outlined buttons
-    if button_type.endswith('_outline'):
-        pass
-    
-    # Configure the style with reduced padding for better space usage
-    style.configure(
-        style_name,
-        background=bg_color,
-        foreground=fg_color,
-        font=FONTS.get('button', ('TkDefaultFont', 10)),
-        padding=(3, 1)
-    )
-    
-    # Add hover effect
-    style.map(
-        style_name,
-        background=[('active', _lighter_color(bg_color))],
-        relief=[('active', 'sunken')]
-    )
-    
-    # Create the button with the style
-    button_kwargs: Dict[str, Union[str, int]] = {'style': style_name}
-    if width is not None:
-        # Ensure width is an integer (required by ttk.Button)
-        try:
-            button_kwargs['width'] = int(width)
-        except (ValueError, TypeError):
-            # If conversion fails, use default width
-            pass
+        # Store original properties
+        self.original_text = text
+        self.is_filter_active = False
         
-    # Create the button with proper type handling
-    style = cast(str, button_kwargs.pop('style'))  # Use cast to ensure it's treated as str
-    width_val = button_kwargs.pop('width', None)
+        # Get button colors based on type
+        colors = _get_button_colors(button_type)
+        self.normal_bg = colors['bg']
+        self.normal_fg = colors['fg']
+        self.active_fg = "#FFFFFF"  # Keep white text for active state
+        self.active_border = "#000000"  # Black border for active state
+        
+        # Configure initial appearance with reduced padding
+        self.configure(
+            bg=self.normal_bg,
+            fg=self.normal_fg,
+            activebackground=_lighter_color(self.normal_bg, 0.1),
+            activeforeground=self.normal_fg,
+            font=FONTS.get('button', ('TkDefaultFont', 9, 'bold')),  # Slightly smaller font
+            relief='raised',
+            bd=1,  # Thinner border for normal state
+            padx=6,  # Reduced from 10
+            pady=3,  # Reduced from 6
+            cursor='hand2'
+        )
     
-    if width_val is not None:
-        # Ensure width_val is an integer for ttk.Button
-        if isinstance(width_val, int):
-            button = ttk.Button(parent, text=text, command=command, style=style, width=width_val)
+    def set_active(self, active=True):
+        """Set the active state of the filter button."""
+        self.is_filter_active = active
+        if active:
+            # Active state: Dark green background + checkmark + underlined text
+            self.configure(
+                text=f"✓ {self.original_text}",
+                fg="#FFFFFF",  # White text
+                bg="#2E7D32",  # Dark green background
+                activebackground="#1B5E20",  # Even darker green on hover
+                activeforeground="#FFFFFF",
+                relief='sunken',  # Pressed appearance
+                bd=2,
+                highlightbackground="#000000",
+                highlightcolor="#000000", 
+                highlightthickness=1,
+                # Add underline to the font
+                font=('TkDefaultFont', 9, 'bold underline')
+            )
         else:
-            # Default to no width if not an integer
-            button = ttk.Button(parent, text=text, command=command, style=style)
+            # Normal state: restore original appearance
+            self.configure(
+                text=self.original_text,
+                fg=self.normal_fg,
+                bg=self.normal_bg,
+                activebackground=_lighter_color(self.normal_bg, 0.1),
+                activeforeground=self.normal_fg,
+                relief='raised',
+                bd=1,
+                highlightthickness=0,
+                # Remove underline from font
+                font=('TkDefaultFont', 9, 'bold')
+            )
+    
+    def toggle_active(self):
+        """Toggle the active state."""
+        self.set_active(not self.is_filter_active)
+    
+    def is_active(self):
+        """Check if the filter is active."""
+        return self.is_filter_active
+
+def create_action_button(parent, text, command, button_type='primary', width=None, **kwargs):
+    """
+    Create a styled action button with support for active states.
+    """
+    # Check if this is a filter button
+    is_filter = kwargs.pop('is_filter', False)
+    
+    if is_filter:
+        # Create filter button with active state support
+        button = FilterButton(parent, text, command, button_type, **kwargs)
+        if width:
+            button.configure(width=width)
+        return button
     else:
-        button = ttk.Button(parent, text=text, command=command, style=style)
-    return button
+        # For regular buttons, use tk.Button with reduced padding
+        colors = _get_button_colors(button_type)
+        
+        button_kwargs = {
+            'bg': colors['bg'],
+            'fg': colors['fg'],
+            'activebackground': _lighter_color(colors['bg'], 0.1),
+            'activeforeground': colors['fg'],
+            'font': FONTS.get('button', ('TkDefaultFont', 9, 'bold')),  # Slightly smaller font
+            'relief': 'raised',
+            'bd': 1,  # Thinner border
+            'padx': 6,  # Reduced from 10
+            'pady': 3,  # Reduced from 6
+            'cursor': 'hand2'
+        }
+        
+        # Add any additional kwargs
+        button_kwargs.update(kwargs)
+        
+        button = tk.Button(parent, text=text, command=command, **button_kwargs)
+        
+        if width:
+            button.configure(width=width)
+        
+        return button
+
+def _get_button_colors(button_type):
+    """Get background and foreground colors for different button types."""
+    color_map = {
+        'primary': {'bg': '#4169E1', 'fg': '#FFFFFF'},    # Royal Blue
+        'secondary': {'bg': '#6c757d', 'fg': '#FFFFFF'},   # Gray
+        'success': {'bg': '#28a745', 'fg': '#FFFFFF'},     # Green
+        'warning': {'bg': '#ffc107', 'fg': '#000000'},     # Yellow
+        'danger': {'bg': '#dc3545', 'fg': '#FFFFFF'},      # Red
+        'info': {'bg': '#17a2b8', 'fg': '#FFFFFF'},        # Cyan
+    }
+    return color_map.get(button_type, color_map['primary'])
 
 def create_info_label(parent, text: str, font_style=None, textvariable=None, **kwargs) -> ttk.Label:
     """

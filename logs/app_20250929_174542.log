@@ -1,0 +1,174 @@
+2025-09-29 17:45:42 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250929_174542.log
+2025-09-29 17:45:42 - root - INFO - Application starting...
+2025-09-29 17:45:43 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-29 17:45:43 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-29 17:45:43 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-29 17:45:43 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-29 17:45:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-29 17:45:44 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-29 17:45:44 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-29 17:45:44 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-29 17:45:44 - ui.settings_tab.SettingsTab - INFO - Default column settings initialized
+2025-09-29 17:45:45 - ui.settings_tab.SettingsTab - INFO - Loaded column settings for 18 columns
+2025-09-29 17:45:45 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-29 17:45:45 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-29 17:45:45 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-29 17:45:45 - ui.main_window - INFO - Main application initialized
+2025-09-29 17:45:45 - root - INFO - Main window initialized
+2025-09-29 17:45:45 - ui.main_window.MainApplication - INFO - Applying ultra-minimal tab styling...
+2025-09-29 17:45:46 - ui.main_window.MainApplication - INFO - Ultra-minimal tab styling applied successfully
+2025-09-29 17:45:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loading merged data from settings path: H:/My Drive/CRM T84/0 Live App/Search data/merged_data
+2025-09-29 17:45:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 17:45:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 17:45:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-29 17:45:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1126 records closing after 2025-09-29 17:45:55.343403
+2025-09-29 17:45:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 17:45:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 17:45:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Auto-loaded 1 files with 14425 total records from: H:/My Drive/CRM T84/0 Live App/Search data/merged_data
+2025-09-29 17:45:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Successfully loaded merged data from settings: H:/My Drive/CRM T84/0 Live App/Search data/merged_data
+2025-09-29 17:45:55 - ui.main_window.MainApplication - INFO - Initial data loaded for Search tab
+2025-09-29 17:46:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1126 records closing after 2025-09-29 17:46:00.737413
+2025-09-29 17:46:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 36 records match 'una' with AND logic
+2025-09-29 17:46:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 17:46:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 17:46:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1126 records closing after 2025-09-29 17:46:01.505931
+2025-09-29 17:46:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'una ba' with AND logic
+2025-09-29 17:46:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1126 records closing after 2025-09-29 17:46:02.290556
+2025-09-29 17:46:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'una bare' with AND logic
+2025-09-29 17:46:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1126 records closing after 2025-09-29 17:46:02.839317
+2025-09-29 17:46:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'una barea' with AND logic
+2025-09-29 17:46:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1126 records closing after 2025-09-29 17:46:25.934923
+2025-09-29 17:46:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'una barrea' with AND logic
+2025-09-29 17:46:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1126 records closing after 2025-09-29 17:46:29.538813
+2025-09-29 17:46:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'una bar' with AND logic
+2025-09-29 17:46:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1126 records closing after 2025-09-29 17:46:37.269422
+2025-09-29 17:46:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'una barer' with AND logic
+2025-09-29 17:46:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1126 records closing after 2025-09-29 17:46:37.937810
+2025-09-29 17:46:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'una barera' with AND logic
+2025-09-29 17:46:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1126 records closing after 2025-09-29 17:46:41.857531
+2025-09-29 17:46:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'una brera' with AND logic
+2025-09-29 17:46:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 17:46:41 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 17:46:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=%24DirectLink&page=FrontEndViewTender&service=direct&sp=SF9XTp6krno7pE4NUwRLyrg%3D%3D
+2025-09-29 18:05:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:05:52.956092
+2025-09-29 18:05:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 662 records match 'Ha' with AND logic
+2025-09-29 18:05:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:05:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:05:53 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:05:53.500635
+2025-09-29 18:05:53 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 16 records match 'Haro' with AND logic
+2025-09-29 18:05:53 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:05:53 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:05:53 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:05:53.824353
+2025-09-29 18:05:53 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 3 records match 'Harot' with AND logic
+2025-09-29 18:05:53 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:05:53 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:05:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:05:54.127868
+2025-09-29 18:05:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 3 records match 'Harot' with AND logic
+2025-09-29 18:05:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:05:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:06:11 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=%24DirectLink&page=FrontEndViewTender&service=direct&sp=SHcJ%2FShwHI11R95T9r%2Bvy7w%3D%3D
+2025-09-29 18:07:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:07:23.310992
+2025-09-29 18:07:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 117 records match 'Gar' with AND logic
+2025-09-29 18:07:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:07:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:07:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:07:23.834219
+2025-09-29 18:07:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'Garib' with AND logic
+2025-09-29 18:07:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:07:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:07:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:07:24.124555
+2025-09-29 18:07:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'Garib' with AND logic
+2025-09-29 18:07:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:07:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:07:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:07:24.577328
+2025-09-29 18:07:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'Garib n' with AND logic
+2025-09-29 18:07:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:07:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:07:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:07:25.509224
+2025-09-29 18:07:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'Garib nath' with AND logic
+2025-09-29 18:07:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:07:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:07:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=%24DirectLink&page=FrontEndViewTender&service=direct&sp=SCWy2%2F5YU995YKATuWcmdnA%3D%3D
+2025-09-29 18:08:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:08:56.486892
+2025-09-29 18:08:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 542 records match 'La' with AND logic
+2025-09-29 18:08:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:08:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:08:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:08:56.879008
+2025-09-29 18:08:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 2 records match 'Laml' with AND logic
+2025-09-29 18:08:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:08:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:08:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:08:57.192546
+2025-09-29 18:08:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 2 records match 'Lamle' with AND logic
+2025-09-29 18:08:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:08:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:08:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:08:57.652634
+2025-09-29 18:08:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 2 records match 'Lamleh' with AND logic
+2025-09-29 18:08:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:08:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:08:58 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:08:58.618173
+2025-09-29 18:08:58 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 2 records match 'Lamlehri' with AND logic
+2025-09-29 18:08:58 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:08:58 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:09:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=%24DirectLink&page=FrontEndViewTender&service=direct&sp=SD9eNLI1kSYKKcXRmHvLmcg%3D%3D
+2025-09-29 18:26:17 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:26:17.660261
+2025-09-29 18:26:17 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 995 records match 'am' with AND logic
+2025-09-29 18:26:17 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:26:17 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:26:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:26:18.033939
+2025-09-29 18:26:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 58 records match 'amb' with AND logic
+2025-09-29 18:26:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:26:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:26:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:26:18.356141
+2025-09-29 18:26:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 6 records match 'ambe' with AND logic
+2025-09-29 18:26:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:26:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:26:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:26:18.894816
+2025-09-29 18:26:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 2 records match 'ambeh' with AND logic
+2025-09-29 18:26:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:26:18 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:26:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:26:19.548646
+2025-09-29 18:26:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 2 records match 'ambehra' with AND logic
+2025-09-29 18:26:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:26:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:26:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:26:24.249820
+2025-09-29 18:26:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 2 records match 'ambehra, h' with AND logic
+2025-09-29 18:26:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:26:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:26:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:26:24.739899
+2025-09-29 18:26:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'ambehra, har' with AND logic
+2025-09-29 18:26:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:26:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:26:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:26:25.359637
+2025-09-29 18:26:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'ambehra, haro' with AND logic
+2025-09-29 18:26:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:26:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:26:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:26:29.147078
+2025-09-29 18:26:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'ambehra, harot' with AND logic
+2025-09-29 18:26:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:26:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:26:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=%24DirectLink&page=FrontEndViewTender&service=direct&sp=SZnu3YHIPEqhTWcDK%2BoKUyQ%3D%3D
+2025-09-29 18:32:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:32:01.825605
+2025-09-29 18:32:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:32:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:32:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:32:06.032535
+2025-09-29 18:32:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1084 records match 'd' with AND logic
+2025-09-29 18:32:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:32:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:32:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:32:06.482350
+2025-09-29 18:32:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 85 records match 'du' with AND logic
+2025-09-29 18:32:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:32:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:32:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:32:07.045500
+2025-09-29 18:32:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 2 records match 'dum' with AND logic
+2025-09-29 18:32:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:32:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:32:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:32:10.552974
+2025-09-29 18:32:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'dumkha' with AND logic
+2025-09-29 18:32:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:32:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:32:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1084 records closing after 2025-09-29 18:32:10.961950
+2025-09-29 18:32:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'dumkhar' with AND logic
+2025-09-29 18:32:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-29 18:32:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-29 18:32:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=%24DirectLink&page=FrontEndViewTender&service=direct&sp=SC7o1%2Fix8UPTrE939CcE5qw%3D%3D
+2025-09-29 22:42:31 - ui.main_window - INFO - Application closing
+2025-09-29 22:42:31 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json

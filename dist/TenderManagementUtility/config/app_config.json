@@ -2,21 +2,32 @@
     "app_title": "Tender Search Utility V3",
     "default_data_folder": "./data/input_excel_files/",
     "merged_data_folder": "./data/merged_data/",
+    "auto_load_data_path": "H:/My Drive/CRM T84/0 Live App/Search data/merged_data",
     "log_level": "INFO",
     "last_used_folders": [
-        "H:/My Drive/0dev/Search Utility v2/tender_management_v2.1/data/input_excel_files"
+        "H:/My Drive/CRM T84/0 Live App/Search data/merged_data"
     ],
+    "remote_data_sources": [],
+    "remote_connection_timeout": 30,
+    "remote_download_chunk_size": 8192,
+    "cleanup_temp_files_on_exit": true,
     "merger_preferred_unique_keys": [
         "Tender ID (Extracted)",
         "Title and Ref.No./Tender ID",
         "Tender ID"
     ],
     "merger_critical_fields": [
+         "Tender ID (Extracted)",
+        "Title and Ref.No./Tender ID",
+        "Tender ID",
         "Closing Date",
         "Status",
         "Value"
     ],
+    "merger_max_backups": 5,
+    "default_dashboard": "Search & Dashboard",
     "last_loaded_files": [
-        "./data/merged_data/hptenders_gov_in_consolidated_master.xlsx"
-    ]
+        "H:/My Drive/CRM T84/0 Live App/Search data/merged_data"
+    ],
+    "auto_load_enabled": true
 }

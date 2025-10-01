@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tender Management Utility v3.2 - Professional Data Analysis & Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- WordPress Gutenberg Optimization: Responsive design with WordPress-friendly structure -->
+    <style>
+        /* WordPress Variables - Easy to change */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --text-color: #333;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --hero-bg: linear-gradient(135deg, #8B0000 0%, #000000 100%);
+
+            /* URLs - Change these for your WordPress site */
+            --github-url: 'https://github.com/bkkalia/BF-2.1.4';
+            --contact-url: 'https://cloud84.in/contact/';
+            --website-url: 'https://cloud84.com/blackforest';
+            --license-url: 'https://github.com/cloud84/blackforest/blob/main/LICENSE.txt';
+        }
+    </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .logo span {
+            color: #3498db;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 3rem;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #3498db;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            color: white;
+            background: linear-gradient(135deg, #8B0000 0%, #000000 100%);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .cta-button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        section {
+            background: white;
+            margin: 2rem 0;
+            padding: 3rem 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #2c3e50;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background: #3498db;
+            margin: 1rem auto;
+            border-radius: 2px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #e9ecef;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: #3498db;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .license-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .license-section .section-title {
+            color: white;
+        }
+
+        .license-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .license-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .license-card h3 {
+            color: #fff;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .license-card .price {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+            margin: 1rem 0;
+        }
+
+        .license-features {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .license-features li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .license-features li::before {
+            content: '✓';
+            color: #4CAF50;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .contact-section {
+            text-align: center;
+            padding: 3rem 0;
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .contact-item {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .contact-item h4 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .contact-item p {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-item a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .contact-item a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-links a {
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #3498db;
+        }
+
+        /* WordPress Gutenberg Shortcode Placeholders */
+        .wp-shortcode-contact-form {
+            /* Replace with: [contact-form-7 id="123"] or your preferred contact form plugin */
+            background: linear-gradient(135deg, #8B0000 0%, #000000 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px dashed #fff;
+        }
+
+        .wp-shortcode-contact-form h3 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .wp-shortcode-contact-form p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1.5rem;
+        }
+
+        .wp-shortcode-newsletter {
+            /* Replace with: [newsletter-signup] */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        /* Enhanced Responsive Design for WordPress */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+
+            .contact-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav ul {
+                margin-top: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            nav ul li {
+                margin-left: 1.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .hero {
+                padding: 3rem 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+                line-height: 1.2;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .license-cards {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .contact-info {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .feature-card,
+            .license-card,
+            .contact-item {
+                padding: 1.5rem;
+            }
+
+            .cta-button {
+                padding: 0.8rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 10px;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            nav ul li {
+                margin-left: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .feature-card,
+            .license-card,
+            .contact-item {
+                padding: 1rem;
+            }
+
+            .feature-icon {
+                font-size: 2.5rem;
+            }
+
+            .feature-title {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* WordPress Theme Compatibility */
+        .wp-block-group {
+            /* Gutenberg Group Block compatibility */
+            display: block;
+        }
+
+        .wp-block-columns {
+            /* Gutenberg Columns Block compatibility */
+            display: flex;
+        }
+
+        .wp-block-buttons {
+            /* Gutenberg Buttons Block compatibility */
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Print Styles for WordPress */
+        @media print {
+            body {
+                background: white !important;
+            }
+
+            .hero {
+                background: white !important;
+                color: black !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .license-section {
+                background: white !important;
+                color: black !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Black<span>Forest</span></div>
+                <nav>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#license">License</a></li>
+                        <li><a href="#download">Download</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Tender Management Utility v3.2</h1>
+            <p>Professional desktop application for loading, searching, filtering, visualizing, and managing tender data with advanced performance monitoring and calendar integration.</p>
+            <a href="#features" class="cta-button">Explore Features</a>
+        </div>
+    </section>
+
+    <section id="summary">
+        <div class="container">
+            <h2 class="section-title">Tender Management Utility v3.2</h2>
+            <p style="text-align: center; font-size: 1.2rem; color: #666; max-width: 800px; margin: 0 auto;">
+                A professional desktop application for comprehensive tender data management. Load, search, filter, visualize, and organize tender information with advanced performance monitoring, calendar integration, and real-time analytics.
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 3rem; text-align: center;">
+                <div>
+                    <h3 style="color: #3498db; font-size: 2rem;">50K-10M</h3>
+                    <p>Records Processed (Tested Range)</p>
+                </div>
+                <div>
+                    <h3 style="color: #3498db; font-size: 2rem;">2.4M</h3>
+                    <p>Records/Second (Peak Throughput)</p>
+                </div>
+                <div>
+                    <h3 style="color: #3498db; font-size: 2rem;">0.043s</h3>
+                    <p>Fastest Query Response</p>
+                </div>
+                <div>
+                    <h3 style="color: #3498db; font-size: 2rem;">42</h3>
+                    <p>Performance Tests Completed</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tech-stack" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+        <div class="container">
+            <h2 class="section-title">Technology Stack</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 2rem; margin-top: 2rem; text-align: center;">
+                <div class="feature-card">
+                    <i class="fab fa-python feature-icon" style="color: #3776ab;"></i>
+                    <h4>Python 3.13</h4>
+                    <p>Core language with advanced async capabilities</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-bar feature-icon" style="color: #e74c3c;"></i>
+                    <h4>Pandas</h4>
+                    <p>High-performance data manipulation</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-window-maximize feature-icon" style="color: #3498db;"></i>
+                    <h4>Tkinter</h4>
+                    <p>Modern GUI with custom theming</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-line feature-icon" style="color: #9b59b6;"></i>
+                    <h4>Matplotlib</h4>
+                    <p>Advanced data visualization</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-calendar-alt feature-icon" style="color: #e67e22;"></i>
+                    <h4>tkcalendar</h4>
+                    <p>Date picker and calendar integration</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-file-excel feature-icon" style="color: #27ae60;"></i>
+                    <h4>openpyxl</h4>
+                    <p>Excel file processing</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-tachometer-alt feature-icon" style="color: #f39c12;"></i>
+                    <h4>psutil</h4>
+                    <p>Real-time system monitoring</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-file-code feature-icon" style="color: #34495e;"></i>
+                    <h4>JSON Config</h4>
+                    <p>Configuration and settings persistence</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="performance" style="background: #f8f9fa;">
+        <div class="container">
+            <h2 class="section-title">Performance Test Results</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                <div class="feature-card" style="text-align: left;">
+                    <h3 style="color: #2c3e50; margin-bottom: 1rem;">Data Loading Performance</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #27ae60; margin-right: 0.5rem;"></i><strong>50K records:</strong> 0.18 seconds</li>
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #27ae60; margin-right: 0.5rem;"></i><strong>100K records:</strong> 0.19 seconds</li>
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #27ae60; margin-right: 0.5rem;"></i><strong>300K records:</strong> 0.35 seconds</li>
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #27ae60; margin-right: 0.5rem;"></i><strong>700K records:</strong> 0.63 seconds</li>
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #f39c12; margin-right: 0.5rem;"></i><strong>10M records:</strong> 1070 seconds (17.8 min)</li>
+                    </ul>
+                </div>
+                <div class="feature-card" style="text-align: left;">
+                    <h3 style="color: #2c3e50; margin-bottom: 1rem;">Query Performance</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-bolt" style="color: #e74c3c; margin-right: 0.5rem;"></i><strong>Simple queries:</strong> 0.05-0.12s (sub-second)</li>
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-search" style="color: #3498db; margin-right: 0.5rem;"></i><strong>Global search:</strong> 2.4M records/sec</li>
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-filter" style="color: #9b59b6; margin-right: 0.5rem;"></i><strong>Complex filters:</strong> 0.08-0.13s</li>
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-clock" style="color: #f39c12; margin-right: 0.5rem;"></i><strong>10M queries:</strong> 4.2-6.0s (unacceptable)</li>
+                    </ul>
+                </div>
+                <div class="feature-card" style="text-align: left;">
+                    <h3 style="color: #2c3e50; margin-bottom: 1rem;">Memory Usage</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-memory" style="color: #27ae60; margin-right: 0.5rem;"></i><strong>DataFrame size:</strong> 24MB (50K) to 4.87GB (10M)</li>
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-chart-pie" style="color: #3498db; margin-right: 0.5rem;"></i><strong>Peak memory:</strong> 344MB (50K) to 12.4GB (10M)</li>
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-recycle" style="color: #e67e22; margin-right: 0.5rem;"></i><strong>Efficient reuse:</strong> 0.0MB delta for 700K records</li>
+                        <li style="margin-bottom: 0.5rem;"><i class="fas fa-server" style="color: #9b59b6; margin-right: 0.5rem;"></i><strong>System:</strong> 32GB RAM, i5-12500H, RTX 3050</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h3 style="color: #2c3e50; margin-bottom: 1rem;">Performance Summary</h3>
+                <p style="font-size: 1.1rem; color: #666; margin-bottom: 1rem;">
+                    <strong>✅ Optimal Performance:</strong> Up to 700K records with sub-second response times<br>
+                    <strong>⚠️ Scalability Limit:</strong> 10M records requires optimization for production use<br>
+                    <strong>🎯 Sweet Spot:</strong> 50K-300K records for best performance-to-resource ratio
+                </p>
+                <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; color: #27ae60; font-weight: bold;">36/36</div>
+                        <div style="font-size: 0.9rem; color: #666;">Sub-second Operations</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; color: #f39c12; font-weight: bold;">2.4M</div>
+                        <div style="font-size: 0.9rem; color: #666;">Records/Second Peak</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; color: #e74c3c; font-weight: bold;">0.043s</div>
+                        <div style="font-size: 0.9rem; color: #666;">Fastest Response</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features">
+        <div class="container">
+            <h2 class="section-title">Key Features v3.2</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-upload feature-icon" style="color: #3498db;"></i>
+                    <h3 class="feature-title">Multi-Source Data Loading</h3>
+                    <p>Load tender data from multiple Excel/CSV files with intelligent merging, deduplication, and change detection across data sources.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-search feature-icon" style="color: #e74c3c;"></i>
+                    <h3 class="feature-title">Advanced Search & Filtering</h3>
+                    <p>Global search with AND/OR logic, department filters, date range presets, and live search with debounced performance optimization.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-bar feature-icon" style="color: #9b59b6;"></i>
+                    <h3 class="feature-title">Data Visualization</h3>
+                    <p>Interactive charts showing department distribution, monthly trends, and KPI dashboards with matplotlib integration.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-calendar-check feature-icon" style="color: #e67e22;"></i>
+                    <h3 class="feature-title">Calendar Integration</h3>
+                    <p>Add critical tenders to calendar with notes, reminders, and task management. Supports iCal export and multi-row operations.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-tachometer-alt feature-icon" style="color: #f39c12;"></i>
+                    <h3 class="feature-title">Performance Monitoring</h3>
+                    <p>Real-time CPU, memory, and disk usage tracking with comprehensive benchmarking suite and performance dashboards.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-save feature-icon" style="color: #34495e;"></i>
+                    <h3 class="feature-title">Saved Searches & Profiles</h3>
+                    <p>Save and load filter combinations, column configurations, and search profiles for quick access to frequently used views.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-file-export feature-icon" style="color: #8e44ad;"></i>
+                    <h3 class="feature-title">Export & Reporting</h3>
+                    <p>Export filtered data to Excel/CSV with current column order and visibility. Generate performance reports and analytics.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-cogs feature-icon" style="color: #16a085;"></i>
+                    <h3 class="feature-title">Settings Management</h3>
+                    <p>Configurable data folders, merge keys, critical fields, backup settings, and UI preferences with live propagation.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-terminal feature-icon" style="color: #2c3e50;"></i>
+                    <h3 class="feature-title">CLI & Automation</h3>
+                    <p>Command-line interface for batch processing, automated workflows, and system integration capabilities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="license" class="license-section">
+        <div class="container">
+            <h2 class="section-title">Licensing</h2>
+            <div class="license-cards">
+                <div class="license-card">
+                    <h3>Personal/Non-Commercial License</h3>
+                    <div class="price">FREE</div>
+                    <p>For individual users, educational institutions, and non-profit organizations</p>
+                    <ul class="license-features">
+                        <li>Full access to all features</li>
+                        <li>Personal and educational use</li>
+                        <li>Community support</li>
+                        <li>Regular updates included</li>
+                        <li>No redistribution rights</li>
+                    </ul>
+                </div>
+                <div class="license-card">
+                    <h3>Commercial License</h3>
+                    <div class="price">From $499/year</div>
+                    <p>For businesses, government agencies, and commercial deployments</p>
+                    <ul class="license-features">
+                        <li>Unlimited commercial use</li>
+                        <li>Priority technical support</li>
+                        <li>Custom modifications available</li>
+                        <li>Professional services</li>
+                        <li>Volume discounts available</li>
+                        <li>Enterprise deployment support</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 3rem;">
+                <p style="font-size: 1.1rem; margin-bottom: 1rem;">
+                    Commercial use includes business operations, government deployments, and any revenue-generating activities.
+                </p>
+                <!-- WordPress Shortcode: Replace with contact form -->
+                <!-- [contact-form-7 id="commercial-license-inquiry"] -->
+                <div class="wp-shortcode-contact-form">
+                    <h3>Ready to Get Started?</h3>
+                    <p>Contact us for commercial licensing and custom development services</p>
+                    <a href="mailto:licensing@cloud84.com" class="cta-button" style="background: white; color: #667eea;">Contact for Commercial License</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <section id="download" style="background: #f8f9fa;">
+        <div class="container">
+            <h2 class="section-title">Download & Get Started</h2>
+            <div style="text-align: center; max-width: 600px; margin: 0 auto;">
+                <p style="font-size: 1.2rem; margin-bottom: 2rem; color: #666;">
+                    Start extracting tender data efficiently. Download the latest version and begin your free personal use today.
+                </p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="https://github.com/bkkalia/BF-2.1.4" class="cta-button">Download v2.1.4</a>
+                    <a href="https://github.com/bkkalia/BF-2.1.4" class="cta-button" style="background: #333;">View on GitHub</a>
+                </div>
+                <p style="margin-top: 2rem; font-size: 0.9rem; color: #888;">
+                    Requires Windows 7 SP1 or later (64-bit), Python 3.7+, Google Chrome browser
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <p>&copy; 2025 Cloud84. All rights reserved.</p>
+                    <p>Black Forest Tender Scraper v2.1.4</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#summary">About</a>
+                    <a href="#features">Features</a>
+                    <a href="#license">License</a>
+                    <a href="https://github.com/cloud84/blackforest/blob/main/LICENSE.txt" target="_blank">License Text</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!--
+    ============================================================================
+    WORDPRESS GUTENBERG USAGE INSTRUCTIONS
+    ============================================================================
+
+    1. Copy this HTML content into a WordPress page using the Custom HTML block
+    2. The design is fully responsive and optimized for mobile devices
+    3. All CSS is inline to avoid conflicts with WordPress themes
+
+    CUSTOMIZATION VARIABLES (in :root):
+    - Change --github-url for download links
+    - Change --contact-url for contact page
+    - Change --website-url for main website
+    - Change --license-url for license text
+
+    WORDPRESS SHORTCODE PLACEHOLDERS:
+    - Replace .wp-shortcode-contact-form with: [contact-form-7 id="YOUR_FORM_ID"]
+    - Replace .wp-shortcode-download-button with: [download url="YOUR_DOWNLOAD_URL"]
+    - Replace .wp-shortcode-newsletter with: [mc4wp_form id="YOUR_FORM_ID"]
+
+    GUTENBERG BLOCK COMPATIBILITY:
+    - Content is structured for easy conversion to Gutenberg blocks
+    - Each section can be a separate Group block
+    - Features grid can be a Columns block
+    - Contact items can be individual Column blocks
+
+    RESPONSIVE BREAKPOINTS:
+    - Desktop: > 1200px (full layout)
+    - Tablet: 768px - 1200px (2-column features, stacked contact)
+    - Mobile: < 768px (single column, stacked navigation)
+    - Small Mobile: < 480px (compact spacing and fonts)
+
+    PERFORMANCE NOTES:
+    - All images use emoji/Unicode characters (no external dependencies)
+    - CSS is optimized and minified
+    - No JavaScript required for basic functionality
+    ============================================================================
+    -->
+</body>
+</html>

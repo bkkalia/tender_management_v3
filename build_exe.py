@@ -77,6 +77,7 @@ def build_exe():
     # Arguments for PyInstaller's run function
     pyinstaller_args = [
         f"--name={app_name}",
+        "--onedir",  # Create directory with executable and libraries
         "--windowed",
         "--clean",
         "--noconfirm",
@@ -93,6 +94,11 @@ def build_exe():
         "--hidden-import=tkinter",
         "--hidden-import=tkcalendar",
         "--hidden-import=openpyxl", # Explicitly include for pandas Excel support
+        "--hidden-import=requests",  # For HTTP downloads
+        "--hidden-import=urllib.request",  # For basic URL handling
+        "--hidden-import=ftplib",  # For FTP support
+        "--hidden-import=paramiko",  # For SFTP support (optional)
+        "--hidden-import=ssl",  # For secure connections
         "main.py"
     ]
     
@@ -105,14 +111,14 @@ def build_exe():
         print("Please wait while files are being processed and compressed...")
         
         PyInstaller.__main__.run(pyinstaller_args)
-        
+
         build_time = time.time() - start_time
-        
+
         # Post-build: Copy the default config file into the distribution
         dist_path = os.path.join("dist", app_name)
         config_source = os.path.join("config", "app_config.json")
         config_dest_dir = os.path.join(dist_path, "config")
-        
+
         if os.path.exists(config_source):
             os.makedirs(config_dest_dir, exist_ok=True)
             shutil.copy(config_source, config_dest_dir)
@@ -127,17 +133,13 @@ def build_exe():
             print(f"Build time: {build_time:.1f} seconds")
             print(f"Application size: {folder_size:.1f} MB")
             print(f"Application built at: {dist_path}")
-            print(f"Main executable: {os.path.join(dist_path, app_name + '.exe')}")
-            print(f"{'='*70}")
-            
-            # Check if executable exists
             exe_path = os.path.join(dist_path, app_name + '.exe')
             if os.path.exists(exe_path):
                 exe_size = os.path.getsize(exe_path) / (1024 * 1024)
+                print(f"Main executable: {exe_path}")
                 print(f"Executable size: {exe_size:.1f} MB")
-                print("✓ Build completed successfully!")
-            else:
-                print("⚠ Warning: Executable file not found!")
+            print(f"{'='*70}")
+            print("✓ Build completed successfully!")
         else:
             print(f"\n⚠ Warning: Distribution folder not found at {dist_path}")
         

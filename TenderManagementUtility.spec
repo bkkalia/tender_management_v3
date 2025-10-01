@@ -6,7 +6,7 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[('utils', 'utils'), ('ui', 'ui'), ('core', 'core'), ('config', 'config'), ('resources', 'resources')],
-    hiddenimports=['pandas', 'tkinter', 'tkcalendar', 'openpyxl'],
+    hiddenimports=['pandas', 'tkinter', 'tkcalendar', 'openpyxl', 'requests', 'urllib.request', 'ftplib', 'paramiko', 'ssl'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -32,6 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['resources\\app_icon.ico'],
 )
 coll = COLLECT(
     exe,

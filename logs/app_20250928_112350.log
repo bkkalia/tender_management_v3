@@ -1,0 +1,89 @@
+2025-09-28 11:23:50 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250928_112350.log
+2025-09-28 11:23:50 - root - INFO - Application starting...
+2025-09-28 11:23:50 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-28 11:23:50 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-28 11:23:50 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-28 11:23:50 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-28 11:23:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 11:23:51 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-28 11:23:51 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-28 11:23:51 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-28 11:23:51 - ui.settings_tab.SettingsTab - INFO - Default column settings initialized
+2025-09-28 11:23:51 - ui.settings_tab.SettingsTab - INFO - Loaded column settings for 18 columns
+2025-09-28 11:23:51 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-28 11:23:51 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-28 11:23:51 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-28 11:23:51 - ui.main_window - INFO - Main application initialized
+2025-09-28 11:23:51 - root - INFO - Main window initialized
+2025-09-28 11:23:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loading last used data source: export_test_data.xlsx
+2025-09-28 11:23:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: []
+2025-09-28 11:23:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 7 columns
+2025-09-28 11:23:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 11:24:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 0 records closing after 2025-09-28 11:24:02.432616
+2025-09-28 11:24:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loaded merged file for analysis: export_test_data.xlsx (15000 records)
+2025-09-28 11:24:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Successfully loaded last used data source: export_test_data.xlsx
+2025-09-28 11:24:02 - ui.main_window.MainApplication - INFO - Initial data loaded for Search tab
+2025-09-28 11:24:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:24:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:24:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 11:24:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:24:33.278895
+2025-09-28 11:24:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:24:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:24:40 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-28 11:24:45 - ui.settings_tab.SettingsTab - INFO - Loaded column settings for 18 columns
+2025-09-28 11:24:56 - ui.settings_tab.SettingsTab - INFO - Selected column: Department
+2025-09-28 11:24:56 - ui.settings_tab.SettingsTab - INFO - Selected column: Department
+2025-09-28 11:25:25 - ui.benchmark_window.BenchmarkWindow - INFO - Benchmark window initialized
+2025-09-28 11:25:25 - ui.settings_tab.SettingsTab - INFO - Benchmark window opened from settings
+2025-09-28 11:26:56 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-09-28 11:26:57 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-28 11:26:58 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab selected (placeholder)
+2025-09-28 11:26:59 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-28 11:27:32 - ui.calendar_tab.CalendarTab - INFO - View changed to: Week
+2025-09-28 11:27:36 - ui.calendar_tab.CalendarTab - INFO - View changed to: Month
+2025-09-28 11:27:37 - ui.calendar_tab.CalendarTab - INFO - View changed to: Day
+2025-09-28 11:27:49 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:27:49.997478
+2025-09-28 11:27:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1283 records match 'u' with AND logic
+2025-09-28 11:27:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:27:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:27:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:27:50.802572
+2025-09-28 11:27:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 63 records match 'una' with AND logic
+2025-09-28 11:27:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:27:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:27:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:27:52.715480
+2025-09-28 11:27:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 63 records match 'una' with AND logic
+2025-09-28 11:27:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:27:52 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:27:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:27:55.545874
+2025-09-28 11:27:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'una =' with AND logic
+2025-09-28 11:27:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:27:57.673989
+2025-09-28 11:27:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'una ==' with AND logic
+2025-09-28 11:27:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:27:59.827682
+2025-09-28 11:27:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 63 records match 'una' with AND logic
+2025-09-28 11:27:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:27:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:28:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:28:02.443740
+2025-09-28 11:28:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 63 records match 'una' with AND logic
+2025-09-28 11:28:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:28:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:28:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:28:03.753063
+2025-09-28 11:28:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'una pwd' with AND logic
+2025-09-28 11:28:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:28:09.573520
+2025-09-28 11:28:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 13 records match 'una, pwd' with AND logic
+2025-09-28 11:28:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:28:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:28:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:28:24.564304
+2025-09-28 11:28:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 768 records match 'una, pwd' with OR logic
+2025-09-28 11:28:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:28:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:28:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_3_days
+2025-09-28 11:28:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:28:31.206890
+2025-09-28 11:28:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 768 records match 'una, pwd' with OR logic
+2025-09-28 11:28:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_3_days) with status (live): 546 records
+2025-09-28 11:28:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:28:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 11:28:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 11:28:55.199197
+2025-09-28 11:28:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 768 records match 'una, pwd' with OR logic
+2025-09-28 11:28:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_3_days) with status (live): 546 records
+2025-09-28 11:28:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 11:28:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns

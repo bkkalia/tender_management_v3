@@ -114,6 +114,216 @@ class TenderDataProcessor:
         self.logger.info(f"Successfully loaded {total_records} records from {loaded_count} files.")
         return True, f"Successfully loaded {total_records} records from {loaded_count} files."
 
+    def _filter_by_date(self, df: pd.DataFrame, date_filter: Dict[str, Any]) -> Optional[pd.DataFrame]:
+        """
+        Filter the DataFrame by date based on the provided date filter criteria.
+        
+        Args:
+            df: The DataFrame to filter.
+            date_filter: A dictionary containing the date filter criteria.
+        
+        Returns:
+            A filtered DataFrame or None if no valid date filter is provided.
+        """
+        if df.empty or 'type' not in date_filter:
+            return None
+            
+        # Ensure we have closing date columns
+        if not self.closing_date_columns:
+            self.logger.warning("No closing date columns found for date filtering")
+            return None
+            
+        filter_type = date_filter['type']
+        
+        # Use pandas Timestamp for precise time comparisons
+        current_time = pd.Timestamp.now()
+        today_start = current_time.normalize()  # Start of today (00:00:00)
+        today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)  # End of today (23:59:59.999999)
+        
+        # Use the first closing date column for filtering
+        date_col = self.closing_date_columns[0]
+        
+        # Log the current filtering details
+        self.logger.info(f"Filtering by date - Type: {filter_type}, Column: {date_col}")
+        self.logger.info(f"Current time: {current_time}")
+        self.logger.info(f"Today range: {today_start} to {today_end}")
+        
+        # Check for valid datetime data
+        valid_date_mask = df[date_col].notna()
+        valid_date_count = valid_date_mask.sum()
+        total_records = len(df)
+        
+        self.logger.info(f"Total records: {total_records}, Records with valid dates: {valid_date_count}")
+        
+        if valid_date_count == 0:
+            self.logger.warning(f"No valid dates found in column '{date_col}'")
+            return pd.DataFrame()  # Return empty DataFrame if no valid dates
+        
+        try:
+            # Handle different filter types with proper logging
+            if filter_type == 'all':
+                self.logger.info(f"All records filter: returning {len(df)} records")
+                return df.copy()
+                
+            elif filter_type == 'live':
+                mask = df[date_col] > current_time
+                filtered_df = df[mask].copy()
+                self.logger.info(f"Live tenders filter: {len(filtered_df)} records (closing after {current_time})")
+                return filtered_df
+                
+            elif filter_type == 'expired':
+                mask = df[date_col] < current_time
+                filtered_df = df[mask].copy()
+                self.logger.info(f"Expired tenders filter: {len(filtered_df)} records (closed before {current_time})")
+                return filtered_df
+                
+            elif filter_type == 'today':
+                mask = (df[date_col] >= today_start) & (df[date_col] <= today_end)
+                filtered_df = df[mask].copy()
+                self.logger.info(f"Today filter: {len(filtered_df)} records (closing between {today_start} and {today_end})")
+                return filtered_df
+                
+            elif filter_type == 'next_3_days':
+                end_date = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
+                mask = (df[date_col] >= current_time) & (df[date_col] <= end_date)
+                filtered_df = df[mask].copy()
+                self.logger.info(f"Next 3 days filter: {len(filtered_df)} records (closing between {current_time} and {end_date})")
+                return filtered_df
+                
+            elif filter_type == 'next_7_days':
+                end_date = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
+                mask = (df[date_col] >= current_time) & (df[date_col] <= end_date)
+                filtered_df = df[mask].copy()
+                self.logger.info(f"Next 7 days filter: {len(filtered_df)} records (closing between {current_time} and {end_date})")
+                return filtered_df
+                
+            elif filter_type == 'next_30_days':
+                end_date = today_start + pd.Timedelta(days=30, hours=23, minutes=59, seconds=59)
+                mask = (df[date_col] >= current_time) & (df[date_col] <= end_date)
+                filtered_df = df[mask].copy()
+                self.logger.info(f"Next 30 days filter: {len(filtered_df)} records (closing between {current_time} and {end_date})")
+                return filtered_df
+                
+            elif filter_type == 'combined':
+                # Handle combined status + time range filters
+                status = date_filter.get('status', 'live')
+                time_range = date_filter.get('time_range')
+                
+                self.logger.info(f"Combined filter - Status: {status}, Time range: {time_range}")
+                
+                # First apply status filter
+                if status == 'live':
+                    status_mask = df[date_col] > current_time
+                    status_filtered = df[status_mask].copy()
+                    self.logger.info(f"Status filter (live): {len(status_filtered)} records")
+                elif status == 'expired':
+                    status_mask = df[date_col] < current_time
+                    status_filtered = df[status_mask].copy()
+                    self.logger.info(f"Status filter (expired): {len(status_filtered)} records")
+                else:  # 'all'
+                    status_filtered = df.copy()
+                    self.logger.info(f"Status filter (all): {len(status_filtered)} records")
+                
+                # Then apply time range filter if specified
+                if time_range and len(status_filtered) > 0:
+                    if time_range == 'today':
+                        time_mask = (status_filtered[date_col] >= today_start) & (status_filtered[date_col] <= today_end)
+                        final_filtered = status_filtered[time_mask].copy()
+                        self.logger.info(f"Combined filter result: {len(final_filtered)} records (status: {status}, time: today)")
+                    elif time_range == 'next_3_days':
+                        end_date = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
+                        if status == 'live':
+                            time_mask = (status_filtered[date_col] >= current_time) & (status_filtered[date_col] <= end_date)
+                        else:
+                            time_mask = (status_filtered[date_col] >= today_start) & (status_filtered[date_col] <= end_date)
+                        final_filtered = status_filtered[time_mask].copy()
+                        self.logger.info(f"Combined filter result: {len(final_filtered)} records (status: {status}, time: next 3 days)")
+                    elif time_range == 'next_7_days':
+                        end_date = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
+                        if status == 'live':
+                            time_mask = (status_filtered[date_col] >= current_time) & (status_filtered[date_col] <= end_date)
+                        else:
+                            time_mask = (status_filtered[date_col] >= today_start) & (status_filtered[date_col] <= end_date)
+                        final_filtered = status_filtered[time_mask].copy()
+                        self.logger.info(f"Combined filter result: {len(final_filtered)} records (status: {status}, time: next 7 days)")
+                    elif time_range == 'next_30_days':
+                        end_date = today_start + pd.Timedelta(days=30, hours=23, minutes=59, seconds=59)
+                        if status == 'live':
+                            time_mask = (status_filtered[date_col] >= current_time) & (status_filtered[date_col] <= end_date)
+                        else:
+                            time_mask = (status_filtered[date_col] >= today_start) & (status_filtered[date_col] <= end_date)
+                        final_filtered = status_filtered[time_mask].copy()
+                        self.logger.info(f"Combined filter result: {len(final_filtered)} records (status: {status}, time: next 30 days)")
+                    else:
+                        final_filtered = status_filtered
+                        self.logger.info(f"Combined filter result: {len(final_filtered)} records (status only: {status})")
+                else:
+                    final_filtered = status_filtered
+                    self.logger.info(f"Combined filter result: {len(final_filtered)} records (status only: {status})")
+                
+                return final_filtered
+                
+            elif filter_type == 'custom':
+                # FIXED: Check for datetime strings FIRST and use them exclusively
+                start_datetime_str = date_filter.get('start_datetime')
+                end_datetime_str = date_filter.get('end_datetime')
+                
+                if start_datetime_str and end_datetime_str:
+                    try:
+                        # Parse the datetime strings directly
+                        start_dt = pd.to_datetime(start_datetime_str)
+                        end_dt = pd.to_datetime(end_datetime_str)
+                        
+                        # LOG THE CORRECT DATETIME RANGE
+                        self.logger.info(f"Custom date filter: {start_dt} to {end_dt}")
+                        
+                        # Apply the filter using datetime comparison
+                        mask = (df[date_col] >= start_dt) & (df[date_col] <= end_dt)
+                        filtered_result = df[mask].copy()
+                        
+                        self.logger.info(f"Custom date filter returned {len(filtered_result)} records")
+                        return filtered_result
+                        
+                    except Exception as e:
+                        self.logger.error(f"Error parsing custom datetime range: {e}")
+                        return None
+                
+                # Fallback to legacy date-only filtering ONLY if no datetime strings
+                start_date = date_filter.get('start_date')
+                end_date = date_filter.get('end_date')
+                
+                if not start_date or not end_date:
+                    self.logger.warning("Custom date filter missing start_date or end_date")
+                    return None
+                
+                try:
+                    # Convert string dates to pandas timestamps
+                    start_timestamp = pd.Timestamp(start_date)
+                    # Set end date to end of day (23:59:59) for inclusive filtering
+                    end_timestamp = pd.Timestamp(end_date) + pd.Timedelta(hours=23, minutes=59, seconds=59)
+                    
+                    self.logger.info(f"Custom date filter (legacy): {start_timestamp} to {end_timestamp}")
+                    
+                    mask = (df[date_col] >= start_timestamp) & (df[date_col] <= end_timestamp)
+                    filtered_result = df[mask].copy()
+                    
+                    self.logger.info(f"Custom date filter (legacy) returned {len(filtered_result)} records")
+                    return filtered_result
+                    
+                except Exception as e:
+                    self.logger.error(f"Error parsing custom date range: {e}")
+                    return None
+            
+            else:
+                self.logger.warning(f"Unknown filter type: {filter_type}")
+                return df.copy()
+                    
+        except Exception as e:
+            self.logger.error(f"Error in date filtering: {e}", exc_info=True)
+            return None
+        
+        return None
+
     def _identify_and_convert_date_columns(self):
         """Identify and convert date columns to datetime format, focusing on closing dates."""
         self.date_columns = []
@@ -121,6 +331,9 @@ class TenderDataProcessor:
         
         # Log initial column info
         self.logger.info(f"Total columns in data: {len(self.raw_data.columns)}")
+        self.logger.info(f"Available columns: {list(self.raw_data.columns)}")
+        
+        # Sample some data to help with debugging
         for col in self.raw_data.columns:
             sample_values = self.raw_data[col].dropna().head(3).tolist()
             self.logger.debug(f"Column '{col}': Sample values: {sample_values}")
@@ -180,7 +393,7 @@ class TenderDataProcessor:
                             if valid_count > 0 and valid_count >= total_count * 0.1:  # At least 10% success rate
                                 self.raw_data[col] = converted_series
                                 converted = True
-                                self.logger.info(f"Converted '{col}' using format '{date_format}': {valid_count}/{total_count} values")
+                                self.logger.info(f"✓ Converted '{col}' using format '{date_format}': {valid_count}/{total_count} values")
                                 break
                         except (ValueError, TypeError) as e:
                             self.logger.debug(f"Format '{date_format}' failed for '{col}': {e}")
@@ -196,23 +409,34 @@ class TenderDataProcessor:
                             if valid_count > 0:
                                 self.raw_data[col] = converted_series
                                 converted = True
-                                self.logger.info(f"Converted '{col}' using automatic inference: {valid_count}/{total_count} values")
+                                self.logger.info(f"✓ Converted '{col}' using automatic inference: {valid_count}/{total_count} values")
                         except Exception as e:
                             self.logger.warning(f"Automatic conversion failed for '{col}': {e}")
                     
                     if converted:
-                        # Log sample values after conversion
+                        # Log sample values after conversion and date range
                         sample_after = self.raw_data[col].dropna().head(5).tolist()
                         self.logger.info(f"Sample values after conversion for '{col}': {sample_after}")
+                        
+                        # Log date range for debugging
+                        min_date = self.raw_data[col].min()
+                        max_date = self.raw_data[col].max()
+                        self.logger.info(f"Date range for '{col}': {min_date} to {max_date}")
                         
                         self.filtered_data[col] = self.raw_data[col]
                         self.date_columns.append(col)
                         self.closing_date_columns.append(col)
                     else:
-                        self.logger.warning(f"Failed to convert any values in '{col}' to datetime")
+                        self.logger.warning(f"✗ Failed to convert any values in '{col}' to datetime")
                         
                 except Exception as e:
                     self.logger.error(f"Error processing column '{col}': {e}")
+        
+        # Final summary of date columns found
+        if self.closing_date_columns:
+            self.logger.info(f"Successfully identified {len(self.closing_date_columns)} closing date columns: {self.closing_date_columns}")
+        else:
+            self.logger.warning("No closing date columns were successfully identified and converted")
 
     def _find_department_column(self) -> Optional[str]:
         """
@@ -326,99 +550,6 @@ class TenderDataProcessor:
         # Update filtered data
         self.filtered_data = filtered_df
 
-    def _filter_by_date(self, df: pd.DataFrame, date_filter: Dict[str, Any]) -> Optional[pd.DataFrame]:
-        """
-        Filter the DataFrame by date based on the provided date filter criteria.
-        
-        Args:
-            df: The DataFrame to filter.
-            date_filter: A dictionary containing the date filter criteria.
-        
-        Returns:
-            A filtered DataFrame or None if no valid date filter is provided.
-        """
-        if df.empty or 'type' not in date_filter:
-            return None
-            
-        # Ensure we have closing date columns
-        if not self.closing_date_columns:
-            self.logger.warning("No closing date columns found for date filtering")
-            return None
-            
-        filter_type = date_filter['type']
-        
-        # Use pandas Timestamp for precise time comparisons
-        current_time = pd.Timestamp.now()
-        today_start = current_time.normalize()  # Start of today (00:00:00)
-        today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)  # End of today (23:59:59.999999)
-        
-        # Use the first closing date column for filtering
-        date_col = self.closing_date_columns[0]
-        
-        try:
-            if filter_type == 'all':
-                # Return all data without date filtering
-                return df.copy()
-                
-            elif filter_type == 'today':
-                mask = (df[date_col] >= today_start) & (df[date_col] <= today_end)
-                return df[mask].copy()
-                
-            elif filter_type == 'next_3_days':
-                end_date = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
-                mask = (df[date_col] >= current_time) & (df[date_col] <= end_date)
-                return df[mask].copy()
-                
-            elif filter_type == 'next_7_days':
-                end_date = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
-                mask = (df[date_col] >= current_time) & (df[date_col] <= end_date)
-                return df[mask].copy()
-                
-            elif filter_type == 'next_30_days':
-                end_date = today_start + pd.Timedelta(days=30, hours=23, minutes=59, seconds=59)
-                mask = (df[date_col] >= current_time) & (df[date_col] <= end_date)
-                return df[mask].copy()
-                
-            elif filter_type == 'expired':
-                mask = df[date_col] < current_time
-                return df[mask].copy()
-                
-            elif filter_type == 'live':
-                mask = df[date_col] > current_time
-                return df[mask].copy()
-                
-            elif filter_type == 'custom':
-                start_date = date_filter.get('start_date')
-                end_date = date_filter.get('end_date')
-                
-                if not start_date or not end_date:
-                    self.logger.warning("Custom date filter missing start_date or end_date")
-                    return None
-                
-                try:
-                    # Convert string dates to pandas timestamps
-                    start_timestamp = pd.Timestamp(start_date)
-                    # Set end date to end of day (23:59:59) for inclusive filtering
-                    end_timestamp = pd.Timestamp(end_date) + pd.Timedelta(hours=23, minutes=59, seconds=59)
-                    
-                    self.logger.info(f"Custom date filter: {start_timestamp} to {end_timestamp}")
-                    
-                    mask = (df[date_col] >= start_timestamp) & (df[date_col] <= end_timestamp)
-                    filtered_result = df[mask].copy()
-                    
-                    self.logger.info(f"Custom date filter returned {len(filtered_result)} records")
-                    return filtered_result
-                    
-                except Exception as e:
-                    self.logger.error(f"Error parsing custom date range: {e}")
-                    return None
-                    
-        except Exception as e:
-            self.logger.error(f"Error in date filtering: {e}")
-            return None
-        
-        return None
-
     def reset_filters(self) -> None:
         """Reset all filters, returning to the original data."""
         self.filtered_data = self.raw_data.copy()
@@ -438,7 +569,7 @@ class TenderDataProcessor:
             "closing_next_3_days": 0,
             "closing_next_7_days": 0,
             "expired_tenders": 0,
-            "live_tenders": 0,  # Add live tenders count
+            "live_tenders": 0,
             "data_sources": 0
         }
         
@@ -462,11 +593,11 @@ class TenderDataProcessor:
                     unique_depts.update(d.strip() for d in depts if d.strip() and d.strip().lower() not in ['nan', 'none', ''])
                 stats["unique_departments"] = len(unique_depts)
             
-            # Date-based stats - ONLY USE CLOSING DATE COLUMNS with precise time handling
+            # Date-based stats - USE CURRENT DATETIME for precise time-aware filtering
             if hasattr(self, 'closing_date_columns') and self.closing_date_columns:
-                current_time = pd.Timestamp.now()  # Use precise timestamp for all calculations
-                today_start = current_time.normalize()
-                today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)
+                current_datetime = pd.Timestamp.now()  # Use precise datetime
+                today_start = current_datetime.normalize()  # Start of today (00:00:00)
+                today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)  # End of today (23:59:59)
                 
                 for col in self.closing_date_columns:
                     # Skip columns that aren't datetime type
@@ -478,25 +609,25 @@ class TenderDataProcessor:
                     if valid_dates.empty:
                         continue
                         
-                    # Closing today (precise time comparison)
-                    stats["closing_today"] += ((valid_dates[col] >= today_start) & 
-                                            (valid_dates[col] <= today_end)).sum()
+                    # Closing today - from current time until end of today
+                    stats["closing_today"] += ((valid_dates[col] >= current_datetime) & 
+                                              (valid_dates[col] <= today_end)).sum()
                     
-                    # Next 3 days (from now to 3 days ahead)
+                    # Next 3 days - from current time to end of 3 days from today
                     end_3_days = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
-                    stats["closing_next_3_days"] += ((valid_dates[col] >= current_time) & 
-                                                  (valid_dates[col] <= end_3_days)).sum()
+                    stats["closing_next_3_days"] += ((valid_dates[col] >= current_datetime) & 
+                                                    (valid_dates[col] <= end_3_days)).sum()
                     
-                    # Next 7 days (from now to 7 days ahead)
+                    # Next 7 days - from current time to end of 7 days from today
                     end_7_days = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
-                    stats["closing_next_7_days"] += ((valid_dates[col] >= current_time) & 
-                                                  (valid_dates[col] <= end_7_days)).sum()
+                    stats["closing_next_7_days"] += ((valid_dates[col] >= current_datetime) & 
+                                                    (valid_dates[col] <= end_7_days)).sum()
                     
-                    # Expired - closing date/time has passed
-                    stats["expired_tenders"] += (valid_dates[col] < current_time).sum()
+                    # Expired - closing datetime has passed
+                    stats["expired_tenders"] += (valid_dates[col] < current_datetime).sum()
                     
-                    # Live - closing date/time is in the future
-                    stats["live_tenders"] += (valid_dates[col] > current_time).sum()
+                    # Live - closing datetime is in the future
+                    stats["live_tenders"] += (valid_dates[col] > current_datetime).sum()
 
             # Count data sources
             stats["data_sources"] = len(set(self.last_loaded_files))
@@ -533,3 +664,119 @@ class TenderDataProcessor:
             # Fill NaN values with 'Unknown', get unique values, sort, and convert to list
             return sorted(list(self.raw_data[department_col].fillna('Unknown').unique()))
         return ["N/A"]
+
+    def update_config(self, new_config_manager):
+        """Update the configuration manager and apply new settings."""
+        self.config_manager = new_config_manager
+        self.logger.info("Configuration updated in TenderDataProcessor")
+
+    def _apply_date_filter(self, df: pd.DataFrame, date_filter: Dict[str, Any]) -> pd.DataFrame:
+        """Apply date filtering based on the filter configuration."""
+        if not date_filter or df.empty:
+            return df
+
+        # Find the date column (prefer exact matches first)
+        date_columns = ['Closing Date', 'Due Date', 'Deadline', 'Expiry Date']
+        date_col = None
+        
+        for col_name in date_columns:
+            if col_name in df.columns:
+                date_col = col_name
+                break
+        
+        # If no exact match, look for columns containing date-related keywords
+        if not date_col:
+            for col in df.columns:
+                col_lower = col.lower()
+                if any(keyword in col_lower for keyword in ['closing', 'due', 'deadline', 'expiry', 'date']):
+                    date_col = col
+                    break
+        
+        if not date_col:
+            self.logger.warning("No date column found for filtering")
+            return df
+
+        # Convert the date column to datetime
+        try:
+            df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+        except Exception as e:
+            self.logger.error(f"Error converting date column: {e}")
+            return df
+
+        # Remove rows with invalid dates
+        original_count = len(df)
+        df = df.dropna(subset=[date_col])
+        if len(df) < original_count:
+            self.logger.info(f"Removed {original_count - len(df)} rows with invalid dates")
+
+        if df.empty:
+            return df
+
+        filter_type = date_filter.get('type', '')
+        now = datetime.now()
+        today = now.date()
+
+        try:
+            if filter_type == 'all':
+                return df
+            elif filter_type == 'live':
+                return df[df[date_col] >= now]
+            elif filter_type == 'today':
+                return df[df[date_col].dt.date == today]
+            elif filter_type == 'next_3_days':
+                end_date = today + timedelta(days=3)
+                return df[(df[date_col].dt.date >= today) & (df[date_col].dt.date <= end_date)]
+            elif filter_type == 'next_7_days':
+                end_date = today + timedelta(days=7)
+                return df[(df[date_col].dt.date >= today) & (df[date_col].dt.date <= end_date)]
+            elif filter_type == 'next_30_days':
+                end_date = today + timedelta(days=30)
+                return df[(df[date_col].dt.date >= today) & (df[date_col].dt.date <= end_date)]
+            elif filter_type == 'expired':
+                return df[df[date_col] < now]
+            elif filter_type == 'custom':
+                # FIXED: Check for datetime strings FIRST and use them exclusively
+                start_datetime_str = date_filter.get('start_datetime')
+                end_datetime_str = date_filter.get('end_datetime')
+                
+                if start_datetime_str and end_datetime_str:
+                    try:
+                        # Parse the datetime strings directly - this was the issue
+                        start_dt = pd.to_datetime(start_datetime_str)
+                        end_dt = pd.to_datetime(end_datetime_str)
+                        
+                        # LOG THE CORRECT DATETIME RANGE
+                        self.logger.info(f"Custom date filter: {start_dt} to {end_dt}")
+                        
+                        # Apply the filter using datetime comparison
+                        filtered_df = df[(df[date_col] >= start_dt) & (df[date_col] <= end_dt)]
+                        
+                        self.logger.info(f"Custom date filter returned {len(filtered_df)} records")
+                        return filtered_df
+                        
+                    except Exception as e:
+                        self.logger.error(f"Error parsing custom datetime range: {e}")
+                        return pd.DataFrame()  # Return empty on error
+                
+                # Only use legacy date-only filtering if no datetime strings are provided
+                start_date = date_filter.get('start_date')
+                end_date = date_filter.get('end_date')
+                if start_date and end_date:
+                    try:
+                        # Create full-day datetime range for legacy support
+                        start_dt = pd.to_datetime(f"{start_date} 00:00:00")
+                        end_dt = pd.to_datetime(f"{end_date} 23:59:59")
+                        
+                        self.logger.info(f"Legacy date filter: {start_dt} to {end_dt}")
+                        filtered_df = df[(df[date_col] >= start_dt) & (df[date_col] <= end_dt)]
+                        self.logger.info(f"Legacy date filter returned {len(filtered_df)} records")
+                        return filtered_df
+                    except Exception as e:
+                        self.logger.error(f"Error parsing legacy date range: {e}")
+                        return pd.DataFrame()
+
+        except Exception as e:
+            self.logger.error(f"Error applying date filter: {e}")
+            return df
+
+        return df

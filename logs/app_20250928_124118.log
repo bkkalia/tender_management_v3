@@ -1,0 +1,52 @@
+2025-09-28 12:41:18 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250928_124118.log
+2025-09-28 12:41:18 - root - INFO - Application starting...
+2025-09-28 12:41:18 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-28 12:41:18 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-28 12:41:18 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-28 12:41:18 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-28 12:41:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 12:41:19 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-28 12:41:19 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-28 12:41:19 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-28 12:41:19 - ui.settings_tab.SettingsTab - INFO - Default column settings initialized
+2025-09-28 12:41:19 - ui.settings_tab.SettingsTab - INFO - Loaded column settings for 18 columns
+2025-09-28 12:41:19 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-28 12:41:19 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-28 12:41:19 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-28 12:41:19 - ui.main_window - INFO - Main application initialized
+2025-09-28 12:41:19 - root - INFO - Main window initialized
+2025-09-28 12:41:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loading last used data source: export_test_data.xlsx
+2025-09-28 12:41:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: []
+2025-09-28 12:41:23 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 7 columns
+2025-09-28 12:41:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 12:41:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 0 records closing after 2025-09-28 12:41:26.645366
+2025-09-28 12:41:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loaded merged file for analysis: export_test_data.xlsx (15000 records)
+2025-09-28 12:41:26 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Successfully loaded last used data source: export_test_data.xlsx
+2025-09-28 12:41:26 - ui.main_window.MainApplication - INFO - Initial data loaded for Search tab
+2025-09-28 12:41:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 12:41:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 12:41:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 12:41:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 12:41:55.441892
+2025-09-28 12:41:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 12:41:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 12:42:09 - ui.search_dashboard_tab.SearchDashboardTab - WARNING - Clipboard text access failed: CLIPBOARD selection doesn't exist or form "STRING" not defined
+2025-09-28 12:42:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Configured tesseract path: C:\Program Files\Tesseract-OCR\tesseract.exe
+2025-09-28 12:42:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Found PIL image in clipboard
+2025-09-28 12:42:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - OCR successful: extracted 16 characters
+2025-09-28 12:42:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - OCR extracted text from image: 16 characters
+2025-09-28 12:42:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 12:42:09.375181
+2025-09-28 12:42:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'Canteen Services' with AND logic
+2025-09-28 12:42:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 12:42:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 12:42:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - OCR successfully filled Global Search with 16 characters
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - WARNING - Clipboard text access failed: CLIPBOARD selection doesn't exist or form "STRING" not defined
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Configured tesseract path: C:\Program Files\Tesseract-OCR\tesseract.exe
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Found PIL image in clipboard
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - OCR successful: extracted 12 characters
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - OCR extracted text from image: 12 characters
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 12:46:05.232846
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'Rising India' with AND logic
+2025-09-28 12:46:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - OCR successfully filled Global Search with 12 characters
+2025-09-28 12:46:26 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-28 12:46:34 - ui.benchmark_window.BenchmarkWindow - INFO - Benchmark window initialized
+2025-09-28 12:46:34 - ui.settings_tab.SettingsTab - INFO - Benchmark window opened from settings

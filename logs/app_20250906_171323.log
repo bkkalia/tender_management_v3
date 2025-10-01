@@ -1,0 +1,67 @@
+2025-09-06 17:13:23 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250906_171323.log
+2025-09-06 17:13:23 - root - INFO - Application starting...
+2025-09-06 17:13:23 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-06 17:13:23 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-06 17:13:23 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-06 17:13:23 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-06 17:13:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-06 17:13:24 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-06 17:13:24 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-06 17:13:24 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-06 17:13:24 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-06 17:13:24 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-06 17:13:24 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-06 17:13:24 - ui.main_window - INFO - Main application initialized
+2025-09-06 17:13:24 - root - INFO - Main window initialized
+2025-09-06 17:14:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-06 17:14:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:14:02.656992
+2025-09-06 17:14:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: today
+2025-09-06 17:14:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (today) with status (live): 0 records
+2025-09-06 17:14:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: expired
+2025-09-06 17:14:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Expired tenders filter: 9766 records closed before 2025-09-06 17:14:27.831588
+2025-09-06 17:14:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: today
+2025-09-06 17:14:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (today) with status (expired): 20 records
+2025-09-06 17:14:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied custom date range filter: 2025-09-06 00:00:00 to 2025-09-06 09:59:00, 0 records matching
+2025-09-06 17:14:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-06 17:14:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:14:55.894654
+2025-09-06 17:15:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied custom date range filter: 2025-09-06 00:00:00 to 2025-09-06 10:59:00, 0 records matching
+2025-09-06 17:15:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: expired
+2025-09-06 17:15:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Expired tenders filter: 9766 records closed before 2025-09-06 17:15:09.095711
+2025-09-06 17:15:11 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied custom date range filter: 2025-09-06 00:00:00 to 2025-09-06 10:59:00, 0 records matching
+2025-09-06 17:15:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-06 17:15:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:15:24.136688
+2025-09-06 17:15:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: expired
+2025-09-06 17:15:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Expired tenders filter: 9766 records closed before 2025-09-06 17:15:29.999909
+2025-09-06 17:15:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied custom date range filter: 2025-09-06 00:00:00 to 2025-09-06 11:59:00, 16 records matching
+2025-09-06 17:15:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-06 17:15:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:15:51.407682
+2025-09-06 17:15:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-06 17:15:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:15:54.271251
+2025-09-06 17:15:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_3_days
+2025-09-06 17:15:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_3_days) with status (live): 16 records
+2025-09-06 17:16:28 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:16:28.809838
+2025-09-06 17:16:28 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_3_days) with status (live): 16 records
+2025-09-06 17:16:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:16:31.829965
+2025-09-06 17:16:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_3_days) with status (live): 16 records
+2025-09-06 17:16:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-06 17:16:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:16:35.559740
+2025-09-06 17:16:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:16:42.915090
+2025-09-06 17:16:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:16:43.479101
+2025-09-06 17:16:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:16:46.907036
+2025-09-06 17:16:49 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:16:49.103186
+2025-09-06 17:16:58 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:16:58.601005
+2025-09-06 17:16:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:16:59.429243
+2025-09-06 17:16:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:16:59.981522
+2025-09-06 17:17:01 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:17:01.630529
+2025-09-06 17:17:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_30_days
+2025-09-06 17:17:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_30_days) with status (live): 50 records
+2025-09-06 17:17:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-06 17:17:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:17:06.500173
+2025-09-06 17:17:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:17:09.378099
+2025-09-06 17:17:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:17:09.733402
+2025-09-06 17:17:10 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:17:10.345584
+2025-09-06 17:17:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:17:14.584860
+2025-09-06 17:17:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:17:30.758812
+2025-09-06 17:17:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:17:31.533800
+2025-09-06 17:17:32 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:17:32.447336
+2025-09-06 17:18:17 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:18:17.233148

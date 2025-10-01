@@ -1,0 +1,147 @@
+2025-09-27 12:22:18 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250927_122218.log
+2025-09-27 12:22:18 - root - INFO - Application starting...
+2025-09-27 12:22:18 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-27 12:22:18 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-27 12:22:18 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-27 12:22:18 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-27 12:22:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-27 12:22:19 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-27 12:22:20 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-27 12:22:20 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-27 12:22:20 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-27 12:22:20 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-27 12:22:20 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-27 12:22:20 - ui.main_window - INFO - Main application initialized
+2025-09-27 12:22:20 - root - INFO - Main window initialized
+2025-09-27 12:36:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 12:36:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-27 12:36:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1411 records closing after 2025-09-27 12:36:59.978777
+2025-09-27 12:36:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 12:38:06 - ui.charts_window - ERROR - Error creating scatter chart: 'value' must be an instance of str or bytes, not a datetime.datetime
+2025-09-27 12:38:06 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 12:38:12 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 12:38:12 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 12:38:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_7_days
+2025-09-27 12:38:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1411 records closing after 2025-09-27 12:38:24.783646
+2025-09-27 12:38:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_7_days) with status (live): 1214 records
+2025-09-27 12:38:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 12:38:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 12:39:32 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 12:39:32 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 12:39:32 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 12:39:33 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 12:39:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_3_days
+2025-09-27 12:39:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1411 records closing after 2025-09-27 12:39:56.559430
+2025-09-27 12:39:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_3_days) with status (live): 755 records
+2025-09-27 12:39:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 12:39:58 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 12:40:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_7_days
+2025-09-27 12:40:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1410 records closing after 2025-09-27 12:40:02.500013
+2025-09-27 12:40:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_7_days) with status (live): 1213 records
+2025-09-27 12:40:02 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 12:40:04 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 12:40:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_30_days
+2025-09-27 12:40:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1410 records closing after 2025-09-27 12:40:04.708092
+2025-09-27 12:40:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_30_days) with status (live): 1408 records
+2025-09-27 12:40:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 12:40:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 12:40:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_3_days
+2025-09-27 12:40:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1410 records closing after 2025-09-27 12:40:07.045608
+2025-09-27 12:40:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_3_days) with status (live): 754 records
+2025-09-27 12:40:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 12:40:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: today
+2025-09-27 12:40:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1410 records closing after 2025-09-27 12:40:08.206548
+2025-09-27 12:40:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (today) with status (live): 127 records
+2025-09-27 12:40:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 12:40:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 12:40:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_7_days
+2025-09-27 12:40:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1410 records closing after 2025-09-27 12:40:08.798475
+2025-09-27 12:40:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_7_days) with status (live): 1213 records
+2025-09-27 12:40:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 12:40:10 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 12:40:35 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 12:40:36 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 12:40:36 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 12:40:36 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 12:40:36 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 12:40:37 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 12:48:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1410 records closing after 2025-09-27 12:48:24.763500
+2025-09-27 12:48:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 63 records match 'una' with AND logic
+2025-09-27 12:48:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_7_days) with status (live): 54 records
+2025-09-27 12:48:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 12:48:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 12:48:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1410 records closing after 2025-09-27 12:48:35.005931
+2025-09-27 12:48:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_7_days) with status (live): 1213 records
+2025-09-27 12:48:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 12:48:36 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 12:48:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 12:48:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'S.No' (ascending)
+2025-09-27 12:48:42 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 12:48:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 12:48:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'S.No' (descending)
+2025-09-27 12:48:54 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 14:11:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1382 records closing after 2025-09-27 14:11:24.271445
+2025-09-27 14:11:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'Restoration of rain damages
+on NMT to Malkada' with AND logic
+2025-09-27 14:11:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1382 records closing after 2025-09-27 14:11:31.409085
+2025-09-27 14:11:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'Restoration of rain damages
+on NMT to Malkad' with AND logic
+2025-09-27 14:11:41 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 14:11:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 14:11:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-27 14:11:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1382 records closing after 2025-09-27 14:11:43.449704
+2025-09-27 14:11:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'Restoration of rain damages
+on NMT to Malkad' with AND logic
+2025-09-27 14:11:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1382 records closing after 2025-09-27 14:11:54.719168
+2025-09-27 14:11:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'Restoration of rain damages
+on NMT to Malkad' with AND logic
+2025-09-27 14:11:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1382 records closing after 2025-09-27 14:11:56.300457
+2025-09-27 14:11:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 14:11:59 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 14:12:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1382 records closing after 2025-09-27 14:12:15.187039
+2025-09-27 14:12:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'Malkada' with AND logic
+2025-09-27 14:12:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 14:12:15 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 14:12:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Opened URL: https://hptenders.gov.in/nicgep/app?component=%24DirectLink&page=FrontEndViewTender&service=direct&sp=SbGpInr81HbhC3NNKh4LU9A%3D%3D
+2025-09-27 14:22:22 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:22:22 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:22:29 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:22:29 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:40 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 14:23:42 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 14:23:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 14:23:46 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:46 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:47 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:47 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:47 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 14:23:47 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:47 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:51 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:51 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:57 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 14:23:57 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:57 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:59 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:59 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:59 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 14:23:59 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:23:59 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:24:22 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:24:22 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:24:23 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:24:23 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-09-27 14:37:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-27 14:37:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1382 records closing after 2025-09-27 14:37:42.530497
+2025-09-27 14:37:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 14:37:43 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 14:37:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_3_days
+2025-09-27 14:37:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1382 records closing after 2025-09-27 14:37:44.690938
+2025-09-27 14:37:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_3_days) with status (live): 726 records
+2025-09-27 14:37:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 14:37:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 14:38:35 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 14:38:36 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 14:38:36 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 14:38:40 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values
+2025-09-27 14:38:41 - ui.charts_window - ERROR - Error getting filtered tender counts for month: Can only use .dt accessor with datetimelike values

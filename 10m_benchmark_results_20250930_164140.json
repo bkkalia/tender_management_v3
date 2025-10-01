@@ -1,0 +1,114 @@
+{
+  "system_specs": {
+    "cpu_cores": 12,
+    "cpu_threads": 16,
+    "memory_total_gb": 31.692127227783203,
+    "memory_available_gb": 7.028179168701172,
+    "os": "nt - win32",
+    "python_version": "3.13.5",
+    "timestamp": "2025-09-30T16:01:01.037270"
+  },
+  "benchmark_results": {
+    "data_loading": {
+      "operation": "data_loading_10m",
+      "dataset_size": 10000000,
+      "execution_time": 1069.9682646,
+      "memory_delta_mb": 4013.0390625,
+      "cpu_usage_percent": 15.2,
+      "records_per_second": 9346.071590019006,
+      "timestamp": "2025-09-30T16:40:59.513946",
+      "system_memory_used_gb": 8.499992370605469,
+      "performance_category": "unacceptable"
+    },
+    "query_performance": [
+      {
+        "operation": "query_10m_simple_department_filter",
+        "dataset_size": 10000000,
+        "execution_time": 5.663996600007522,
+        "memory_delta_mb": 209.67578125,
+        "cpu_usage_percent": 20.1,
+        "records_per_second": 1765537.7829829063,
+        "timestamp": "2025-09-30T16:41:07.055302",
+        "system_memory_used_gb": 7.833709716796875,
+        "performance_category": "unacceptable",
+        "query_type": "simple_department_filter",
+        "query_description": "Single department filter",
+        "result_count": 2496964
+      },
+      {
+        "operation": "query_10m_complex_multi_department",
+        "dataset_size": 10000000,
+        "execution_time": 5.971268599998439,
+        "memory_delta_mb": 202.94921875,
+        "cpu_usage_percent": 7.7,
+        "records_per_second": 1674686.012282652,
+        "timestamp": "2025-09-30T16:41:13.029342",
+        "system_memory_used_gb": 8.031902313232422,
+        "performance_category": "unacceptable",
+        "query_type": "complex_multi_department",
+        "query_description": "Multi-department filter with OR logic",
+        "result_count": 4998796
+      },
+      {
+        "operation": "query_10m_global_search",
+        "dataset_size": 10000000,
+        "execution_time": 4.155828700007987,
+        "memory_delta_mb": 343.421875,
+        "cpu_usage_percent": 30.049999999999997,
+        "records_per_second": 2406258.949022798,
+        "timestamp": "2025-09-30T16:41:17.189368",
+        "system_memory_used_gb": 8.367279052734375,
+        "performance_category": "slow",
+        "query_type": "global_search",
+        "query_description": "Global search across all columns",
+        "result_count": 10000000
+      },
+      {
+        "operation": "query_10m_date_range_filter",
+        "dataset_size": 10000000,
+        "execution_time": 4.654773499991279,
+        "memory_delta_mb": -3.44921875,
+        "cpu_usage_percent": 7.75,
+        "records_per_second": 2148332.244311938,
+        "timestamp": "2025-09-30T16:41:21.846112",
+        "system_memory_used_gb": 8.363910675048828,
+        "performance_category": "slow",
+        "query_type": "date_range_filter",
+        "query_description": "Date range filtering",
+        "result_count": 10000000
+      }
+    ],
+    "memory_analysis": {
+      "operation": "memory_analysis_10m",
+      "dataset_size": 10000000,
+      "execution_time": 14.656191600006423,
+      "memory_delta_mb": 9.19921875,
+      "cpu_usage_percent": 13.25,
+      "records_per_second": 682305.4906020482,
+      "timestamp": "2025-09-30T16:41:37.236972",
+      "system_memory_used_gb": 7.627830505371094,
+      "performance_category": "unacceptable",
+      "dataframe_memory_mb": 4865.087588310242,
+      "baseline_memory_gb": 7.618846893310547,
+      "peak_memory_gb": 12.369908991269767
+    }
+  },
+  "summary": {
+    "total_operations": 6,
+    "total_execution_time": 1105.0703236000118,
+    "average_execution_time": 184.17838726666864,
+    "fastest_operation": 4.155828700007987,
+    "slowest_operation": 1069.9682646,
+    "average_memory_delta": 795.8059895833334,
+    "average_records_per_second": 1447744.4251320602,
+    "performance_categories": {
+      "unacceptable": 4,
+      "slow": 2
+    },
+    "memory_efficiency": 12565.876772598534
+  },
+  "visualizations": {},
+  "total_time": 2437.7708389759064,
+  "timestamp": "2025-09-30T16:41:38.808122",
+  "dataset_size": 10000000
+}

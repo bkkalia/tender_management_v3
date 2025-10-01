@@ -1,0 +1,14 @@
+{
+    "github.copilot.enable": {
+        "*": true
+    },
+    "github.copilot.advanced": {
+        "length": 500,
+        "temperature": 0.1,
+        "top_p": 0.1
+    },
+    "github.copilot.editor.enableAutoCompletions": false,
+    "files.associations": {
+        ".copilot-instructions.md": "markdown"
+    }
+}

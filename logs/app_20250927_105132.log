@@ -1,0 +1,257 @@
+2025-09-27 10:51:32 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250927_105132.log
+2025-09-27 10:51:32 - root - INFO - Application starting...
+2025-09-27 10:51:32 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-27 10:51:32 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-27 10:51:32 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-27 10:51:32 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-27 10:51:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-27 10:51:33 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-27 10:51:33 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-27 10:51:33 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-27 10:51:33 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-27 10:51:33 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-27 10:51:33 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-27 10:51:33 - ui.main_window - INFO - Main application initialized
+2025-09-27 10:51:33 - root - INFO - Main window initialized
+2025-09-27 10:52:13 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Added new files for merging: ('H:/My Drive/CRM T84/0 Live App/Search data/input_excel_files/hptenders_gov_in_tenders_20250927_102029.xlsx',)
+2025-09-27 10:52:19 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Starting batch merge process via UI. Output Folder='H:/My Drive/CRM T84/0 Live App/Search data/merged_data'
+2025-09-27 10:52:19 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Processing portal hptenders with 1 files
+2025-09-27 10:52:19 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Sorted 1 files for portal 'hptenders', oldest first.
+2025-09-27 10:52:19 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Portal hptenders: Processing files in this order:
+  1. hptenders_gov_in_tenders_20250927_102029.xlsx
+
+2025-09-27 10:52:19 - core.file_merger - INFO - Backup of 'hptenders_consolidated_master.xlsx' created at 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders\hptenders_consolidated_master_backup_20250927_105219.zip'
+2025-09-27 10:52:19 - core.file_merger - INFO - Removed oldest backup: 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\portal_backups\hptenders\hptenders_consolidated_master_backup_20250620_130132.zip' to maintain max 5 versions.
+2025-09-27 10:52:20 - core.file_merger - INFO - Starting with 14146 existing records from master file.
+2025-09-27 10:52:21 - core.file_merger - INFO - Loaded 1449 records from hptenders_gov_in_tenders_20250927_102029.xlsx
+2025-09-27 10:52:21 - core.file_merger - INFO - Columns in combined data: ['Department Name', 'S.No', 'e-Published Date', 'Closing Date', 'Opening Date', 'Organisation Chain', 'Title and Ref.No./Tender ID', 'Tender ID (Extracted)', 'Direct URL', 'Status URL']
+2025-09-27 10:52:21 - core.file_merger - INFO - Preferred unique keys: ['Tender ID (Extracted)', 'Title and Ref.No./Tender ID', 'Tender ID']
+2025-09-27 10:52:21 - core.file_merger - INFO - Selected unique key: Tender ID (Extracted)
+2025-09-27 10:52:21 - core.file_merger - INFO - Merge for portal 'hptenders': 15595 total input records -> 14269 unique records (removed 1326 duplicates)
+2025-09-27 10:52:22 - core.file_merger - INFO - Successfully merged 1 files for portal 'hptenders'.
+Summary: 14269 total records in merged file
+• 123 new records added
+• 14146 existing records updated with newer data
+• 1326 duplicate records resolved
+Output file: hptenders_consolidated_master.xlsx
+2025-09-27 10:52:26 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Batch merge process completed. Success: 1, Fail: 0
+2025-09-27 10:52:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 10:52:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-27 10:52:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1450 records closing after 2025-09-27 10:52:30.996448
+2025-09-27 10:52:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 10:52:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loaded merged file for analysis: H:/My Drive/CRM T84/0 Live App/Search data/merged_data\hptenders_consolidated_master.xlsx (14269 records)
+2025-09-27 10:52:31 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Automatically loading merged file 'H:/My Drive/CRM T84/0 Live App/Search data/merged_data\hptenders_consolidated_master.xlsx' into Search Tab.
+2025-09-27 10:52:31 - ui.portal_merger_tab.PortalDataMergerTab - INFO - Cleared all files from merge list.
+2025-09-27 10:52:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1450 records closing after 2025-09-27 10:52:44.550396
+2025-09-27 10:52:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 1091 records match 'pwd, irri' with OR logic
+2025-09-27 10:52:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 35 records match 'una' with AND logic
+2025-09-27 10:52:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 10:52:49 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loaded search configuration: PWD Irri Una
+2025-09-27 10:52:56 - ui.search_dashboard_tab.SearchDashboardTab - ERROR - Error deleting saved search: list indices must be integers or slices, not str
+2025-09-27 10:53:06 - ui.search_dashboard_tab.SearchDashboardTab - WARNING - Removed reference to missing search: PWD Irri Una
+2025-09-27 10:53:07 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-27 10:53:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Cleaned saved searches, removed 1 corrupted entries
+2025-09-27 10:53:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1450 records closing after 2025-09-27 10:53:12.473419
+2025-09-27 10:53:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 802 records match 'PWD' with OR logic
+2025-09-27 10:53:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 13 records match 'una' with AND logic
+2025-09-27 10:53:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 10:53:14 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loaded search configuration: PWD Una
+2025-09-27 10:53:19 - ui.search_dashboard_tab.SearchDashboardTab - ERROR - Error deleting saved search: list indices must be integers or slices, not str
+2025-09-27 10:54:43 - ui.search_dashboard_tab.SearchDashboardTab - WARNING - Removed reference to missing search: PWD Una
+2025-09-27 10:54:44 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-27 10:54:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Cleaned saved searches, removed 1 corrupted entries
+2025-09-27 10:54:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1450 records closing after 2025-09-27 10:54:48.607988
+2025-09-27 10:54:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 802 records match 'pwd' with OR logic
+2025-09-27 10:54:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 13 records match 'una' with AND logic
+2025-09-27 10:54:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 10:54:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loaded search configuration: pwd una
+2025-09-27 10:55:05 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-27 10:55:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Saved search configuration: una pwd 2
+2025-09-27 10:55:15 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:17 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:20 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:22 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:24 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:28 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:30 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:32 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:34 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:35 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 10:55:36 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 10:55:36 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:38 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 10:55:38 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:40 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:42 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:44 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:47 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:49 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:50 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 10:55:51 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 10:55:51 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:53 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:55 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:57 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:55:59 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:01 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:03 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:05 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:07 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:09 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:11 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:13 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:15 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:17 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:19 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:21 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:23 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:25 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:26 - ui.charts_window - WARNING - Could not minimize window: can't iconify ".!notebook.!searchdashboardtab.!toplevel": it is a transient
+2025-09-27 10:56:27 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:28 - ui.charts_window - WARNING - Could not minimize window: can't iconify ".!notebook.!searchdashboardtab.!toplevel": it is a transient
+2025-09-27 10:56:29 - ui.charts_window - WARNING - Could not minimize window: can't iconify ".!notebook.!searchdashboardtab.!toplevel": it is a transient
+2025-09-27 10:56:29 - ui.charts_window - WARNING - Could not minimize window: can't iconify ".!notebook.!searchdashboardtab.!toplevel": it is a transient
+2025-09-27 10:56:29 - ui.charts_window - WARNING - Could not minimize window: can't iconify ".!notebook.!searchdashboardtab.!toplevel": it is a transient
+2025-09-27 10:56:30 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:30 - ui.charts_window - WARNING - Could not minimize window: can't iconify ".!notebook.!searchdashboardtab.!toplevel": it is a transient
+2025-09-27 10:56:32 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:34 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:36 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:38 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:40 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:42 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:43 - ui.charts_window - WARNING - Could not minimize window: can't iconify ".!notebook.!searchdashboardtab.!toplevel": it is a transient
+2025-09-27 10:56:44 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:46 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:48 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:50 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:52 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:54 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1450 records closing after 2025-09-27 10:56:55.756147
+2025-09-27 10:56:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 1307 records match 'pwd,s' with OR logic
+2025-09-27 10:56:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 51 records match 'una' with AND logic
+2025-09-27 10:56:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 10:56:56 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:56:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1450 records closing after 2025-09-27 10:56:56.753825
+2025-09-27 10:56:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 819 records match 'pwd,sidc' with OR logic
+2025-09-27 10:56:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 19 records match 'una' with AND logic
+2025-09-27 10:56:56 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 10:56:58 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:00 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:02 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1450 records closing after 2025-09-27 10:57:03.466751
+2025-09-27 10:57:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 819 records match 'pwd, sidc' with OR logic
+2025-09-27 10:57:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 19 records match 'una' with AND logic
+2025-09-27 10:57:03 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 10:57:04 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1450 records closing after 2025-09-27 10:57:07.825834
+2025-09-27 10:57:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 819 records match 'pwd, sidc,' with OR logic
+2025-09-27 10:57:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 19 records match 'una' with AND logic
+2025-09-27 10:57:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 10:57:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1450 records closing after 2025-09-27 10:57:08.339953
+2025-09-27 10:57:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 848 records match 'pwd, sidc, id' with OR logic
+2025-09-27 10:57:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 24 records match 'una' with AND logic
+2025-09-27 10:57:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 10:57:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1450 records closing after 2025-09-27 10:57:08.688854
+2025-09-27 10:57:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 839 records match 'pwd, sidc, idp' with OR logic
+2025-09-27 10:57:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 24 records match 'una' with AND logic
+2025-09-27 10:57:08 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 10:57:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1450 records closing after 2025-09-27 10:57:09.057092
+2025-09-27 10:57:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 839 records match 'pwd, sidc, idp' with OR logic
+2025-09-27 10:57:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 24 records match 'una' with AND logic
+2025-09-27 10:57:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 10:57:10 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:12 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:14 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:18 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:21 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:23 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:25 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:25 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:27 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:27 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:29 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:29 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:31 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:31 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:33 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:35 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:37 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:39 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:39 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:41 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:41 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:43 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:43 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:45 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:46 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:48 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:48 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:48 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:49 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:50 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:50 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:52 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:52 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:53 - matplotlib.axes._base - WARNING - Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:54 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:54 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:56 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:56 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:57:58 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:57:58 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:00 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:00 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:02 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:02 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:04 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:04 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:06 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:08 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:10 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:10 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:12 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:13 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:15 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:15 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:17 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:17 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:18 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 10:58:18 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:19 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 10:58:19 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:19 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:21 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 10:58:21 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:21 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:23 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:24 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 10:58:24 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:25 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 10:58:25 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:25 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:27 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:29 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:30 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 10:58:30 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:31 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 10:58:31 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:31 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:32 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:33 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:35 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:37 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 10:58:39 - matplotlib.axes._base - WARNING - Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+2025-09-27 10:58:40 - ui.charts_window - INFO - Charts data refreshed from Tree view

@@ -1,0 +1,20 @@
+2025-09-26 14:29:58 - root - INFO - Logging to file: g:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250926_142958.log
+2025-09-26 14:29:58 - root - INFO - Application starting...
+2025-09-26 14:29:58 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-26 14:29:58 - core.config_manager - INFO - Configuration loaded from g:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-26 14:29:58 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-26 14:29:58 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-26 14:29:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-26 14:30:00 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-26 14:30:00 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from g:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-26 14:30:00 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-26 14:30:00 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-26 14:30:00 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-26 14:30:00 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-26 14:30:00 - ui.main_window - INFO - Main application initialized
+2025-09-26 14:30:00 - root - INFO - Main window initialized
+2025-09-26 14:32:40 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loaded search configuration: PWD Irri Una
+2025-09-26 14:32:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loaded search configuration: pwd una
+2025-09-26 14:32:50 - ui.search_dashboard_tab.SearchDashboardTab - ERROR - Error importing saved searches: list indices must be integers or slices, not str
+2025-09-26 14:33:09 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Exported saved searches to: H:/My Drive/CRM T84/0 Live App/Search Utility/data/input_excel_files/saved searches3.json
+2025-09-26 14:33:13 - ui.search_dashboard_tab.SearchDashboardTab - ERROR - Error importing saved searches: list indices must be integers or slices, not str

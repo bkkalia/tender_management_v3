@@ -2,12 +2,13 @@
 Settings Tab module - UI component for application configuration.
 """
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog, messagebox, colorchooser
 import logging
 import os
 import sys
 from typing import TYPE_CHECKING, Dict, List, Any, Optional
 import re
+import pandas as pd
 
 # Fix imports by adding parent directory to path if needed
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -29,14 +30,32 @@ class SettingsTab(ttk.Frame):
     """
     Settings Tab for configuring application parameters.
     """
-    def __init__(self, parent: ttk.Notebook, main_app: 'MainApplication'):
+    def __init__(self, parent, main_app):
         super().__init__(parent)
         self.main_app = main_app
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         
-        # UI variables for paths
-        self.default_data_folder_var = tk.StringVar(value=self.main_app.global_config.get("default_data_folder", ""))
-        self.merged_data_folder_var = tk.StringVar(value=self.main_app.global_config.get("merged_data_folder", ""))
+        # UI variables for paths with appropriate defaults
+        # Default: dummy data for development, production for live use
+        default_dummy_data = r"C:\Users\kalia\Downloads\dummy_data"
+        default_production_data = r"H:\My Drive\CRM T84\0 Live App\Search data\merged_data"
+
+        # Try to determine if we're in development vs production
+        import os
+        current_user = os.environ.get('USERNAME', '')
+        # Check if production paths exist or if username suggests production environment
+        production_paths = [default_production_data, r"H:\My Drive"]
+        is_production = any(os.path.exists(path) for path in production_paths) or current_user.lower() not in ['kalia', 'saleem']
+
+        if is_production and os.path.exists(default_production_data):
+            default_data_default = default_production_data
+            default_merged_default = default_production_data
+        else:
+            default_data_default = default_dummy_data
+            default_merged_default = default_dummy_data
+
+        self.default_data_folder_var = tk.StringVar(value=self.main_app.global_config.get("default_data_folder", default_data_default))
+        self.merged_data_folder_var = tk.StringVar(value=self.main_app.global_config.get("merged_data_folder", default_merged_default))
         
         # UI variables for merger parameters
         self.merger_unique_keys_var = tk.StringVar(value=self._format_list_for_display(
@@ -80,10 +99,44 @@ class SettingsTab(ttk.Frame):
         # Main container with scrolling capability
         main_frame = ttk.Frame(self)
         main_frame.pack(fill=tk.BOTH, expand=True, padx=SPACING['medium'], pady=SPACING['medium'])
-        
-        # Main settings content
-        content_frame = ttk.Frame(main_frame)
-        content_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Create canvas and scrollbars for main content area
+        self.canvas = tk.Canvas(main_frame, borderwidth=0, highlightthickness=0)
+        self.v_scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=self.canvas.yview)
+
+        # Create main scrollable frame
+        self.scrollable_frame = ttk.Frame(self.canvas)
+
+        # Configure canvas scrolling
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
+
+        # Create window in canvas
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+        # Configure canvas scrolling
+        self.canvas.configure(yscrollcommand=self.v_scrollbar.set)
+
+        # Pack the canvas and scrollbar
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.v_scrollbar.pack(side="right", fill="y")
+
+        # Bind mouse wheel to canvas
+        main_frame.bind("<Enter>", lambda e: self._bind_to_mousewheel())
+        main_frame.bind("<Leave>", lambda e: self._unbind_to_mousewheel())
+        self.canvas.bind("<Enter>", lambda e: self._bind_to_mousewheel())
+        self.canvas.bind("<Leave>", lambda e: self._unbind_to_mousewheel())
+
+        # Main settings content inside scrollable frame with improved styling
+        content_frame = ttk.Frame(self.scrollable_frame)
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=SPACING['medium'], pady=SPACING['medium'])
+
+        # Configure content frame styling
+        style = ttk.Style()
+        style.configure('Settings.TLabelframe', background='#f8f9fa', borderwidth=2, relief='solid')
+        style.configure('Settings.TLabelframe.Label', background='#007bff', foreground='white', font=('TkDefaultFont', 11, 'bold'))
         
         # Section 1: File Paths Settings
         paths_frame = create_labeled_frame(content_frame, "File Paths")
@@ -93,16 +146,18 @@ class SettingsTab(ttk.Frame):
         default_data_row = ttk.Frame(paths_frame)
         default_data_row.pack(fill=tk.X, padx=SPACING['medium'], pady=SPACING['small'])
         
-        create_info_label(default_data_row, "Default Data Folder:").pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        info_label = create_info_label(default_data_row, "Default Data Folder:")
+        info_label.pack(side=tk.LEFT, padx=(0, SPACING['small']))
         
         default_data_entry = ttk.Entry(default_data_row, textvariable=self.default_data_folder_var, width=50)
         default_data_entry.pack(side=tk.LEFT, padx=(0, SPACING['small']), fill=tk.X, expand=True)
         
-        create_action_button(
+        browse_btn = create_action_button(
             default_data_row, "Browse...", 
             lambda: self._browse_folder(self.default_data_folder_var),
             width=10
-        ).pack(side=tk.LEFT)
+        )
+        browse_btn.pack(side=tk.LEFT)
         
         # Help text for default data folder
         create_info_label(
@@ -193,14 +248,267 @@ class SettingsTab(ttk.Frame):
             font_style=FONTS.get('small', ('TkDefaultFont', 9, 'italic'))
         ).pack(fill=tk.X, padx=SPACING['medium'], pady=(0, SPACING['small']))
         
-        # Section 3: Advanced Settings (placeholder for future)
+        # Section 3: Treeview Column Settings
+        treeview_frame = create_labeled_frame(content_frame, "Treeview Column Settings")
+        treeview_frame.pack(fill=tk.X, pady=SPACING['medium'])
+
+        # Initialize column settings variables
+        self.column_settings = self.main_app.global_config.get("treeview_column_settings", {})
+        self.column_vars = {}  # Dictionary to store checkbox variables
+        self.width_vars = {}   # Dictionary to store width variables
+        self.column_order = []  # List to maintain column order
+        self.selected_column = None  # Currently selected column for moving
+        self.column_frames = {}  # Dictionary to store frame references
+
+        # Default column sequence and settings
+        self._initialize_default_column_settings()
+
+        # Create scrollable frame for column settings
+        columns_container = ttk.Frame(treeview_frame)
+        columns_container.pack(fill=tk.BOTH, expand=True, padx=SPACING['medium'], pady=SPACING['small'])
+
+        # Header row with ordering controls
+        header_frame = ttk.Frame(columns_container)
+        header_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
+
+        ttk.Label(header_frame, text="Order", font=FONTS.get('subheading', ('TkDefaultFont', 10, 'bold')), width=8).pack(side=tk.LEFT)
+        ttk.Label(header_frame, text="Column Name", font=FONTS.get('subheading', ('TkDefaultFont', 10, 'bold'))).pack(side=tk.LEFT, padx=(0, SPACING['large']))
+        ttk.Label(header_frame, text="Visible", font=FONTS.get('subheading', ('TkDefaultFont', 10, 'bold'))).pack(side=tk.LEFT, padx=(0, SPACING['large']))
+        ttk.Label(header_frame, text="Width", font=FONTS.get('subheading', ('TkDefaultFont', 10, 'bold'))).pack(side=tk.LEFT, padx=(0, SPACING['medium']))
+
+        # Separator line
+        ttk.Separator(columns_container, orient="horizontal").pack(fill=tk.X, pady=SPACING['small'])
+
+        # Scrollable frame for column list
+        columns_scroll_frame = ttk.Frame(columns_container)
+        columns_scroll_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Canvas and scrollbar for scrolling
+        canvas = tk.Canvas(columns_scroll_frame, height=150)
+        scrollbar = ttk.Scrollbar(columns_scroll_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Pack canvas and scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # Store reference to scrollable frame for adding columns
+        self.columns_scrollable_frame = scrollable_frame
+
+        # Load and display current column settings
+        self._load_column_settings()
+
+        # Buttons for column management
+        buttons_frame = ttk.Frame(treeview_frame)
+        buttons_frame.pack(fill=tk.X, padx=SPACING['medium'], pady=SPACING['small'])
+
+        # First row of buttons
+        buttons_row1 = ttk.Frame(buttons_frame)
+        buttons_row1.pack(fill=tk.X, pady=(0, SPACING['small']))
+
+        create_action_button(
+            buttons_row1, "Move Up", self._move_column_up,
+            button_type='secondary', width=12
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            buttons_row1, "Move Down", self._move_column_down,
+            button_type='secondary', width=12
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            buttons_row1, "Reset Order", self._reset_column_order,
+            button_type='warning', width=12
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            buttons_row1, "Reset All Settings", self._reset_column_settings,
+            button_type='danger', width=15
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        # Second row of buttons
+        buttons_row2 = ttk.Frame(buttons_frame)
+        buttons_row2.pack(fill=tk.X, pady=(0, SPACING['small']))
+
+        create_action_button(
+            buttons_row2, "Apply to Current View", self._apply_column_settings_to_current_view,
+            button_type='info', width=18
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            buttons_row2, "Export Settings", self._export_column_settings,
+            button_type='success_outline', width=14
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            buttons_row2, "Import Settings", self._import_column_settings,
+            button_type='info_outline', width=14
+        ).pack(side=tk.LEFT)
+
+        # Help text for column settings
+        create_info_label(
+            treeview_frame,
+            "Configure column order, visibility, and widths for the Search & Dashboard treeview.\n"
+            "Use Move Up/Down to reorder columns. Changes apply automatically on data refresh.\n"
+            "Default hidden columns: 'Sr number', 'Data source Path'.",
+            font_style=FONTS.get('small', ('TkDefaultFont', 9, 'italic'))
+        ).pack(fill=tk.X, padx=SPACING['medium'], pady=(0, SPACING['small']))
+
+        # Section 4: Performance Settings
+        performance_frame = create_labeled_frame(content_frame, "Performance")
+        performance_frame.pack(fill=tk.X, pady=SPACING['medium'])
+
+        # Benchmark settings
+        benchmark_row = ttk.Frame(performance_frame)
+        benchmark_row.pack(fill=tk.X, padx=SPACING['medium'], pady=SPACING['small'])
+
+        create_info_label(benchmark_row, "Benchmark Window:").pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            benchmark_row, "Open Benchmark Monitor",
+            self._open_benchmark_window,
+            button_type='primary', width=20
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        # Performance monitoring settings
+        perf_settings_frame = ttk.Frame(performance_frame)
+        perf_settings_frame.pack(fill=tk.X, padx=SPACING['medium'], pady=SPACING['small'])
+
+        # Auto-refresh interval
+        refresh_row = ttk.Frame(perf_settings_frame)
+        refresh_row.pack(fill=tk.X, pady=2)
+
+        create_info_label(refresh_row, "Monitoring Refresh Rate (seconds):").pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        self.refresh_rate_var = tk.StringVar(value=str(self.main_app.global_config.get("performance_refresh_rate", 1)))
+        ttk.Spinbox(refresh_row, from_=1, to=10, textvariable=self.refresh_rate_var,
+                   width=5, command=self._on_setting_changed).pack(side=tk.LEFT)
+
+        # Help text for performance settings
+        create_info_label(
+            performance_frame,
+            "Monitor system performance and run detailed benchmarks in a separate window.\n"
+            "The Benchmark Monitor provides real-time graphs and industry-standard performance tests.",
+            font_style=FONTS.get('small', ('TkDefaultFont', 9, 'italic'))
+        ).pack(fill=tk.X, padx=SPACING['medium'], pady=(0, SPACING['small']))
+
+        # Section 5: Color Scheme Settings
+        colors_frame = create_labeled_frame(content_frame, "🎨 Color Scheme Settings")
+        colors_frame.pack(fill=tk.X, pady=SPACING['medium'])
+
+        # Color scheme description
+        create_info_label(
+            colors_frame,
+            "Customize the appearance of tabs and UI elements. Changes apply immediately to see the effect.",
+            font_style=FONTS.get('small', ('TkDefaultFont', 9, 'italic'))
+        ).pack(fill=tk.X, padx=SPACING['medium'], pady=(0, SPACING['small']))
+
+        # Tab Colors Section
+        tab_colors_frame = ttk.LabelFrame(colors_frame, text="Tab Colors", padding=SPACING['medium'])
+        tab_colors_frame.pack(fill=tk.X, padx=SPACING['medium'], pady=(0, SPACING['small']))
+
+        # Create color variables with current values
+        self.tab_selected_color_var = tk.StringVar(value="#e74c3c")  # Red for selected
+        self.tab_hover_color_var = tk.StringVar(value="#f39c12")      # Orange for hover
+        self.tab_unselected_color_var = tk.StringVar(value="#008080") # Dark teal for unselected
+
+        # Selected tab color
+        selected_row = ttk.Frame(tab_colors_frame)
+        selected_row.pack(fill=tk.X, pady=SPACING['small'])
+        ttk.Label(selected_row, text="Active Tab:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
+        selected_color_btn = tk.Button(
+            selected_row, text="████", command=lambda: self._choose_color(self.tab_selected_color_var),
+            bg=self.tab_selected_color_var.get(), width=8
+        )
+        selected_color_btn.pack(side=tk.LEFT, padx=SPACING['small'])
+        ttk.Label(selected_row, textvariable=self.tab_selected_color_var).pack(side=tk.LEFT)
+
+        # Hover tab color
+        hover_row = ttk.Frame(tab_colors_frame)
+        hover_row.pack(fill=tk.X, pady=SPACING['small'])
+        ttk.Label(hover_row, text="Hover Tab:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
+        hover_color_btn = tk.Button(
+            hover_row, text="████", command=lambda: self._choose_color(self.tab_hover_color_var),
+            bg=self.tab_hover_color_var.get(), width=8
+        )
+        hover_color_btn.pack(side=tk.LEFT, padx=SPACING['small'])
+        ttk.Label(hover_row, textvariable=self.tab_hover_color_var).pack(side=tk.LEFT)
+
+        # Unselected tab color
+        unselected_row = ttk.Frame(tab_colors_frame)
+        unselected_row.pack(fill=tk.X, pady=SPACING['small'])
+        ttk.Label(unselected_row, text="Inactive Tab:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
+        unselected_color_btn = tk.Button(
+            unselected_row, text="████", command=lambda: self._choose_color(self.tab_unselected_color_var),
+            bg=self.tab_unselected_color_var.get(), width=8
+        )
+        unselected_color_btn.pack(side=tk.LEFT, padx=SPACING['small'])
+        ttk.Label(unselected_row, textvariable=self.tab_unselected_color_var).pack(side=tk.LEFT)
+
+        # Color scheme management buttons
+        color_buttons_row = ttk.Frame(tab_colors_frame)
+        color_buttons_row.pack(fill=tk.X, pady=SPACING['small'])
+
+        create_action_button(
+            color_buttons_row, "Apply Colors", self._apply_color_scheme,
+            button_type='primary', width=12
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            color_buttons_row, "Export Scheme", self._export_color_scheme,
+            button_type='success_outline', width=12
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            color_buttons_row, "Import Scheme", self._import_color_scheme,
+            button_type='info_outline', width=12
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        create_action_button(
+            color_buttons_row, "Reset to Default", self._reset_color_scheme,
+            button_type='warning', width=15
+        ).pack(side=tk.LEFT)
+
+        # Predefined color schemes
+        schemes_row = ttk.Frame(tab_colors_frame)
+        schemes_row.pack(fill=tk.X, pady=SPACING['small'])
+
+        ttk.Label(schemes_row, text="Quick Schemes:", font=('TkDefaultFont', 9, 'bold')).pack(side=tk.LEFT)
+
+        # Professional scheme
+        create_action_button(
+            schemes_row, "Professional", lambda: self._apply_quick_scheme("professional"),
+            button_type='secondary', width=12
+        ).pack(side=tk.LEFT, padx=(SPACING['small'], SPACING['small']//2))
+
+        # Vibrant scheme
+        create_action_button(
+            schemes_row, "Vibrant", lambda: self._apply_quick_scheme("vibrant"),
+            button_type='secondary', width=12
+        ).pack(side=tk.LEFT, padx=(0, SPACING['small']//2))
+
+        # Monochrome scheme
+        create_action_button(
+            schemes_row, "Monochrome", lambda: self._apply_quick_scheme("monochrome"),
+            button_type='secondary', width=12
+        ).pack(side=tk.LEFT)
+
+        # Section 6: Advanced Settings (placeholder for future)
         advanced_frame = create_labeled_frame(content_frame, "Advanced Settings")
         advanced_frame.pack(fill=tk.X, pady=SPACING['medium'])
-        
+
         # Placeholder for future advanced settings
         ttk.Label(
-            advanced_frame, 
-            text="Advanced settings will be available in a future update.",
+            advanced_frame,
+            text="Additional advanced settings will be available in future updates.",
             padding=SPACING['medium'],
             font=FONTS.get('body', ('TkDefaultFont', 10, 'italic'))
         ).pack(fill=tk.X)
@@ -230,7 +538,123 @@ class SettingsTab(ttk.Frame):
         self.merger_unique_keys_var.trace_add("write", self._on_setting_changed)
         self.merger_critical_fields_var.trace_add("write", self._on_setting_changed)
         self.merger_max_backups_var.trace_add("write", self._on_setting_changed)
-    
+        self.refresh_rate_var.trace_add("write", self._on_setting_changed)
+
+    def _bind_to_mousewheel(self, event=None):
+        """Bind mouse wheel to canvas scrolling."""
+        try:
+            # Bind mouse wheel events to scroll the canvas
+            if hasattr(self, 'canvas'):
+                self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        except Exception as e:
+            self.logger.debug(f"Error binding mouse wheel: {e}")
+
+    def _unbind_to_mousewheel(self, event=None):
+        """Unbind mouse wheel from canvas scrolling."""
+        try:
+            if hasattr(self, 'canvas'):
+                self.canvas.unbind_all("<MouseWheel>")
+        except Exception as e:
+            self.logger.debug(f"Error unbinding mouse wheel: {e}")
+
+    def _on_mousewheel(self, event):
+        """Handle mouse wheel scrolling for the canvas."""
+        try:
+            # Scroll the canvas vertically based on mouse wheel
+            if hasattr(self, 'canvas'):
+                self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        except Exception as e:
+            self.logger.debug(f"Error handling mouse wheel: {e}")
+
+    def _on_column_setting_changed(self, *args):
+        """Track when column settings have been changed."""
+        self.settings_changed = True
+        self.status_var.set("Column settings changed. Click 'Save Settings' to apply.")
+
+    def _reset_column_settings(self):
+        """Reset column settings to defaults."""
+        confirm = messagebox.askyesno(
+            "Confirm Reset",
+            "Are you sure you want to reset all column settings to their default values?",
+            parent=self
+        )
+
+        if not confirm:
+            return
+
+        # Clear current settings
+        self.main_app.global_config.set("treeview_column_settings", {})
+
+        # Reload column settings (will use defaults)
+        self._load_column_settings()
+
+        self.settings_changed = True
+        self.status_var.set("Column settings reset to defaults. Click 'Save Settings' to apply.")
+
+    def _apply_column_settings_to_current_view(self):
+        """Apply column settings to the current Search & Dashboard view."""
+        try:
+            # Get the Search & Dashboard tab
+            search_tab = self.main_app.tabs.get("Search & Dashboard")
+            if not search_tab or not hasattr(search_tab, 'tree'):
+                messagebox.showwarning("No Active View", "Search & Dashboard tab is not available or has no data loaded.")
+                return
+
+            # Save current settings first
+            self._save_column_settings()
+
+            # Apply settings to current treeview using search tab's method
+            search_tab._apply_column_settings_to_treeview()
+
+            messagebox.showinfo("Settings Applied", "Column settings applied to current view successfully.")
+
+        except Exception as e:
+            self.logger.error(f"Error applying column settings to current view: {e}")
+            messagebox.showerror("Apply Error", f"Failed to apply column settings:\n{str(e)}")
+
+
+
+    def _apply_column_settings_to_treeview(self, treeview):
+        """Apply column settings to a specific treeview widget."""
+        if not treeview:
+            return
+
+        try:
+            column_settings = self.main_app.global_config.get("treeview_column_settings", {})
+
+            # Get current columns
+            current_columns = treeview['columns']
+
+            for col in current_columns:
+                settings = column_settings.get(col, {})
+
+                # Set visibility (hide/show column)
+                if not settings.get("visible", True):
+                    # Hide column by setting width to 0
+                    treeview.column(col, width=0, minwidth=0)
+                else:
+                    # Show column with configured width
+                    width = settings.get("width", 100)
+                    treeview.column(col, width=width, minwidth=50)
+
+        except Exception as e:
+            self.logger.error(f"Error applying column settings to treeview: {e}")
+
+    def _open_benchmark_window(self):
+        """Open the benchmark monitor window."""
+        try:
+            # Import the benchmark window
+            from ui.benchmark_window import BenchmarkWindow
+
+            # Create and show the benchmark window
+            benchmark_window = BenchmarkWindow(self, self.main_app)
+
+            self.logger.info("Benchmark window opened from settings")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open benchmark window: {e}", parent=self)
+            self.logger.error(f"Error opening benchmark window: {e}")
+
     def _on_setting_changed(self, *args):
         """Track when settings have been changed."""
         self.settings_changed = True
@@ -288,15 +712,28 @@ class SettingsTab(ttk.Frame):
             except ValueError as e:
                 messagebox.showerror("Invalid Setting", f"Invalid value for maximum backups: {str(e)}", parent=self)
                 return
-            
+
+            # Validate refresh rate
+            try:
+                refresh_rate = int(self.refresh_rate_var.get())
+                if refresh_rate < 1 or refresh_rate > 10:
+                    raise ValueError("Refresh rate must be between 1 and 10 seconds")
+            except ValueError as e:
+                messagebox.showerror("Invalid Setting", f"Invalid refresh rate: {str(e)}", parent=self)
+                return
+
             # Prepare the settings to save
             settings_to_save = {
                 "default_data_folder": self.default_data_folder_var.get(),
                 "merged_data_folder": self.merged_data_folder_var.get(),
                 "merger_preferred_unique_keys": self._parse_comma_separated_list(self.merger_unique_keys_var.get()),
                 "merger_critical_fields": self._parse_comma_separated_list(self.merger_critical_fields_var.get()),
-                "merger_max_backups": max_backups
+                "merger_max_backups": max_backups,
+                "performance_refresh_rate": refresh_rate
             }
+
+            # Save column settings
+            self._save_column_settings()
             
             # Create directories if they don't exist
             for path_key in ["default_data_folder", "merged_data_folder"]:
@@ -333,27 +770,53 @@ class SettingsTab(ttk.Frame):
     
     def _propagate_config_changes(self, new_settings: Dict[str, Any]):
         """Notify other components of configuration changes."""
-        # Reinitialize relevant components that depend on these settings
-        
-        # Update Search tab's data processor with new paths if it exists
-        search_tab = self.main_app.tabs.get("Search & Dashboard")
-        if search_tab and hasattr(search_tab, "data_processor"):
-            search_tab.data_processor.update_config(self.main_app.global_config)
-            self.logger.info("Updated Search tab's data processor with new config")
-        
-        # Update Portal Merger tab with new merger settings if it exists
-        merger_tab = self.main_app.tabs.get("Portal Merger")
-        if merger_tab and hasattr(merger_tab, "merger"):
-            merger_tab.merger = None  # Force recreation with new config
-            # Create a new PortalDataMerger instance directly
-            merger_tab.merger = PortalDataMerger(self.main_app.global_config)
-            self.logger.info("Updated Portal Merger tab with new config")
+        try:
+            # Update Search tab's data processor with new paths if it exists
+            search_tab = self.main_app.tabs.get("Search & Dashboard")
+            if search_tab and hasattr(search_tab, "data_processor"):
+                if hasattr(search_tab.data_processor, 'update_config'):
+                    search_tab.data_processor.update_config(self.main_app.global_config)
+                    self.logger.info("Updated Search tab's data processor with new config")
+                else:
+                    # Recreate the data processor with new config
+                    from core.data_processor import TenderDataProcessor
+                    search_tab.data_processor = TenderDataProcessor(self.main_app.global_config)
+                    self.logger.info("Recreated Search tab's data processor with new config")
+            
+            # Update Portal Merger tab with new merger settings if it exists
+            merger_tab = self.main_app.tabs.get("Portal Merger")
+            if merger_tab and hasattr(merger_tab, "merger"):
+                merger_tab.merger = None  # Force recreation with new config
+                # Create a new PortalDataMerger instance directly
+                merger_tab.merger = PortalDataMerger(self.main_app.global_config)
+                self.logger.info("Updated Portal Merger tab with new config")
+                
+        except Exception as e:
+            self.logger.error(f"Error propagating config changes: {e}")
+            # Don't raise the error, just log it so settings still save
     
     def on_tab_selected(self):
         """Called when this tab is selected."""
-        # Refresh displayed values from current config
-        self.default_data_folder_var.set(self.main_app.global_config.get("default_data_folder", ""))
-        self.merged_data_folder_var.set(self.main_app.global_config.get("merged_data_folder", ""))
+        # Refresh displayed values from current config with smart defaults
+        # Default: dummy data for development, production for live use
+        default_dummy_data = r"C:\Users\kalia\Downloads\dummy_data"
+        default_production_data = r"H:\My Drive\CRM T84\0 Live App\Search data\merged_data"
+
+        # Try to determine if we're in development vs production
+        current_user = os.environ.get('USERNAME', '')
+        # Check if production paths exist or if username suggests production environment
+        production_paths = [default_production_data, r"H:\My Drive"]
+        is_production = any(os.path.exists(path) for path in production_paths) or current_user.lower() not in ['kalia', 'saleem']
+
+        if is_production and os.path.exists(default_production_data):
+            default_data_default = default_production_data
+            default_merged_default = default_production_data
+        else:
+            default_data_default = default_dummy_data
+            default_merged_default = default_dummy_data
+
+        self.default_data_folder_var.set(self.main_app.global_config.get("default_data_folder", default_data_default))
+        self.merged_data_folder_var.set(self.main_app.global_config.get("merged_data_folder", default_merged_default))
         
         self.merger_unique_keys_var.set(self._format_list_for_display(
             self.main_app.global_config.get("merger_preferred_unique_keys", [])
@@ -372,7 +835,7 @@ class SettingsTab(ttk.Frame):
         self.status_var.set("Ready")
         
         self.logger.info("Settings tab selected and refreshed")
-    
+
     def check_unsaved_changes(self) -> bool:
         """
         Check if there are unsaved changes when switching tabs or closing the application.
@@ -380,16 +843,548 @@ class SettingsTab(ttk.Frame):
         """
         if not self.settings_changed:
             return True
-        
+
         response = messagebox.askyesnocancel(
             "Unsaved Changes",
             "You have unsaved settings changes. Would you like to save them before continuing?",
             parent=self
         )
-        
+
         if response is None:  # Cancel
             return False
         if response is True:  # Yes, save
             self._save_settings()
             return not self.settings_changed  # Only proceed if save was successful
         return True  # No, discard changes
+
+    def _initialize_default_column_settings(self):
+        """Initialize default column settings with proper sequence and hidden columns."""
+        self.default_column_sequence = [
+            "Department", "Closing Date", "Tender ID", "Tender Name", "Direct URL",
+            "Status URL", "e-Publish Date", "Opening Date"
+        ]
+
+        # Columns to hide by default
+        self.columns_hidden_by_default = ["Sr number", "Data source Path"]
+
+        # Default widths for proportionate sizing
+        self.default_column_widths = {
+            "Tender ID": 120,
+            "Tender Name": 250,
+            "Title": 250,
+            "Department": 150,
+            "Closing Date": 120,
+            "Status": 100,
+            "Value": 100,
+            "Location": 150,
+            "Source File": 150,
+            "Description": 300,
+            "Agency": 180,
+            "Ministry": 180,
+            "Tender ID (Extracted)": 120,
+            "Title and Ref.No./Tender ID": 200,
+            "Direct URL": 120,
+            "Status URL": 120,
+            "e-Publish Date": 120,
+            "Opening Date": 120
+        }
+
+        self.logger.info("Default column settings initialized")
+
+    def _load_column_settings(self):
+        """Load and display column settings from config in ordered manner."""
+        # Clear existing column settings
+        for widget in self.columns_scrollable_frame.winfo_children():
+            widget.destroy()
+
+        self.column_vars = {}
+        self.width_vars = {}
+        self.column_order = []
+
+        # Get current column settings from config
+        column_settings = self.main_app.global_config.get("treeview_column_settings", {})
+
+        # If no settings exist, create default settings
+        if not column_settings:
+            column_settings = self._create_default_column_settings()
+
+        # Get column order from config or use default sequence
+        column_order = self.main_app.global_config.get("treeview_column_order", self.default_column_sequence.copy())
+
+        # Add any new columns from data that aren't in the order yet
+        for col_name in column_settings:
+            if col_name not in column_order:
+                column_order.append(col_name)
+
+        # Update stored order
+        self.column_order = column_order
+
+        # Create UI elements for each column in order
+        for order_num, col_name in enumerate(column_order, 1):
+            if col_name in column_settings:
+                settings = column_settings[col_name]
+                self._create_column_setting_row(order_num, col_name, settings)
+
+        self.logger.info(f"Loaded column settings for {len(column_order)} columns")
+
+    def _create_default_column_settings(self):
+        """Create default column settings with proper defaults."""
+        column_settings = {}
+
+        # Common tender columns
+        common_columns = [
+            "Tender ID", "Tender Name", "Title", "Department", "Closing Date", "Status",
+            "Value", "Location", "Source File", "Description", "Agency", "Ministry",
+            "Tender ID (Extracted)", "Title and Ref.No./Tender ID", "Direct URL",
+            "Status URL", "e-Publish Date", "Opening Date", "Sr number", "Data source Path"
+        ]
+
+        for col in common_columns:
+            # Check if column should be hidden by default
+            is_visible = col not in self.columns_hidden_by_default
+            width = self.default_column_widths.get(col, 100)
+
+            column_settings[col] = {
+                "visible": is_visible,
+                "width": width
+            }
+
+        return column_settings
+
+    def _create_column_setting_row(self, order_num: int, col_name: str, settings: dict):
+        """Create a single column setting row in the UI."""
+        col_frame = ttk.Frame(self.columns_scrollable_frame)
+        col_frame.pack(fill=tk.X, pady=1)
+
+        # Store the column name and frame reference for selection/movement
+        # Use a custom attribute stored in our own dict instead
+        if not hasattr(self, 'column_frames'):
+            self.column_frames = {}
+        self.column_frames[col_name] = col_frame
+
+        # Make the frame clickable for selection
+        def select_column(event=None, frame=col_frame, name=col_name):
+            self._select_column(name)
+
+        col_frame.bind("<Button-1>", select_column)
+        col_frame.configure(cursor="hand2")  # Change cursor on hover
+
+        # Order number label
+        order_label = ttk.Label(col_frame, text=str(order_num), width=6, anchor="center")
+        order_label.pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        order_label.bind("<Button-1>", select_column)
+
+        # Column name label
+        name_label = ttk.Label(col_frame, text=col_name, width=25, anchor="w")
+        name_label.pack(side=tk.LEFT, padx=(0, SPACING['medium']))
+        name_label.bind("<Button-1>", select_column)
+
+        # Visibility checkbox
+        visible_var = tk.BooleanVar(value=settings.get("visible", True))
+        self.column_vars[col_name] = visible_var
+
+        visible_cb = ttk.Checkbutton(col_frame, variable=visible_var,
+                                   command=self._on_column_setting_changed)
+        visible_cb.pack(side=tk.LEFT, padx=(0, SPACING['medium']))
+
+        # Width spinbox
+        width_var = tk.StringVar(value=str(settings.get("width", 100)))
+        self.width_vars[col_name] = width_var
+
+        width_sb = ttk.Spinbox(col_frame, from_=50, to=500, textvariable=width_var,
+                             width=5, command=self._on_column_setting_changed)
+        width_sb.pack(side=tk.LEFT)
+
+        # Bind width variable change
+        width_var.trace_add("write", self._on_column_setting_changed)
+
+    def _select_column(self, col_name: str):
+        """Select a column for movement operations."""
+        # Clear previous selection visual indicator
+        if hasattr(self, 'selected_column') and self.selected_column:
+            if self.selected_column in self.column_frames:
+                frame = self.column_frames[self.selected_column]
+                # Reset background color
+                frame.configure(style="TFrame")
+
+        # Set new selection
+        self.selected_column = col_name
+
+        # Apply selection visual indicator
+        if col_name in self.column_frames:
+            frame = self.column_frames[col_name]
+            # Make it look selected (light blue background)
+            style = ttk.Style()
+            style.configure("Selected.TFrame", background="#e3f2fd")  # Light blue background
+            frame.configure(style="Selected.TFrame")
+
+        self.logger.info(f"Selected column: {col_name}")
+
+    def _move_column_up(self):
+        """Move selected column up in the order."""
+        if not self.selected_column or self.selected_column not in self.column_order:
+            messagebox.showwarning("No Column Selected", "Please click on a column row to select it first.")
+            return
+
+        current_index = self.column_order.index(self.selected_column)
+        if current_index > 0:
+            # Swap with the previous item
+            self.column_order[current_index], self.column_order[current_index - 1] = \
+                self.column_order[current_index - 1], self.column_order[current_index]
+
+            # Reload the UI with new order
+            self._load_column_settings()
+            self.settings_changed = True
+            self.status_var.set("Column moved up. Click 'Save Settings' to apply.")
+        else:
+            messagebox.showinfo("Can't Move Up", "This column is already at the top.")
+
+    def _move_column_down(self):
+        """Move selected column down in the order."""
+        if not self.selected_column or self.selected_column not in self.column_order:
+            messagebox.showwarning("No Column Selected", "Please click on a column row to select it first.")
+            return
+
+        current_index = self.column_order.index(self.selected_column)
+        if current_index < len(self.column_order) - 1:
+            # Swap with the next item
+            self.column_order[current_index], self.column_order[current_index + 1] = \
+                self.column_order[current_index + 1], self.column_order[current_index]
+
+            # Reload the UI with new order
+            self._load_column_settings()
+            self.settings_changed = True
+            self.status_var.set("Column moved down. Click 'Save Settings' to apply.")
+        else:
+            messagebox.showinfo("Can't Move Down", "This column is already at the bottom.")
+
+    def _reset_column_order(self):
+        """Reset column order to the default sequence."""
+        confirm = messagebox.askyesno(
+            "Confirm Reset Order",
+            "Reset column order to default sequence?",
+            parent=self
+        )
+
+        if not confirm:
+            return
+
+        # Reset to default order
+        self.column_order = self.default_column_sequence.copy()
+        self.main_app.global_config.set("treeview_column_order", self.column_order)
+
+        # Reload column settings
+        self._load_column_settings()
+
+        self.settings_changed = True
+        self.status_var.set("Column order reset. Click 'Save Settings' to apply.")
+
+    def _export_column_settings(self):
+        """Export column settings to a JSON file."""
+        try:
+            column_settings = self.main_app.global_config.get("treeview_column_settings", {})
+            column_order = self.main_app.global_config.get("treeview_column_order", self.column_order)
+
+            export_data = {
+                "column_settings": column_settings,
+                "column_order": column_order,
+                "export_date": str(pd.Timestamp.now())
+            }
+
+            file_path = filedialog.asksaveasfilename(
+                title="Export Column Settings",
+                defaultextension=".json",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+
+            if file_path:
+                import json
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(export_data, f, indent=2, ensure_ascii=False)
+
+                messagebox.showinfo("Export Successful",
+                                  f"Column settings exported to:\n{file_path}")
+                self.logger.info(f"Column settings exported to: {file_path}")
+
+        except Exception as e:
+            self.logger.error(f"Error exporting column settings: {e}")
+            messagebox.showerror("Export Error", f"Failed to export settings: {str(e)}")
+
+    def _import_column_settings(self):
+        """Import column settings from a JSON file."""
+        try:
+            file_path = filedialog.askopenfilename(
+                title="Import Column Settings",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+
+            if not file_path:
+                return
+
+            import json
+            with open(file_path, 'r', encoding='utf-8') as f:
+                import_data = json.load(f)
+
+            if "column_settings" in import_data:
+                self.main_app.global_config.set("treeview_column_settings", import_data["column_settings"])
+            if "column_order" in import_data:
+                self.main_app.global_config.set("treeview_column_order", import_data["column_order"])
+
+            # Reload the UI
+            self._load_column_settings()
+
+            messagebox.showinfo("Import Successful",
+                              f"Column settings imported from:\n{file_path}")
+            self.logger.info(f"Column settings imported from: {file_path}")
+
+            self.settings_changed = True
+            self.status_var.set("Column settings imported. Click 'Save Settings' to apply.")
+
+        except Exception as e:
+            self.logger.error(f"Error importing column settings: {e}")
+            messagebox.showerror("Import Error", f"Failed to import settings: {str(e)}")
+
+    def _save_column_settings(self):
+        """Save current column settings to config."""
+        column_settings = {}
+
+        for col_name in self.column_vars:
+            visible = self.column_vars[col_name].get()
+            try:
+                width = int(self.width_vars[col_name].get())
+            except ValueError:
+                width = 100  # Default width if invalid
+
+            column_settings[col_name] = {
+                "visible": visible,
+                "width": width
+            }
+
+        self.main_app.global_config.set("treeview_column_settings", column_settings)
+
+        # Save column order
+        if self.column_order:
+            self.main_app.global_config.set("treeview_column_order", self.column_order)
+
+    def _choose_color(self, color_var: tk.StringVar):
+        """Open color chooser dialog and update the specified color variable."""
+        try:
+            current_color = color_var.get()
+            chosen_color = colorchooser.askcolor(color=current_color, title="Choose Color")
+
+            if chosen_color and chosen_color[1]:  # chosen_color[1] contains the hex color
+                color_var.set(chosen_color[1])
+                self.settings_changed = True
+                self.status_var.set("Color changed. Click 'Apply Colors' to see the effect.")
+
+        except Exception as e:
+            self.logger.error(f"Error choosing color: {e}")
+            messagebox.showerror("Color Selection Error", f"Failed to select color: {str(e)}")
+
+    def _apply_color_scheme(self):
+        """Apply the current color scheme to the application."""
+        try:
+            # Get the color values
+            selected_color = self.tab_selected_color_var.get()
+            hover_color = self.tab_hover_color_var.get()
+            unselected_color = self.tab_unselected_color_var.get()
+
+            # Validate colors (basic hex color validation)
+            for color_name, color_value in [
+                ("Selected tab", selected_color),
+                ("Hover tab", hover_color),
+                ("Unselected tab", unselected_color)
+            ]:
+                if not self._is_valid_hex_color(color_value):
+                    messagebox.showerror("Invalid Color",
+                                       f"Invalid color format for {color_name}: {color_value}\n"
+                                       "Please use hex format like #RRGGBB")
+                    return
+
+            # Save colors to config
+            color_scheme = {
+                "tab_selected": selected_color,
+                "tab_hover": hover_color,
+                "tab_unselected": unselected_color
+            }
+
+            self.main_app.global_config.set("color_scheme", color_scheme)
+            self.main_app.global_config.save_config()
+
+            # Apply colors immediately by calling the main window's styling method
+            if hasattr(self.main_app, '_apply_tab_styling'):
+                self.main_app._apply_tab_styling()
+
+            self.status_var.set("Color scheme applied successfully!")
+            self.logger.info(f"Applied new color scheme: {color_scheme}")
+
+        except Exception as e:
+            self.logger.error(f"Error applying color scheme: {e}")
+            messagebox.showerror("Apply Error", f"Failed to apply color scheme: {str(e)}")
+
+    def _export_color_scheme(self):
+        """Export the current color scheme to a JSON file."""
+        try:
+            # Get current colors
+            color_scheme = {
+                "tab_selected": self.tab_selected_color_var.get(),
+                "tab_hover": self.tab_hover_color_var.get(),
+                "tab_unselected": self.tab_unselected_color_var.get(),
+                "export_date": str(pd.Timestamp.now()),
+                "description": "Custom color scheme for Tender Management Utility tabs"
+            }
+
+            # Ask for export file location
+            file_path = filedialog.asksaveasfilename(
+                title="Export Color Scheme",
+                defaultextension=".json",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+
+            if not file_path:
+                return
+
+            # Export to JSON
+            import json
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(color_scheme, f, indent=2, ensure_ascii=False)
+
+            messagebox.showinfo("Export Complete", f"Color scheme exported to:\n{file_path}")
+            self.logger.info(f"Color scheme exported to: {file_path}")
+
+        except Exception as e:
+            self.logger.error(f"Error exporting color scheme: {e}")
+            messagebox.showerror("Export Error", f"Failed to export color scheme: {str(e)}")
+
+    def _import_color_scheme(self):
+        """Import a color scheme from a JSON file."""
+        try:
+            # Ask for import file
+            file_path = filedialog.askopenfilename(
+                title="Import Color Scheme",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+
+            if not file_path:
+                return
+
+            import json
+            with open(file_path, 'r', encoding='utf-8') as f:
+                imported_scheme = json.load(f)
+
+            # Validate the imported scheme
+            required_keys = ["tab_selected", "tab_hover", "tab_unselected"]
+            if not all(key in imported_scheme for key in required_keys):
+                messagebox.showerror("Invalid File",
+                                   "The selected file does not contain a valid color scheme.")
+                return
+
+            # Apply the imported colors
+            self.tab_selected_color_var.set(imported_scheme["tab_selected"])
+            self.tab_hover_color_var.set(imported_scheme["tab_hover"])
+            self.tab_unselected_color_var.set(imported_scheme["tab_unselected"])
+
+            # Save to config
+            self.main_app.global_config.set("color_scheme", imported_scheme)
+            self.main_app.global_config.save_config()
+
+            # Apply immediately
+            self._apply_color_scheme()
+
+            messagebox.showinfo("Import Complete", f"Color scheme imported from:\n{file_path}")
+            self.logger.info(f"Color scheme imported from: {file_path}")
+
+        except Exception as e:
+            self.logger.error(f"Error importing color scheme: {e}")
+            messagebox.showerror("Import Error", f"Failed to import color scheme: {str(e)}")
+
+    def _reset_color_scheme(self):
+        """Reset color scheme to default values."""
+        try:
+            # Default color scheme
+            default_colors = {
+                "tab_selected": "#e74c3c",    # Bright red
+                "tab_hover": "#f39c12",       # Bright orange
+                "tab_unselected": "#008080"   # Dark teal
+            }
+
+            # Apply default colors
+            self.tab_selected_color_var.set(default_colors["tab_selected"])
+            self.tab_hover_color_var.set(default_colors["tab_hover"])
+            self.tab_unselected_color_var.set(default_colors["tab_unselected"])
+
+            # Save to config
+            self.main_app.global_config.set("color_scheme", default_colors)
+            self.main_app.global_config.save_config()
+
+            # Apply immediately
+            self._apply_color_scheme()
+
+            messagebox.showinfo("Reset Complete", "Color scheme reset to defaults.")
+            self.logger.info("Color scheme reset to defaults")
+
+        except Exception as e:
+            self.logger.error(f"Error resetting color scheme: {e}")
+            messagebox.showerror("Reset Error", f"Failed to reset color scheme: {str(e)}")
+
+    def _apply_quick_scheme(self, scheme_type: str):
+        """Apply a predefined quick color scheme."""
+        try:
+            schemes = {
+                "professional": {
+                    "tab_selected": "#2c3e50",    # Dark blue-gray
+                    "tab_hover": "#34495e",       # Slightly lighter
+                    "tab_unselected": "#ecf0f1"   # Light gray
+                },
+                "vibrant": {
+                    "tab_selected": "#e74c3c",    # Bright red
+                    "tab_hover": "#9b59b6",       # Purple
+                    "tab_unselected": "#3498db"   # Bright blue
+                },
+                "monochrome": {
+                    "tab_selected": "#2c3e50",    # Dark gray
+                    "tab_hover": "#7f8c8d",       # Medium gray
+                    "tab_unselected": "#bdc3c7"   # Light gray
+                }
+            }
+
+            if scheme_type not in schemes:
+                messagebox.showerror("Invalid Scheme", f"Unknown color scheme: {scheme_type}")
+                return
+
+            scheme = schemes[scheme_type]
+
+            # Apply the scheme colors
+            self.tab_selected_color_var.set(scheme["tab_selected"])
+            self.tab_hover_color_var.set(scheme["tab_hover"])
+            self.tab_unselected_color_var.set(scheme["tab_unselected"])
+
+            # Apply immediately
+            self._apply_color_scheme()
+
+            messagebox.showinfo("Scheme Applied", f"'{scheme_type.title()}' color scheme applied successfully.")
+            self.logger.info(f"Applied quick color scheme: {scheme_type}")
+
+        except Exception as e:
+            self.logger.error(f"Error applying quick scheme: {e}")
+            messagebox.showerror("Scheme Error", f"Failed to apply color scheme: {str(e)}")
+
+    def _is_valid_hex_color(self, color: str) -> bool:
+        """Validate if a string is a valid hex color."""
+        try:
+            if not color or not isinstance(color, str):
+                return False
+
+            # Remove leading # if present
+            color = color.lstrip('#')
+
+            # Check if it's a valid 6-digit hex color
+            if len(color) != 6:
+                return False
+
+            # Try to convert to int
+            int(color, 16)
+            return True
+
+        except (ValueError, TypeError):
+            return False

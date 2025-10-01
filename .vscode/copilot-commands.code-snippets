@@ -1,0 +1,38 @@
+{
+    "Cline Analysis Mode": {
+        "prefix": "cline-analyze",
+        "body": [
+            "CLINE MODE: Analyze ${1:filename} completely",
+            "1. Scan for ALL method duplicates",  
+            "2. Map dependencies and method calls",
+            "3. Identify incomplete vs complete implementations",
+            "4. Show fix plan - NO CODE CHANGES YET",
+            "5. Wait for confirmation before proceeding"
+        ],
+        "description": "Full Cline-style codebase analysis"
+    },
+    "Cline Surgical Fix": {
+        "prefix": "cline-fix", 
+        "body": [
+            "CLINE MODE: Surgical fix for ${1:specific error}",
+            "RULES:",
+            "- Touch only the broken code",
+            "- No duplicate methods",  
+            "- No cascading changes",
+            "- Show before/after code only",
+            "- Get confirmation before applying"
+        ],
+        "description": "Surgical fix in Cline style"
+    },
+    "Cline Stop Command": {
+        "prefix": "cline-stop",
+        "body": [
+            "STOP. CLINE MODE:",
+            "- Made only the requested change",
+            "- No additional modifications", 
+            "- Ready for next specific instruction",
+            "- Current status: ${1:describe status}"
+        ],
+        "description": "Stop Copilot from over-helping"
+    }
+}

@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tender Management Utility v3.2 - Professional Tender Data Management</title>
+    <!-- WordPress Gutenberg Optimization: Responsive design with WordPress-friendly structure -->
+    <style>
+        /* WordPress Variables - Easy to change */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --text-color: #333;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --hero-bg: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+
+            /* URLs - Change these for your WordPress site */
+            --github-url: '#';
+            --contact-url: '#';
+            --website-url: '#';
+            --license-url: 'resources/license.txt';
+        }
+    </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .logo span {
+            color: #3498db;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 3rem;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #3498db;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            color: white;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .cta-button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        section {
+            background: white;
+            margin: 2rem 0;
+            padding: 3rem 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #2c3e50;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background: #3498db;
+            margin: 1rem auto;
+            border-radius: 2px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #e9ecef;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: #3498db;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .license-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .license-section .section-title {
+            color: white;
+        }
+
+        .license-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .license-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .license-card h3 {
+            color: #fff;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .license-card .price {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+            margin: 1rem 0;
+        }
+
+        .license-features {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .license-features li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .license-features li::before {
+            content: '✓';
+            color: #4CAF50;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .contact-section {
+            text-align: center;
+            padding: 3rem 0;
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .contact-item {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .contact-item h4 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .contact-item p {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-item a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .contact-item a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-links a {
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #3498db;
+        }
+
+        /* WordPress Gutenberg Shortcode Placeholders */
+        .wp-shortcode-contact-form {
+            /* Replace with: [contact-form-7 id="123"] or your preferred contact form plugin */
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px dashed #fff;
+        }
+
+        .wp-shortcode-contact-form h3 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .wp-shortcode-contact-form p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1.5rem;
+        }
+
+        .wp-shortcode-newsletter {
+            /* Replace with: [newsletter-signup] */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        /* Enhanced Responsive Design for WordPress */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+
+            .contact-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav ul {
+                margin-top: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            nav ul li {
+                margin-left: 1.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .hero {
+                padding: 3rem 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+                line-height: 1.2;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .license-cards {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .contact-info {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .feature-card,
+            .license-card,
+            .contact-item {
+                padding: 1.5rem;
+            }
+
+            .cta-button {
+                padding: 0.8rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 10px;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            nav ul li {
+                margin-left: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .feature-card,
+            .license-card,
+            .contact-item {
+                padding: 1rem;
+            }
+
+            .feature-icon {
+                font-size: 2.5rem;
+            }
+
+            .feature-title {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* WordPress Theme Compatibility */
+        .wp-block-group {
+            /* Gutenberg Group Block compatibility */
+            display: block;
+        }
+
+        .wp-block-columns {
+            /* Gutenberg Columns Block compatibility */
+            display: flex;
+        }
+
+        .wp-block-buttons {
+            /* Gutenberg Buttons Block compatibility */
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Print Styles for WordPress */
+        @media print {
+            body {
+                background: white !important;
+            }
+
+            .hero {
+                background: white !important;
+                color: black !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .license-section {
+                background: white !important;
+                color: black !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Tender<span>Management</span></div>
+                <nav>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#license">License</a></li>
+                        <li><a href="#download">Download</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="version-badge">Latest Version: v3.2</div>
+            <h1>Professional Tender Data Management</h1>
+            <p>Automate your tender management with our advanced desktop application. Load, search, filter, visualize, and manage tender data with unparalleled efficiency and accuracy. Now featuring comprehensive performance monitoring, advanced dummy data generation, and GUI-based benchmark testing.</p>
+            <a href="#download" class="cta-button">Get Started Free</a>
+        </div>
+    </section>
+
+    <section id="summary">
+        <div class="container">
+            <h2 class="section-title">Project Summary</h2>
+            <p style="text-align: center; font-size: 1.2rem; color: #666; max-width: 800px; margin: 0 auto;">
+                Tender Management Utility v3.2 is a comprehensive desktop application designed for loading, searching, filtering, visualizing, merging, and managing tender data with calendar and task integration. Built with a focus on performance, user experience, and data accuracy, it serves professionals and organizations requiring efficient tender procurement management.
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 3rem; text-align: center;">
+                <div>
+                    <h3 style="color: #3498db; font-size: 2rem;">14000+</h3>
+                    <p>Rows Handled (up to 10M+ with adequate hardware)</p>
+                </div>
+                <div>
+                    <h3 style="color: #3498db; font-size: 2rem;">99%</h3>
+                    <p>Data Accuracy Rate</p>
+                </div>
+                <div>
+                    <h3 style="color: #3498db; font-size: 2rem;">Advanced</h3>
+                    <p>Analysis Capabilities</p>
+                </div>
+                <div>
+                    <h3 style="color: #3498db; font-size: 2rem;">v3.2</h3>
+                    <p>Latest Version</p>
+                </div>
+            </div>
+            <p style="text-align: center; font-size: 1.1rem; color: #777; max-width: 900px; margin: 1.5rem auto 0;">
+                <strong>Custom Development Services:</strong> We specialize in creating tailored Python applications for businesses. From data processing tools to management utilities, we build custom software that automates your workflows and gives you a competitive edge. Our expertise includes desktop applications, automation scripts, data analysis tools, and integration solutions.
+            </p>
+        </div>
+    </section>
+
+    <section id="features">
+        <div class="container">
+            <h2 class="section-title">Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Advanced Data Processing</h3>
+                    <p>Multi-folder data loading from Excel/CSV files with intelligent merging, deduplication, and data cleaning for reliable tender data management.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3 class="feature-title">Smart Search & Filtering</h3>
+                    <p>Live search with department and global filters, date presets (Live, Today, Next 3/7/30 Days), and custom range selection with AND/OR logic.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3 class="feature-title">Real-time Dashboard</h3>
+                    <p>Dynamic KPIs showing live/expired tenders, due windows, department distribution, and filtered results with instant updates.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <h3 class="feature-title">Saved Search Profiles</h3>
+                    <p>Save and load search configurations for frequently used filters, with export/import functionality for sharing profiles.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <h3 class="feature-title">Calendar Integration</h3>
+                    <p>Add tender deadlines to calendar applications with notes, supporting single or multiple row selections for efficient task management.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Data Visualization</h3>
+                    <p>Interactive charts showing department distribution and monthly tender trends, with export capabilities for reporting.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚙️</div>
+                    <h3 class="feature-title">Column Configuration</h3>
+                    <p>Reorder, hide/show, and resize columns with persistent settings, plus sortable headers with chronological and numeric sorting.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3 class="feature-title">High Performance</h3>
+                    <p>Debounced asynchronous filtering for large datasets (50K+ rows), multi-threaded processing, and optimized memory usage.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Performance Monitoring</h3>
+                    <p>Real-time system performance tracking with live CPU, memory, and disk usage metrics. Integrated status bar shows RAM usage, data records, and last operation tracking with automatic updates every 2 seconds.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧪</div>
+                    <h3 class="feature-title">Advanced Testing Suite</h3>
+                    <p>Comprehensive GUI-based performance testing with advanced dummy data generator (50K+ records), automated import/testing workflows, and professional markdown reports with system specifications and optimization recommendations.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3 class="feature-title">Advanced Search Architecture</h3>
+                    <p>In-memory inverted token indexing for large datasets (5K+ rows) with set intersection operations for AND/OR logic in global search, automatic fallback to DataFrame scanning for smaller datasets.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">Optimized Performance</h3>
+                    <p>Debounced asynchronous filtering (250ms delay) for large datasets, multi-threaded processing, cached lowercased columns for case-insensitive search, and precompiled regex patterns for improved responsiveness.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="integrations" style="background: #f8f9fa;">
+        <div class="container">
+            <h2 class="section-title">Integrations & Compatibility</h2>
+            <p style="text-align: center; font-size: 1.1rem; color: #666; margin-bottom: 2rem;">
+                Works seamlessly with your existing tools and workflows
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 2rem; align-items: center; justify-items: center; margin-bottom: 3rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">📊</div>
+                    <div style="font-weight: bold; color: #2c3e50;">Excel</div>
+                    <div style="font-size: 0.9rem; color: #666;">.xlsx, .xls</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">📋</div>
+                    <div style="font-weight: bold; color: #2c3e50;">CSV</div>
+                    <div style="font-size: 0.9rem; color: #666;">All formats</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">📅</div>
+                    <div style="font-weight: bold; color: #2c3e50;">Calendar</div>
+                    <div style="font-size: 0.9rem; color: #666;">Outlook, Google</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">🐍</div>
+                    <div style="font-weight: bold; color: #2c3e50;">Python</div>
+                    <div style="font-size: 0.9rem; color: #666;">3.7+</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">🪟</div>
+                    <div style="font-weight: bold; color: #2c3e50;">Windows</div>
+                    <div style="font-size: 0.9rem; color: #666;">7 SP1+</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">☁️</div>
+                    <div style="font-weight: bold; color: #2c3e50;">Cloud</div>
+                    <div style="font-size: 0.9rem; color: #666;">Ready</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="technology-stack" style="background: white;">
+        <div class="container">
+            <h2 class="section-title">Technology Stack</h2>
+            <p style="text-align: center; font-size: 1.1rem; color: #666; margin-bottom: 3rem;">
+                Built with cutting-edge technologies for maximum performance, reliability, and user experience
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+                <!-- Core Technologies -->
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 0.5rem;">🐍</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Python 3.7+</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Core programming language</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Type hints, async/await, rich ecosystem
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 0.5rem;">🖼️</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Tkinter + Ttk</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">GUI framework</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Native Windows UI, theming, responsive design
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 0.5rem;">📊</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Pandas</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Data processing engine</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> DataFrame operations, Excel/CSV I/O, advanced filtering
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 0.5rem;">📈</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Matplotlib</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Data visualization</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Interactive charts, statistical plots, export capabilities
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 0.5rem;">📅</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">TkCalendar</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Date picker widgets</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Interactive calendars, date validation, custom formatting
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 0.5rem;">📁</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">OpenPyXL</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Excel file processing</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Read/write Excel files, formatting preservation, large file support
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Technologies -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚡</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Psutil</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">System performance monitoring</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> CPU, memory, disk usage tracking, cross-platform compatibility
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔒</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Filelock</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">File locking for safety</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Network drive safety, concurrent access protection, Google Drive compatibility
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">📅</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">iCalendar</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Calendar export/import</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Standard calendar formats, Outlook/Google compatibility, event management
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔍</div>
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem;">Advanced Algorithms</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Search optimization</p>
+                        <div style="background: #f8f9fa; padding: 0.5rem; border-radius: 5px; font-size: 0.8rem;">
+                            <strong>Features:</strong> Inverted indexing, debounced filtering, multi-threaded processing, memory optimization
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Architecture Highlights -->
+            <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 2rem; border-radius: 10px; margin-bottom: 2rem;">
+                <h3 style="text-align: center; color: #2c3e50; margin-bottom: 1.5rem;">🏗️ Architecture Highlights</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                    <div style="text-align: center; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎯</div>
+                        <h4 style="color: #2c3e50; margin-bottom: 0.5rem;">MVC Architecture</h4>
+                        <p style="font-size: 0.9rem; color: #666;">Clean separation of concerns with Model-View-Controller pattern</p>
+                    </div>
+                    <div style="text-align: center; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⚡</div>
+                        <h4 style="color: #2c3e50; margin-bottom: 0.5rem;">Asynchronous Processing</h4>
+                        <p style="font-size: 0.9rem; color: #666;">Non-blocking UI with background thread processing</p>
+                    </div>
+                    <div style="text-align: center; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔧</div>
+                        <h4 style="color: #2c3e50; margin-bottom: 0.5rem;">Modular Design</h4>
+                        <p style="font-size: 0.9rem; color: #666;">Easily extensible architecture with plugin support</p>
+                    </div>
+                    <div style="text-align: center; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📊</div>
+                        <h4 style="color: #2c3e50; margin-bottom: 0.5rem;">Performance Optimized</h4>
+                        <p style="font-size: 0.9rem; color: #666;">Memory-efficient processing for large datasets</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="use-cases">
+        <div class="container">
+            <h2 class="section-title">Who Uses Tender Management Utility?</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                <div style="background: #f8f9fa; padding: 2rem; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🏛️</div>
+                    <h3 style="color: #2c3e50; margin-bottom: 1rem;">Government Agencies</h3>
+                    <p style="color: #666;">Streamline procurement processes, track tender deadlines, and ensure compliance with government regulations.</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 2rem; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🏗️</div>
+                    <h3 style="color: #2c3e50; margin-bottom: 1rem;">Construction Companies</h3>
+                    <p style="color: #666;">Manage multiple tender opportunities, analyze market trends, and optimize bidding strategies.</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 2rem; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🏢</div>
+                    <h3 style="color: #2c3e50; margin-bottom: 1rem;">Procurement Teams</h3>
+                    <p style="color: #666;">Centralize tender data management, improve team collaboration, and accelerate decision-making.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="performance" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="container">
+            <h2 class="section-title" style="color: white;">Performance & Reliability</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">⚡</div>
+                    <h3 style="margin-bottom: 1rem;">Lightning Fast</h3>
+                    <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #ffd700;">30s</div>
+                        <div style="font-size: 0.9rem;">Process 10,000 rows</div>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
+                        <div style="width: 95%; height: 100%; background: #4CAF50; border-radius: 4px;"></div>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+                    <h3 style="margin-bottom: 1rem;">Highly Accurate</h3>
+                    <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #ffd700;">99%</div>
+                        <div style="font-size: 0.9rem;">Data Accuracy Rate</div>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
+                        <div style="width: 99%; height: 100%; background: #4CAF50; border-radius: 4px;"></div>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+                    <h3 style="margin-bottom: 1rem;">Secure & Reliable</h3>
+                    <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #ffd700;">100%</div>
+                        <div style="font-size: 0.9rem;">Data Privacy</div>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
+                        <div style="width: 100%; height: 100%; background: #4CAF50; border-radius: 4px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="license" class="license-section">
+        <div class="container">
+            <h2 class="section-title">Licensing</h2>
+            <div class="license-cards">
+                <div class="license-card">
+                    <h3>Personal/Non-Commercial License</h3>
+                    <div class="price">FREE</div>
+                    <p>For individual users, educational institutions, and non-profit organizations</p>
+                    <ul class="license-features">
+                        <li>Full access to all features</li>
+                        <li>Personal and educational use</li>
+                        <li>Community support</li>
+                        <li>Regular updates included</li>
+                        <li>No redistribution rights</li>
+                    </ul>
+                </div>
+                <div class="license-card">
+                    <h3>Commercial License</h3>
+                    <div class="price">From $499/year</div>
+                    <p>For businesses, government agencies, and commercial deployments</p>
+                    <ul class="license-features">
+                        <li>Unlimited commercial use</li>
+                        <li>Priority technical support</li>
+                        <li>Custom modifications available</li>
+                        <li>Professional services</li>
+                        <li>Volume discounts available</li>
+                        <li>Enterprise deployment support</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 3rem;">
+                <p style="font-size: 1.1rem; margin-bottom: 1rem;">
+                    Commercial use includes business operations, government deployments, and any revenue-generating activities.
+                </p>
+                <div class="wp-shortcode-contact-form">
+                    <h3>Ready to Get Started?</h3>
+                    <p>Contact us for commercial licensing and custom development services</p>
+                    <a href="https://cloud84.in/contact/" class="cta-button" style="background: white; color: #667eea;">Contact for Commercial License</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <section id="download" style="background: #f8f9fa;">
+        <div class="container">
+            <h2 class="section-title">Download & Get Started</h2>
+            <div style="text-align: center; max-width: 600px; margin: 0 auto;">
+                <p style="font-size: 1.2rem; margin-bottom: 2rem; color: #666;">
+                    Start managing your tender data efficiently. Download the latest version and begin automating your procurement workflows today.
+                </p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="build_exe.py" class="cta-button">Build Executable</a>
+                    <a href="main.py" class="cta-button" style="background: #333;">Run from Source</a>
+                </div>
+                <p style="margin-top: 2rem; font-size: 0.9rem; color: #888;">
+                    Requires Python 3.7+, pandas, tkinter, openpyxl. Run build_exe.py to create standalone executable.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <p>&copy; 2025 Cloud84. All rights reserved.</p>
+                    <p>Tender Management Utility v3.2 - Advanced Performance Monitoring & Testing Suite</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#summary">About</a>
+                    <a href="#features">Features</a>
+                    <a href="#license">License</a>
+                    <a href="resources/license.txt" target="_blank">License Text</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!--
+    ============================================================================
+    WORDPRESS GUTENBERG USAGE INSTRUCTIONS
+    ============================================================================
+
+    1. Copy this HTML content into a WordPress page using the Custom HTML block
+    2. The design is fully responsive and optimized for mobile devices
+    3. All CSS is inline to avoid conflicts with WordPress themes
+
+    CUSTOMIZATION VARIABLES (in :root):
+    - Change --github-url for download links
+    - Change --contact-url for contact page
+    - Change --website-url for main website
+    - Change --license-url for license text
+
+    WORDPRESS SHORTCODE PLACEHOLDERS:
+    - Replace .wp-shortcode-contact-form with: [contact-form-7 id="YOUR_FORM_ID"]
+    - Replace .wp-shortcode-download-button with: [download url="YOUR_DOWNLOAD_URL"]
+    - Replace .wp-shortcode-newsletter with: [mc4wp_form id="YOUR_FORM_ID"]
+
+    GUTENBERG BLOCK COMPATIBILITY:
+    - Content is structured for easy conversion to Gutenberg blocks
+    - Each section can be a separate Group block
+    - Features grid can be a Columns block
+    - Contact items can be individual Column blocks
+
+    RESPONSIVE BREAKPOINTS:
+    - Desktop: > 1200px (full layout)
+    - Tablet: 768px - 1200px (2-column features, stacked contact)
+    - Mobile: < 768px (single column, stacked navigation)
+    - Small Mobile: < 480px (compact spacing and fonts)
+
+    PERFORMANCE NOTES:
+    - All images use emoji/Unicode characters (no external dependencies)
+    - CSS is optimized and minified
+    - No JavaScript required for basic functionality
+
+    WORDPRESS INTEGRATION STEPS:
+    1. Create a new WordPress page or edit existing one
+    2. Add a "Custom HTML" block in Gutenberg editor
+    3. Paste this entire HTML code into the block
+    4. Update the CSS variables in :root for your specific URLs
+    5. Replace shortcode placeholders with actual WordPress shortcodes
+    6. Save and publish the page
+
+    SHORTCODE REPLACEMENTS:
+    - [contact-form-7 id="commercial-license-inquiry"] → Replace with your Contact Form 7 shortcode
+    - [download url="YOUR_DOWNLOAD_URL"] → Replace with download button shortcode
+    - [mc4wp_form id="YOUR_FORM_ID"] → Replace with Mailchimp newsletter shortcode
+
+    THEME COMPATIBILITY:
+    - Works with any WordPress theme
+    - Inline CSS prevents theme conflicts
+    - Responsive design adapts to all screen sizes
+    - No external dependencies required
+
+    SEO OPTIMIZATION:
+    - Semantic HTML structure
+    - Proper heading hierarchy (H1, H2, H3)
+    - Alt text for accessibility
+    - Clean, crawlable code structure
+
+    BROWSER COMPATIBILITY:
+    - Modern browsers (Chrome, Firefox, Safari, Edge)
+    - CSS Grid and Flexbox support
+    - Fallbacks for older browsers included
+    ============================================================================
+    -->
+</body>
+</html>

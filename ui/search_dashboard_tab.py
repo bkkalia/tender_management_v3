@@ -13,6 +13,18 @@ import time as time_module  # Renamed to avoid conflict with datetime.time
 import re
 import tkinter.simpledialog
 
+# Try to import PIL for image creation and clipboard access
+try:
+    from PIL import Image, ImageDraw, ImageTk, ImageGrab
+    HAS_PIL = True
+except ImportError:
+    Image = None
+    ImageDraw = None
+    ImageTk = None
+    ImageGrab = None
+    HAS_PIL = False
+    print("Warning: PIL not available. URL icons and OCR on images will not be supported.")
+
 # Handle optional imports
 try:
     from tkcalendar import DateEntry  # For calendar picker
@@ -21,6 +33,15 @@ except ImportError:
     DateEntry = None
     HAS_TKCALENDAR = False
     print("Warning: tkcalendar not available. Date picker features will be limited.")
+
+# Handle optional OCR imports
+try:
+    import pytesseract
+    HAS_PYTESSERACT = True
+except ImportError:
+    pytesseract = None
+    HAS_PYTESSERACT = False
+    print("Warning: pytesseract not available. OCR functionality will be disabled.")
 
 # Fix imports by adding parent directory to path if needed
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -31,18 +52,181 @@ if parent_dir not in sys.path:
 # Now we can use the absolute imports
 from utils.constants import SPACING, FONTS, COLORS
 from ui.common_widgets import create_labeled_frame, create_action_button, create_input_entry, create_info_label
+from ui.charts_window import ChartsWindow
 from core.data_processor import TenderDataProcessor
+from core.remote_data_loader import RemoteDataLoader
 
 if TYPE_CHECKING:
     from ui.main_window import MainApplication # Use absolute import
 
 logger = logging.getLogger(__name__)
 
+class AutoDismissMessageDialog(tk.Toplevel):
+    """Auto-dismissing message dialog that closes after 3 seconds or on click anywhere."""
+
+    def __init__(self, parent, title, message):
+        super().__init__(parent)
+        self.title(title)
+        self.parent = parent
+
+        # Set up window properties
+        self.resizable(False, False)
+        self.overrideredirect(True)  # Remove window borders for clean popup
+        self.attributes('-topmost', True)  # Keep it on top
+
+        # Position it near the parent window center
+        parent_x = parent.winfo_rootx()
+        parent_y = parent.winfo_rooty()
+        parent_width = parent.winfo_width()
+        parent_height = parent.winfo_height()
+
+        # Calculate center position
+        dialog_width = 300
+        dialog_height = 80
+        dialog_x = parent_x + (parent_width // 2) - (dialog_width // 2)
+        dialog_y = parent_y + (parent_height // 2) - (dialog_height // 2)
+
+        self.geometry(f"{dialog_width}x{dialog_height}+{dialog_x}+{dialog_y}")
+
+        # Create background frame with rounded corners effect
+        self.frame = tk.Frame(self, bg='#E3F2FD', highlightbackground='#2196F3',
+                            highlightthickness=2, highlightcolor='#2196F3')
+        self.frame.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
+
+        # Create the message label
+        message_label = tk.Label(self.frame, text=message, bg='#E3F2FD', fg='#1565C0',
+                               font=('TkDefaultFont', 10, 'bold'),
+                               wraplength=dialog_width-40, justify='center', padx=10, pady=5)
+        message_label.pack(fill=tk.BOTH, expand=True)
+
+        # Auto-dismiss after 3 seconds
+        self._timer_id = self.after(3000, self.destroy)
+
+        # Bind click anywhere to dismiss
+        self.frame.bind('<Button-1>', self._dismiss)
+        self.frame.bind('<KeyPress>', self._dismiss)
+        self.bind('<FocusOut>', self._dismiss)
+        self.bind('<Button-1>', self._dismiss)
+
+        # Focus the dialog to ensure key bindings work
+        self.focus_force()
+
+        # Clean up when dialog is destroyed
+        def on_destroy(event=None):
+            try:
+                if hasattr(self, '_timer_id') and self._timer_id:
+                    self.after_cancel(self._timer_id)
+            except:
+                pass
+            try:
+                if hasattr(self.frame, 'destroy'):
+                    self.frame.destroy()
+            except:
+                pass
+
+        self.protocol("WM_DELETE_WINDOW", on_destroy)
+        self.bind('<Destroy>', on_destroy)
+
+    def _dismiss(self, event=None):
+        """Dismiss the dialog."""
+        try:
+            if hasattr(self, '_timer_id') and self._timer_id:
+                self.after_cancel(self._timer_id)
+        except:
+            pass
+        self.destroy()
+
+
+# Test function to verify the dialog works
+def test_auto_dismiss_dialog():
+    """Test the auto-dismiss dialog functionality."""
+    root = tk.Tk()
+    root.title("Test Auto Dismiss Dialog")
+    root.geometry("400x300")
+
+    def show_test_dialog():
+        AutoDismissMessageDialog(root, "Test Message", "This dialog will auto-dismiss in 3 seconds or when you click anywhere!")
+
+    test_btn = ttk.Button(root, text="Test Auto Dismiss Dialog", command=show_test_dialog)
+    test_btn.pack(pady=50)
+
+    root.mainloop()
+
+
+class RemoteUrlDialog(tk.Toplevel):
+    """Dialog for entering remote URL and credentials."""
+
+    def __init__(self, parent, remote_loader):
+        super().__init__(parent)
+        self.parent = parent
+        self.remote_loader = remote_loader
+        self.result = None
+
+        self.title("Add Remote URL")
+        self.geometry("400x300")
+        self.transient(parent)
+        self.grab_set()
+
+        # Center the dialog
+        self.geometry("+%d+%d" % (parent.winfo_rootx() + 50, parent.winfo_rooty() + 50))
+
+        self._create_widgets()
+
+    def _create_widgets(self):
+        main_frame = ttk.Frame(self)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+
+        # URL field
+        ttk.Label(main_frame, text="URL:").pack(anchor=tk.W)
+        self.url_var = tk.StringVar()
+        url_entry = ttk.Entry(main_frame, textvariable=self.url_var, width=50)
+        url_entry.pack(fill=tk.X, pady=(0, 10))
+        url_entry.focus()
+
+        # Username field
+        ttk.Label(main_frame, text="Username (optional):").pack(anchor=tk.W)
+        self.username_var = tk.StringVar()
+        username_entry = ttk.Entry(main_frame, textvariable=self.username_var, width=50)
+        username_entry.pack(fill=tk.X, pady=(0, 10))
+
+        # Password field
+        ttk.Label(main_frame, text="Password (optional):").pack(anchor=tk.W)
+        self.password_var = tk.StringVar()
+        password_entry = ttk.Entry(main_frame, textvariable=self.password_var, width=50, show="*")
+        password_entry.pack(fill=tk.X, pady=(0, 20))
+
+        # Buttons
+        button_frame = ttk.Frame(main_frame)
+        button_frame.pack(fill=tk.X)
+
+        ttk.Button(button_frame, text="Cancel", command=self._cancel).pack(side=tk.RIGHT, padx=(10, 0))
+        ttk.Button(button_frame, text="OK", command=self._ok).pack(side=tk.RIGHT)
+
+        # Bind Enter key to OK
+        self.bind('<Return>', lambda e: self._ok())
+        self.bind('<Escape>', lambda e: self._cancel())
+
+    def _ok(self):
+        url = self.url_var.get().strip()
+        if not url:
+            messagebox.showwarning("Missing URL", "Please enter a URL.")
+            return
+
+        username = self.username_var.get().strip() or None
+        password = self.password_var.get().strip() or None
+
+        self.result = (url, username, password)
+        self.destroy()
+
+    def _cancel(self):
+        self.result = None
+        self.destroy()
+
 class SearchDashboardTab(ttk.Frame):
     """
     Search & Dashboard Tab: Load data, search, filter, and view statistics.
     """
-    def __init__(self, parent: ttk.Notebook, main_app):
+    def __init__(self, parent, main_app):
         super().__init__(parent)
         self.main_app = main_app
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
@@ -52,6 +236,11 @@ class SearchDashboardTab(ttk.Frame):
         self.filter_buttons = {}
         self.current_filtered_data = None
 
+        # Initialize UI elements that are referenced before creation
+        self.results_count_var = tk.StringVar(value="No data loaded")
+        self.tree = None  # Will be created in _create_tender_data_widgets
+        self.dashboard_labels = {}  # Will be populated in _create_dashboard_widgets
+
         self.data_processor = TenderDataProcessor(self.main_app.global_config)
         # --- ensure filtered_data attribute exists even before any load ---
         if not hasattr(self.data_processor, 'filtered_data') or self.data_processor.filtered_data is None:
@@ -59,12 +248,23 @@ class SearchDashboardTab(ttk.Frame):
 
         self.loaded_files: List[str] = []
 
-        # UI Variables
+        # UI Variables - Add missing variables
         self.dept_filter_var = tk.StringVar()
         self.global_search_var = tk.StringVar()
         self.selected_folders_var = tk.StringVar(value="No folders selected.")
         self.custom_date_start_var = tk.StringVar()
         self.custom_date_end_var = tk.StringVar()
+        
+        # Add missing operator variables
+        self.dept_operator_var = tk.StringVar(value="OR")
+        self.global_operator_var = tk.StringVar(value="AND")
+        self.status_filter_var = tk.StringVar(value="live")
+
+        # Add missing saved search variable
+        self.saved_search_var = tk.StringVar()
+        self.save_search_name_var = tk.StringVar()
+
+
         # --- NEW time vars for custom range ---
         self.start_hour_var = tk.StringVar(value="00")
         self.start_min_var = tk.StringVar(value="00")
@@ -98,6 +298,20 @@ class SearchDashboardTab(ttk.Frame):
         self._index_min_rows = 5000  # threshold to build index
 
         self.date_filter_buttons: Dict[str, tk.Widget] = {}  # typed to suppress bool expectation
+
+        # Initialize remote data loader
+        self.remote_loader = RemoteDataLoader()
+
+        # Add UI variables for remote sources
+        self.remote_urls: List[str] = []
+
+        # URL handling attributes
+        self.url_columns: List[str] = []
+        self.link_icons: Dict[str, tk.PhotoImage] = {}
+
+        # Track open chart windows to limit instances
+        self.open_chart_windows: List[tk.Toplevel] = []
+        self.max_chart_windows = 2
 
         self._create_widgets()
         self._setup_treeview_bindings()
@@ -153,101 +367,19 @@ class SearchDashboardTab(ttk.Frame):
 
         # Search and filter section with increased height to accommodate all filter buttons
         search_filter_frame = create_labeled_frame(main_pane, "Search, Filter & Dates")
-        main_pane.add(search_filter_frame, height=220, minsize=180)  # Increased from 180 to 220
+        main_pane.add(search_filter_frame, height=335, minsize=295)  # Increased from 320 to 335 to accommodate improved date range layout
         self._create_search_filter_widgets(search_filter_frame)
         self._create_date_filter_widgets(search_filter_frame)
 
-        # Results section with flexible height
+        # Results section with flexible height - shifted down to make room for filter buttons
         tender_data_frame = create_labeled_frame(main_pane, "Tender Data")
-        main_pane.add(tender_data_frame, height=320, minsize=200)  # Slightly reduced to compensate
+        main_pane.add(tender_data_frame, height=220, minsize=160)  # Reduced from 260 to 220 to accommodate larger filter section
         self._create_tender_data_widgets(tender_data_frame)
-        
+
         # Configure collapse button style - make it more compact
         style = ttk.Style()
         style.configure("Collapse.TButton", font=FONTS.get('subheading', ('TkDefaultFont', 11, 'bold')), padding=0)
 
-    def _toggle_data_folders_panel(self):
-        """Toggle the visibility of data folders panel"""
-        if self.data_folders_frame_visible:
-            # Hide the panel content
-            self.data_folders_content.pack_forget()
-            self.toggle_button.config(text="► Data Folders")
-        else:
-            # Show the panel content
-            self.data_folders_content.pack(side=tk.TOP, fill=tk.X)
-            self.toggle_button.config(text="▼ Data Folders")
-            
-        self.data_folders_frame_visible = not self.data_folders_frame_visible
-
-    def _create_dashboard_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
-        """Create dashboard widgets in a single row with solid color backgrounds."""
-        # Container for all cards
-        dashboard_container = ttk.Frame(parent)
-        dashboard_container.pack(fill=tk.X, expand=True, pady=SPACING['small'])
-        
-        # Configure grid with equal column weights - Updated for 11 metrics
-        for i in range(11):  # We now have 11 metrics
-            dashboard_container.columnconfigure(i, weight=1)
-        
-        # Define metrics with their properties - Reorder with Live and Expired first
-        self.dashboard_labels = {}
-        metrics = [
-            # key, title, color - Live and Expired are now first with prominent colors
-            ("live_tenders", "Live\nTenders", "#006400"),  # Dark Green for Live
-            ("expired_tenders", "Expired\nTenders", "#000000"),  # Black for Expired
-            ("total_tenders", "Total\nTenders", COLORS.get('primary', '#1976d2')),
-            ("filtered_tenders", "Filtered\nResults", COLORS.get('info', '#0288d1')),
-            ("match_percentage", "Filter\nMatch %", COLORS.get('success', '#4caf50')),
-            ("unique_departments", "Depts", COLORS.get('warning', '#ff9800')),
-            ("closing_today", "Due\nToday", COLORS.get('danger', '#f44336')),
-            ("closing_next_3_days", "Due in\n3 Days", COLORS.get('secondary', '#9c27b0')),
-            ("closing_next_7_days", "Due in\n7 Days", COLORS.get('info_dark', '#01579b')),
-            ("data_sources", "Data\nSources", COLORS.get('secondary_light', '#ba68c8')),
-            ("current_date", "Date &\nTime", COLORS.get('primary_dark', '#1a237e'))
-        ]
-        
-        # Create a card for each metric
-        for i, (key, title, color) in enumerate(metrics):
-            # Create card frame with solid background
-            card_frame = tk.Frame(dashboard_container, bg=color, width=90, height=100)  # Slightly narrower
-            card_frame.grid(row=0, column=i, padx=1, sticky="nsew")  # Reduced padding
-            card_frame.grid_propagate(False)  # Fix the size
-            
-            # Create centered content inside card
-            if key == "current_date":
-                # Date and time are special cases
-                self.current_time_var = tk.StringVar(value="00:00:00")
-                self.current_date_var = tk.StringVar(value=datetime.now().strftime("%d/%m/%Y"))
-                
-                title_label = tk.Label(card_frame, text=title, bg=color, fg="white",
-                                      font=FONTS.get('small', ('TkDefaultFont', 9, 'bold')))
-                title_label.pack(anchor=tk.CENTER, pady=(10, 0))
-                
-                time_label = tk.Label(card_frame, textvariable=self.current_time_var, 
-                                     bg=color, fg="white", font=FONTS.get('heading', ('TkDefaultFont', 16, 'bold')))
-                time_label.pack(anchor=tk.CENTER, pady=(5, 0))
-                
-                date_label = tk.Label(card_frame, textvariable=self.current_date_var, 
-                                     bg=color, fg="white", font=FONTS.get('small', ('TkDefaultFont', 9)))
-                date_label.pack(anchor=tk.CENTER, pady=(0, 5))
-                
-                # Start clock
-                self._start_clock()
-            else:
-                # Regular metric cards
-                title_label = tk.Label(card_frame, text=title, bg=color, fg="white",
-                                      font=FONTS.get('small') or ('TkDefaultFont', 9, 'bold'))
-                title_label.pack(anchor=tk.CENTER, pady=(10, 0))
-                
-                value_label = tk.Label(card_frame, text="0", bg=color, fg="white",
-                                      font=FONTS.get('heading') or ('TkDefaultFont', 24, 'bold'))
-                value_label.pack(anchor=tk.CENTER, expand=True)
-                
-                # Store reference for updating later
-                self.dashboard_labels[key] = value_label
-                
-        # Make container row expand
-        parent.rowconfigure(0, weight=1)
 
     def _start_clock(self):
         """Start the clock that updates the date/time display using Tkinter's after method."""
@@ -279,1121 +411,2854 @@ class SearchDashboardTab(ttk.Frame):
         action_frame.pack(side=tk.LEFT, padx=(0, SPACING['medium']))
 
         create_action_button(action_frame, "Add Folder", self._add_folder, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
+        create_action_button(action_frame, "Add Cloud URL", self._add_remote_url, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
         create_action_button(action_frame, "Refresh Data", self._load_data_from_folders, width=12).pack(pady=SPACING['small']//2, fill=tk.X)
-        create_action_button(action_frame, "Clear Folders", self._clear_folders, button_type='secondary', width=12).pack(pady=SPACING['small']//2, fill=tk.X)
+        create_action_button(action_frame, "Clear All", self._clear_folders, button_type='secondary', width=12).pack(pady=SPACING['small']//2, fill=tk.X)
 
         selected_folders_label = create_info_label(parent, "", textvariable=self.selected_folders_var, wraplength=600, justify=tk.LEFT)
         selected_folders_label.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=SPACING['small'])
         self._update_selected_folders_display()
 
+    def _load_data_from_folders(self):
+        """Load data from all selected folders and remote URLs."""
+        if not self.loaded_files and not self.remote_urls:
+            messagebox.showinfo("No Sources", "Please add one or more data folders or remote URLs first.")
+            return
+
+        all_files = []
+        
+        # Load from local folders
+        for folder in self.loaded_files:
+            try:
+                excel_files = [f for f in os.listdir(folder) if f.lower().endswith(('.xlsx', '.xls', '.csv'))]
+                for file in excel_files:
+                    all_files.append(os.path.join(folder, file))
+            except Exception as e:
+                self.logger.error(f"Error accessing folder {folder}: {e}")
+        
+        # Load from remote URLs
+        remote_files = []
+        for url_entry in self.remote_urls:
+            try:
+                # Parse URL and credentials
+                parts = url_entry.split('||')
+                url = parts[0]
+                username = parts[1] if len(parts) > 1 else None
+                password = parts[2] if len(parts) > 2 else None
+                
+                self.results_count_var.set(f"Downloading from {url}...")
+                self.update_idletasks()
+                
+                success, message, local_file = self.remote_loader.load_from_remote_source(url, username, password)
+                
+                if success and local_file:
+                    remote_files.append(local_file)
+                    self.logger.info(f"Successfully downloaded: {message}")
+                else:
+                    self.logger.error(f"Failed to download from {url}: {message}")
+                    messagebox.showwarning("Download Failed", f"Failed to download from {url}:\n{message}")
+                    
+            except Exception as e:
+                self.logger.error(f"Error downloading from {url_entry}: {e}")
+                messagebox.showwarning("Download Error", f"Error downloading from remote source:\n{str(e)}")
+        
+        # Combine local and remote files
+        all_files.extend(remote_files)
+        
+        if not all_files:
+            messagebox.showinfo("No Files", "No Excel or CSV files found in the selected sources.")
+            return
+
+        # Show loading indicator
+        self.results_count_var.set("Loading data, please wait...")
+        self.update_idletasks()  # Force UI update
+        
+        try:
+            # Load data from files
+            dfs = []
+            for file in all_files:
+                try:
+                    if file.lower().endswith('.csv'):
+                        df = pd.read_csv(file, encoding='utf-8', low_memory=False)
+                    else:
+                        df = pd.read_excel(file)
+                    
+                    if not df.empty:
+                        # Add source file column
+                        df['Source File'] = os.path.basename(file)
+                        dfs.append(df)
+                except Exception as e:
+                    self.logger.error(f"Error loading file {file}: {e}")
+            
+            if not dfs:
+                messagebox.showinfo("No Data", "Could not load any data from the selected files.")
+                self.results_count_var.set("No data loaded")
+                return
+            
+            # Combine all dataframes
+            combined_df = pd.concat(dfs, ignore_index=True)
+            
+            # Store in data processor
+            self.data_processor.raw_data = combined_df
+            self.data_processor.filtered_data = combined_df.copy()
+            
+            # Update record count
+            record_count = len(combined_df)
+            messagebox.showinfo("Data Loaded", f"Successfully loaded {record_count} records from {len(all_files)} files.")
+            
+            # Refresh the display - important!
+            self._refresh_tree_data()
+            self.update_dashboard()
+            
+            # Apply default filter (live tenders)
+            self._apply_status_filter("live")
+        except Exception as e:
+            self.logger.error(f"Error loading data: {e}", exc_info=True)
+            messagebox.showerror("Error", f"An error occurred while loading data: {str(e)}")
+            self.results_count_var.set("Error loading data")
+
+
+    def _create_dashboard_widgets(self, parent):
+        """Create dashboard widgets in a single row with solid color backgrounds."""
+        # Container for all cards
+        dashboard_container = ttk.Frame(parent)
+        dashboard_container.pack(fill=tk.X, expand=True, pady=SPACING['small'])
+        
+        # Configure grid with equal column weights
+        for i in range(11):  # 11 metrics
+            dashboard_container.columnconfigure(i, weight=1)
+        
+        # Define metrics with their properties
+        self.dashboard_labels = {}  # Initialize as empty dict
+        metrics = [
+            # key, title, color
+            ("live_tenders", "Live\nTenders", "#006400"),  # Dark Green for Live
+            ("expired_tenders", "Expired\nTenders", "#000000"),  # Black for Expired
+            ("total_tenders", "Total\nTenders", COLORS.get('primary', '#1976d2')),
+            ("filtered_tenders", "Filtered\nResults", COLORS.get('info', '#0288d1')),
+            ("match_percentage", "Filter\nMatch %", COLORS.get('success', '#4caf50')),
+            ("unique_departments", "Depts", COLORS.get('warning', '#ff9800')),
+            ("closing_today", "Due\nToday", COLORS.get('danger', '#f44336')),
+            ("closing_next_3_days", "Due in\n3 Days", COLORS.get('secondary', '#9c27b0')),
+            ("closing_next_7_days", "Due in\n7 Days", COLORS.get('info_dark', '#01579b')),
+            ("data_sources", "Data\nSources", COLORS.get('secondary_light', '#ba68c8')),
+            ("current_date", "Date &\nTime", COLORS.get('primary_dark', '#1a237e'))
+        ]
+        
+        # Create a card for each metric
+        for i, (key, title, color) in enumerate(metrics):
+            # Create card frame with solid background
+            card_frame = tk.Frame(dashboard_container, bg=color, width=90, height=100)
+            card_frame.grid(row=0, column=i, padx=1, sticky="nsew")
+            card_frame.grid_propagate(False)  # Fix the size
+            
+            # Create centered content inside card
+            if key == "current_date":
+                # Date and time are special cases
+                title_label = tk.Label(card_frame, text=title, bg=color, fg="white",
+                                      font=FONTS.get('small', ('TkDefaultFont', 9, 'bold')))
+                title_label.pack(anchor=tk.CENTER, pady=(10, 0))
+                
+                time_label = tk.Label(card_frame, textvariable=self.current_time_var, 
+                                     bg=color, fg="white", font=FONTS.get('heading', ('TkDefaultFont', 16, 'bold')))
+                time_label.pack(anchor=tk.CENTER, pady=(5, 0))
+                
+                date_label = tk.Label(card_frame, textvariable=self.current_date_var, 
+                                     bg=color, fg="white", font=FONTS.get('small', ('TkDefaultFont', 9)))
+                date_label.pack(anchor=tk.CENTER, pady=(0, 5))
+                
+                # Start clock
+                self._start_clock()
+            else:
+                # Regular metric cards
+                title_label = tk.Label(card_frame, text=title, bg=color, fg="white",
+                                  font=FONTS.get('small', ('TkDefaultFont', 9, 'bold')))
+                title_label.pack(anchor=tk.CENTER, pady=(10, 0))
+                
+                value_label = tk.Label(card_frame, text="0", bg=color, fg="white",
+                                  font=FONTS.get('heading', ('TkDefaultFont', 24, 'bold')))
+                value_label.pack(anchor=tk.CENTER, expand=True)
+                
+                # Store reference for updating later
+                self.dashboard_labels[key] = value_label
+
+        # Bottom separator line
+        separator = ttk.Separator(parent, orient="horizontal")
+        separator.pack(fill=tk.X, padx=SPACING['small'], pady=(0, SPACING['small']))
+
     def _create_search_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
-        # Using a sub-frame for better organization
-        text_search_frame = ttk.Frame(parent)
-        text_search_frame.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['small']))
+        """Create redesigned search and filter widgets with better visual layout."""
+        # Main container for all search components
+        search_container = ttk.Frame(parent)
+        search_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
+        
+        # Top Row: Side-by-side Department and Global Search with colored borders
+        search_row_frame = ttk.Frame(search_container)
+        search_row_frame.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['medium']))
+        
+        # Left: Department Search Section
+        dept_section = ttk.LabelFrame(search_row_frame, text="Department Search", 
+                                     style="Primary.TLabelframe", padding=SPACING['medium'])
+        dept_section.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, SPACING['small']))
+        
+        # Department input with increased height
+        dept_input_frame = ttk.Frame(dept_section)
+        dept_input_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
+        
+        # Custom style for colored border
+        style = ttk.Style()
+        style.configure("Department.TEntry", fieldbackground="#E8F4FD", relief="solid", borderwidth=2)
+        
+        self.dept_entry = ttk.Entry(dept_input_frame, textvariable=self.dept_filter_var, 
+                                   style="Department.TEntry", font=('TkDefaultFont', 11))
+        self.dept_entry.pack(fill=tk.X, ipady=8)  # Increased height
+        self.dept_entry.bind("<KeyRelease>", self._on_live_search_key)
+        
+        # Department operator buttons
+        dept_op_frame = ttk.Frame(dept_section)
+        dept_op_frame.pack(fill=tk.X, pady=(SPACING['small'], 0))
+        
+        ttk.Label(dept_op_frame, text="Match:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        
+        ttk.Radiobutton(dept_op_frame, text="Any (OR)", variable=self.dept_operator_var, 
+                       value="OR", command=self._on_live_search_key).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        ttk.Radiobutton(dept_op_frame, text="All (AND)", variable=self.dept_operator_var, 
+                       value="AND", command=self._on_live_search_key).pack(side=tk.LEFT)
+        
+        ttk.Label(dept_op_frame, text="(use commas to separate terms)", 
+                 font=('TkDefaultFont', 8), foreground='gray').pack(side=tk.RIGHT)
+        
+        # Right: Global Search Section
+        global_section = ttk.LabelFrame(search_row_frame, text="Global Search", 
+                                       style="Success.TLabelframe", padding=SPACING['medium'])
+        global_section.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(SPACING['small'], 0))
+        
+        # Global search input with increased height
+        global_input_frame = ttk.Frame(global_section)
+        global_input_frame.pack(fill=tk.X, pady=(0, SPACING['small']))
+        
+        style.configure("Global.TEntry", fieldbackground="#E8F8E8", relief="solid", borderwidth=2)
+        
+        self.global_entry = ttk.Entry(global_input_frame, textvariable=self.global_search_var, 
+                                     style="Global.TEntry", font=('TkDefaultFont', 11))
+        self.global_entry.pack(fill=tk.X, ipady=8)  # Increased height
+        self.global_entry.bind("<KeyRelease>", self._on_live_search_key)
+        
+        # Global search operator buttons
+        global_op_frame = ttk.Frame(global_section)
+        global_op_frame.pack(fill=tk.X, pady=(SPACING['small'], 0))
 
-        # Department Filter
-        dept_label = create_info_label(text_search_frame, "Department(s):")
-        dept_label.grid(row=0, column=0, padx=(SPACING['small'], 0), pady=SPACING['small'], sticky="w")
-        dept_entry = create_input_entry(text_search_frame, self.dept_filter_var, width=35) # Increased width
-        dept_entry.grid(row=0, column=1, padx=(SPACING['small']//2, 0), pady=SPACING['small'], sticky="ew")
-        dept_entry.bind("<KeyRelease>", self._on_live_search_key)  # was _apply_filters_on_event
-        # Department search operator radio buttons
-        dept_op_frame = ttk.Frame(text_search_frame)
-        dept_op_frame.grid(row=0, column=2, padx=(SPACING['small']//2, 0), sticky="w")
-        
-        self.dept_operator_var = tk.StringVar(value="OR")
-        ttk.Radiobutton(dept_op_frame, text="OR", variable=self.dept_operator_var, 
-                        value="OR", command=self._apply_filters_on_event).pack(side=tk.LEFT, padx=1)
-        ttk.Radiobutton(dept_op_frame, text="AND", variable=self.dept_operator_var, 
-                        value="AND", command=self._apply_filters_on_event).pack(side=tk.LEFT, padx=1)
-        
-        create_info_label(text_search_frame, "CSV", font_style=FONTS['small']).grid(row=0, column=3, padx=(SPACING['small']//2, SPACING['small']), sticky='w') # Changed label and reduced padding
+        ttk.Label(global_op_frame, text="Match:", font=('TkDefaultFont', 9)).pack(side=tk.LEFT, padx=(0, SPACING['small']))
 
-        # Global Search
-        search_label = create_info_label(text_search_frame, "Global Search:")
-        search_label.grid(row=0, column=4, padx=(SPACING['medium'], 0), pady=SPACING['small'], sticky="w") # Adjusted padding
-        search_entry = create_input_entry(text_search_frame, self.global_search_var, width=50) # Increased width
-        search_entry.grid(row=0, column=5, padx=(SPACING['small']//2, 0), pady=SPACING['small'], sticky="ew")
-        search_entry.bind("<KeyRelease>", self._on_live_search_key)  # was _apply_filters_on_event
-        # Global search operator radio buttons
-        global_op_frame = ttk.Frame(text_search_frame)
-        global_op_frame.grid(row=0, column=6, padx=(SPACING['small']//2, 0), sticky="w")
-        
-        self.global_operator_var = tk.StringVar(value="AND")
-        ttk.Radiobutton(global_op_frame, text="OR", variable=self.global_operator_var, 
-                        value="OR", command=self._apply_filters_on_event).pack(side=tk.LEFT, padx=1)
-        ttk.Radiobutton(global_op_frame, text="AND", variable=self.global_operator_var, 
-                        value="AND", command=self._apply_filters_on_event).pack(side=tk.LEFT, padx=1)
-        
-        create_info_label(text_search_frame, "CSV", font_style=FONTS['small']).grid(row=0, column=7, padx=(SPACING['small']//2, SPACING['small']), sticky='w') # Changed label and reduced padding
-        
-        text_search_frame.grid_columnconfigure(1, weight=1) # Allow dept entry to expand
-        text_search_frame.grid_columnconfigure(5, weight=2) # Allow global search entry to expand more
+        ttk.Radiobutton(global_op_frame, text="Any (OR)", variable=self.global_operator_var,
+                       value="OR", command=self._on_live_search_key).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        ttk.Radiobutton(global_op_frame, text="All (AND)", variable=self.global_operator_var,
+                       value="AND", command=self._on_live_search_key).pack(side=tk.LEFT, padx=(0, SPACING['small']))
 
-        # Only keep the Reset button since we have live search
-        btn_frame = ttk.Frame(text_search_frame)
-        btn_frame.grid(row=0, column=8, padx=(SPACING['medium'], SPACING['small']), sticky="e")
-        create_action_button(btn_frame, "Reset All Filters", self._reset_filters, button_type='danger').pack(side=tk.LEFT, padx=SPACING['small']//2)
+        # OCR button next to the operators - royal blue, no icon
+        ocr_button = tk.Button(
+            global_op_frame,
+            text="OCR",
+            command=self._perform_ocr_from_clipboard,
+            bg="#4169E1",  # Royal blue
+            fg="white",
+            font=('TkDefaultFont', 9, 'bold'),
+            relief='raised',
+            bd=1,
+            padx=8,
+            pady=2,
+            cursor='hand2',
+            width=6
+        )
+        # Add hover effect
+        def on_enter(e):
+            ocr_button.configure(bg="#1E90FF")  # Dodger blue (lighter royal blue)
+        def on_leave(e):
+            ocr_button.configure(bg="#4169E1")  # Back to royal blue
+        ocr_button.bind("<Enter>", on_enter)
+        ocr_button.bind("<Leave>", on_leave)
 
-        # Update the saved searches dropdown
-        self._update_saved_searches_list()
+        ocr_button.pack(side=tk.LEFT, padx=(0, SPACING['small']))
+
+        ttk.Label(global_op_frame, text="(use commas to separate terms)",
+                 font=('TkDefaultFont', 8), foreground='gray').pack(side=tk.RIGHT)
+        
+        # Configure custom LabelFrame styles
+        style.configure("Primary.TLabelframe", borderwidth=2, relief="solid")
+        style.configure("Primary.TLabelframe.Label", foreground="#1976d2", font=('TkDefaultFont', 10, 'bold'))
+        style.configure("Success.TLabelframe", borderwidth=2, relief="solid")
+        style.configure("Success.TLabelframe.Label", foreground="#4caf50", font=('TkDefaultFont', 10, 'bold'))
 
     def _create_date_filter_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
-        # Main date filter container with reduced padding
-        date_filter_frame = ttk.Frame(parent)
-        date_filter_frame.pack(side=tk.TOP, fill=tk.X, pady=(SPACING['small'], SPACING['small']))
+        """Create redesigned date filter widgets in three horizontal sections with responsive layout."""
+        # Main date filter container with responsive grid
+        date_container = ttk.Frame(parent)
+        date_container.pack(side=tk.TOP, fill=tk.X, pady=SPACING['small'])
 
-        # Create a professional header with smaller font and reduced spacing
-        header_frame = ttk.Frame(date_filter_frame)
-        header_frame.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['small']))
+        # Configure grid with equal width distribution - 4 sections
+        date_container.grid_columnconfigure(0, weight=25, minsize=120)  # Status Filter
+        date_container.grid_columnconfigure(1, weight=25, minsize=120)  # Time Range Filter
+        date_container.grid_columnconfigure(2, weight=25, minsize=120)  # Custom Date Range
+        date_container.grid_columnconfigure(3, weight=25, minsize=120)  # Saved Searches
+        date_container.grid_rowconfigure(0, weight=1)
+
+        # Calculate dynamic spacing based on container width
+        section_padding = SPACING['small']
+        internal_padding = (SPACING['small'], SPACING['medium'])
         
-        create_info_label(header_frame, "Filters & Search Options", 
-                         font_style=FONTS.get('body', ('TkDefaultFont', 10, 'bold'))).pack(side=tk.LEFT)
-
-        # Main content frame with three sections: Status, Time Range, and Saved Searches
-        content_frame = ttk.Frame(date_filter_frame)
-        content_frame.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['small']))
+        # Section 1: Status Filter (Column 0)
+        status_section = ttk.LabelFrame(date_container, text="📊 Status Filter", 
+                                       padding=internal_padding)
+        status_section.grid(row=0, column=0, sticky="nsew", padx=(0, section_padding//2))
         
-        # Configure proportional weights for the three sections
-        content_frame.grid_columnconfigure(0, weight=2)  # Status Filter
-        content_frame.grid_columnconfigure(1, weight=5)  # Time Range Filter (largest)
-        content_frame.grid_columnconfigure(2, weight=2)  # Saved Searches
-
-        # Left section: Status-based filters with reduced padding
-        status_section = ttk.LabelFrame(content_frame, text="Status Filter", padding=(SPACING['small'], SPACING['small']))
-        status_section.grid(row=0, column=0, sticky="nsew", padx=(SPACING['small'], SPACING['small']//2), 
-                           pady=(0, SPACING['small']//2))
-
-        # Configure the LabelFrame to center its text with smaller font
-        style = ttk.Style()
-        style.configure("Centered.TLabelframe.Label", anchor="center", font=('TkDefaultFont', 9))
-        status_section.configure(style="Centered.TLabelframe")
-
-        # Radio button variable for mutually exclusive status filters
-        self.status_filter_var = tk.StringVar(value="live")  # Default to Live
-        self.active_date_filter = "live"  # Set default active filter
+        # Status content with consistent height
+        status_content = ttk.Frame(status_section)
+        status_content.pack(fill=tk.BOTH, expand=True)
         
-        # Container for radio buttons with reduced spacing
-        radio_container = ttk.Frame(status_section)
-        radio_container.pack(expand=True, fill=tk.BOTH)
+        status_label = ttk.Label(status_content, text="Show tenders:", font=('TkDefaultFont', 9, 'bold'))
+        status_label.pack(anchor=tk.W, pady=(0, SPACING['small']//2))
         
-        # Status filter options with radio buttons and reduced spacing
         status_options = [
-            ("All Records", "all", "Show all tender records regardless of status"),
-            ("Live Tenders", "live", "Show only active/open tenders"),
-            ("Expired Tenders", "expired", "Show only expired/closed tenders")
+            ("All Records", "all"),
+            ("Live Tenders", "live"), 
+            ("Expired Tenders", "expired")
         ]
         
-        for text, value, tooltip in status_options:
-            radio_btn = ttk.Radiobutton(
-                radio_container, 
-                text=text, 
-                variable=self.status_filter_var,
-                value=value,
-                command=lambda v=value: self._apply_status_filter(v)
-            )
-            radio_btn.pack(anchor=tk.W, pady=SPACING['small']//2)
-            
-            # Store reference for potential styling later
-            if not hasattr(self, 'date_filter_buttons'):
-                self.date_filter_buttons = {}
-            self.date_filter_buttons[value] = radio_btn
-
-        # Center section: Time-based filters with reduced padding
-        time_section = ttk.LabelFrame(content_frame, text="Time Range Filter", padding=(SPACING['small'], SPACING['small']))
-        time_section.grid(row=0, column=1, sticky="nsew", padx=(SPACING['small']//2, SPACING['small']//2), 
-                         pady=(0, SPACING['small']//2))
-        time_section.configure(style="Centered.TLabelframe")
-
-        # Time filter buttons frame with center alignment and reduced spacing
-        time_buttons_frame = ttk.Frame(time_section)
-        time_buttons_frame.pack(anchor=tk.CENTER, pady=(0, SPACING['small']))
-
-        # Quick time filter buttons with reduced spacing
+        for text, value in status_options:
+            radio_btn = ttk.Radiobutton(status_content, text=text, variable=self.status_filter_var,
+                                       value=value, command=lambda v=value: self._apply_status_filter(v))
+            radio_btn.pack(anchor=tk.W, pady=1)
+        
+        # Section 2: Time Range Filter (Column 1)
+        time_section = ttk.LabelFrame(date_container, text="📅 Time Range Filter", 
+                                     padding=internal_padding)
+        time_section.grid(row=0, column=1, sticky="nsew", padx=(section_padding//2, section_padding//2))
+        
+        # Time content with consistent height
+        time_content = ttk.Frame(time_section)
+        time_content.pack(fill=tk.BOTH, expand=True)
+        
+        quick_label = ttk.Label(time_content, text="Quick filters:", font=('TkDefaultFont', 9, 'bold'))
+        quick_label.pack(anchor=tk.W, pady=(0, SPACING['small']//2))
+        
+        # Time filter buttons in compact 2x2 grid
+        button_grid = ttk.Frame(time_content)
+        button_grid.pack(fill=tk.X, expand=True)
+        
+        # Configure button grid for equal distribution
+        button_grid.grid_columnconfigure(0, weight=1)
+        button_grid.grid_columnconfigure(1, weight=1)
+        
         time_presets = [
-            ("Today", "today", "Tenders closing today"),
-            ("Next 3 Days", "next_3_days", "Tenders closing in next 3 days"), 
-            ("Next 7 Days", "next_7_days", "Tenders closing in next 7 days"),
-            ("Next 30 Days", "next_30_days", "Tenders closing in next 30 days")
+            ("Today", "today"),
+            ("3 Days", "next_3_days"),
+            ("7 Days", "next_7_days"), 
+            ("30 Days", "next_30_days")
         ]
         
-        for text, preset_key, tooltip in time_presets:
-            btn = create_action_button(
-                time_buttons_frame,
-                text,
-                lambda p=preset_key: self._apply_time_filter(p),
-                width=11,  # Slightly smaller width
-                button_type='info_outline'
-            )
-            btn.pack(side=tk.LEFT, padx=1)  # Reduced horizontal padding
-            self.date_filter_buttons[preset_key] = btn
-
-        # Custom date range section with center alignment and reduced spacing
-        custom_frame = ttk.Frame(time_section)
-        custom_frame.pack(anchor=tk.CENTER, pady=(SPACING['small'], 0))
+        for i, (text, preset_key) in enumerate(time_presets):
+            row = i // 2
+            col = i % 2
+            btn = create_action_button(button_grid, text, 
+                                      lambda p=preset_key: self._apply_time_filter(p),
+                                      width=8, button_type='info_outline')
+            if btn:
+                btn.grid(row=row, column=col, padx=1, pady=1, sticky="ew")
+                self.date_filter_buttons[preset_key] = btn
         
-        # Custom date range label with smaller font and less space
-        create_info_label(custom_frame, "Custom Date Range:", 
-                         font_style=FONTS.get('small', ('TkDefaultFont', 9, 'bold'))).pack(anchor=tk.CENTER, pady=(0, SPACING['small']))
+        # Reset button below the grid
+        reset_btn = create_action_button(time_content, "🔄 Reset", self._reset_filters, 
+                                        button_type='danger', width=12)
+        if reset_btn:
+            reset_btn.pack(fill=tk.X, pady=(SPACING['small']//2, 0))
+        
+        # Section 3: Custom Date Range (Column 2)
+        custom_section = ttk.LabelFrame(date_container, text="🗓️ Custom Date Range",
+                                       padding=internal_padding)
+        custom_section.grid(row=0, column=2, sticky="nsew", padx=(section_padding//2, section_padding//2))
 
-        # Custom Date Range with Calendar Pickers (only if tkcalendar is available)
+        # Custom content with consistent height
+        custom_content = ttk.Frame(custom_section)
+        custom_content.pack(fill=tk.BOTH, expand=True)
+
+        custom_label = ttk.Label(custom_content, text="Date Range:", font=('TkDefaultFont', 9, 'bold'))
+        custom_label.pack(anchor=tk.W, pady=(0, SPACING['small']//2))
+
         if HAS_TKCALENDAR and DateEntry is not None:
-            # First row: Date pickers and time spinboxes with reduced spacing
-            date_controls_frame = ttk.Frame(custom_frame)
-            date_controls_frame.pack(anchor=tk.CENTER, pady=(0, SPACING['small']))
-            
-            # Start date picker with reduced spacing
-            start_date_frame = ttk.Frame(date_controls_frame)
-            start_date_frame.pack(side=tk.LEFT, padx=SPACING['small'])
-            
-            create_info_label(start_date_frame, "From:").pack(side=tk.LEFT)
-            self.start_date_picker = DateEntry(
-                start_date_frame, 
-                width=10,
-                background=COLORS.get('primary', 'blue'),
-                foreground='white',
-                borderwidth=2,
-                date_pattern='yyyy-mm-dd',
-                selectmode='day'
-            )
-            self.start_date_picker.pack(side=tk.LEFT, padx=(SPACING['small']//2, 0))
-            self.start_date_picker.bind("<<DateEntrySelected>>", self._on_calendar_date_selected)
+            # Improved date picker layout with inline labels and centered alignment
+            date_row = ttk.Frame(custom_content)
+            date_row.pack(fill=tk.X, pady=(0, 2))
 
-            # Start time spinboxes (HH:MM) with reduced spacing
-            hh_sb = ttk.Spinbox(start_date_frame, from_=0, to=23, width=3,
-                                textvariable=self.start_hour_var, format="%02.0f")
-            hh_sb.pack(side=tk.LEFT, padx=1)
-            ttk.Label(start_date_frame, text=":").pack(side=tk.LEFT)
-            mm_sb = ttk.Spinbox(start_date_frame, from_=0, to=59, width=3,
-                                textvariable=self.start_min_var, format="%02.0f")
-            mm_sb.pack(side=tk.LEFT, padx=(0, SPACING['small']//2))
+            # Center the date picker components
+            date_center_frame = ttk.Frame(date_row)
+            date_center_frame.pack(expand=True)
 
-            # "to" label with reduced spacing
-            create_info_label(date_controls_frame, "To:").pack(side=tk.LEFT, padx=(SPACING['small']//2, 0))
+            # Left side - From date with inline label
+            from_frame = ttk.Frame(date_center_frame)
+            from_frame.pack(side=tk.LEFT, expand=True)
 
-            # End date picker with reduced spacing
-            end_date_frame = ttk.Frame(date_controls_frame)
-            end_date_frame.pack(side=tk.LEFT, padx=SPACING['small'])
-            
-            self.end_date_picker = DateEntry(
-                end_date_frame, 
-                width=10,
-                background=COLORS.get('primary', 'blue'),
-                foreground='white',
-                borderwidth=2,
-                date_pattern='yyyy-mm-dd',
-                selectmode='day'
-            )
-            self.end_date_picker.pack(side=tk.LEFT, padx=(SPACING['small']//2, 0))
-            self.end_date_picker.bind("<<DateEntrySelected>>", self._on_calendar_date_selected)
+            # Create horizontal layout for From label and date picker
+            from_inner_frame = ttk.Frame(from_frame)
+            from_inner_frame.pack(expand=True)
 
-            # End time spinboxes (HH:MM) with reduced spacing
-            ehh_sb = ttk.Spinbox(end_date_frame, from_=0, to=23, width=3,
-                                 textvariable=self.end_hour_var, format="%02.0f")
-            ehh_sb.pack(side=tk.LEFT, padx=1)
-            ttk.Label(end_date_frame, text=":").pack(side=tk.LEFT)
-            emm_sb = ttk.Spinbox(end_date_frame, from_=0, to=59, width=3,
-                                 textvariable=self.end_min_var, format="%02.0f")
-            emm_sb.pack(side=tk.LEFT, padx=(0, SPACING['small']//2))
+            ttk.Label(from_inner_frame, text="From:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=(0, 5))
+            self.start_date_picker = DateEntry(from_inner_frame, width=12,  # Increased from 8 to 12 for full yyyy-mm-dd
+                                              background=COLORS.get('primary', 'blue'),
+                                              foreground='white', borderwidth=1,
+                                              date_pattern='yyyy-mm-dd', justify='center')
+            self.start_date_picker.pack(side=tk.LEFT)
 
-            # Second row: Apply button centered below the date controls with reduced space
-            apply_button_frame = ttk.Frame(custom_frame)
-            apply_button_frame.pack(anchor=tk.CENTER, pady=(SPACING['small']//2, 0))
-            
-            apply_custom_btn = create_action_button(
-                apply_button_frame, "Apply Range", self._apply_custom_date_filter, 
-                button_type='primary', width=11
-            )
-            apply_custom_btn.pack()
+            # Right side - To date with inline label
+            to_frame = ttk.Frame(date_center_frame)
+            to_frame.pack(side=tk.LEFT, padx=15)
+
+            # Create horizontal layout for To label and date picker
+            to_inner_frame = ttk.Frame(to_frame)
+            to_inner_frame.pack(expand=True)
+
+            ttk.Label(to_inner_frame, text="To:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=(0, 5))
+            self.end_date_picker = DateEntry(to_inner_frame, width=12,  # Increased from 8 to 12 for full yyyy-mm-dd
+                                            background=COLORS.get('primary', 'blue'),
+                                            foreground='white', borderwidth=1,
+                                            date_pattern='yyyy-mm-dd', justify='center')
+            self.end_date_picker.pack(side=tk.LEFT)
+
+            # Time row with centered alignment
+            time_row = ttk.Frame(custom_content)
+            time_row.pack(fill=tk.X, pady=(2, 20))  # Increased gap below time controls to 20 pixels (2x)
+
+            time_center_frame = ttk.Frame(time_row)
+            time_center_frame.pack(expand=True)
+
+            ttk.Label(time_center_frame, text="Time:", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=(0, 5))
+
+            # Start time - improved layout
+            start_time_frame = ttk.Frame(time_center_frame)
+            start_time_frame.pack(side=tk.LEFT)
+
+            ttk.Spinbox(start_time_frame, from_=0, to=23, width=3, textvariable=self.start_hour_var,
+                       format="%02.0f").pack(side=tk.LEFT)
+            ttk.Label(start_time_frame, text=":", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=1)
+            ttk.Spinbox(start_time_frame, from_=0, to=59, width=3, textvariable=self.start_min_var,
+                       format="%02.0f").pack(side=tk.LEFT)
+
+            ttk.Label(time_center_frame, text="to", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=8)
+
+            # End time - improved layout
+            end_time_frame = ttk.Frame(time_center_frame)
+            end_time_frame.pack(side=tk.LEFT)
+
+            ttk.Spinbox(end_time_frame, from_=0, to=23, width=3, textvariable=self.end_hour_var,
+                       format="%02.0f").pack(side=tk.LEFT)
+            ttk.Label(end_time_frame, text=":", font=('TkDefaultFont', 8)).pack(side=tk.LEFT, padx=1)
+            ttk.Spinbox(end_time_frame, from_=0, to=59, width=3, textvariable=self.end_min_var,
+                       format="%02.0f").pack(side=tk.LEFT)
+
+            # Apply button - full width with 10% padding, centered below time controls
+            button_row = ttk.Frame(custom_content)
+            button_row.pack(fill=tk.X, pady=(0, 0))  # Removed top padding since gap is now above
+
+            # Create container with reduced padding (50% reduction from 20 to 10)
+            button_container = ttk.Frame(button_row)
+            button_container.pack(expand=True, padx=10)  # Reduced from 20 to 10 (50% reduction)
+
+            go_btn = create_action_button(button_container, "Apply",
+                                         self._apply_custom_date_filter,
+                                         button_type='primary', width=34)  # Reduced from 48 to 34 (30% reduction)
+            if go_btn:
+                # Copy all styling from Reset button but keep blue background
+                go_btn.configure(
+                    font=('TkDefaultFont', 9, 'bold'),  # Same font as Reset button but BOLD
+                    relief='raised',  # Same relief as Reset button
+                    borderwidth=1,  # Same border as Reset button
+                    cursor='hand2',  # Same cursor as Reset button
+                    padx=10,  # Same horizontal padding as Reset button
+                    pady=5,   # Same vertical padding as Reset button
+                    highlightthickness=0,  # Remove highlight border
+                    highlightcolor='#2196f3',  # Blue highlight color
+                    highlightbackground='#2196f3'  # Blue highlight background
+                )
+                # Copy hover effects from Reset button but keep blue theme
+                def on_enter(e):
+                    go_btn.configure(
+                        background='#1976d2',  # Darker blue on hover (same as Reset but blue)
+                        foreground='white',
+                        relief='solid'
+                    )
+                def on_leave(e):
+                    go_btn.configure(
+                        background='#2196f3',  # Original blue (same as Reset but blue)
+                        foreground='white',
+                        relief='raised'
+                    )
+                go_btn.bind("<Enter>", on_enter)
+                go_btn.bind("<Leave>", on_leave)
+
+                go_btn.pack(expand=True, fill=tk.X, pady=(0, 0))  # Removed bottom padding to match Reset button size
         else:
-            # Fallback: text entries with reduced spacing
-            # First row: Date and time entries
-            date_controls_frame = ttk.Frame(custom_frame)
-            date_controls_frame.pack(anchor=tk.CENTER, pady=(0, SPACING['small']))
+            # Fallback text entries - also compact
+            date_inputs = ttk.Frame(custom_content)
+            date_inputs.pack(fill=tk.X, pady=(0, 2))
             
-            create_info_label(date_controls_frame, "From (YYYY-MM-DD):").pack(side=tk.LEFT)
-            self.start_date_entry = create_input_entry(date_controls_frame, self.custom_date_start_var, width=12)
-            self.start_date_entry.pack(side=tk.LEFT, padx=SPACING['small']//2)
+            ttk.Label(date_inputs, text="From:", font=('TkDefaultFont', 8)).pack(anchor=tk.W)
+            self.start_date_entry = ttk.Entry(date_inputs, textvariable=self.custom_date_start_var, width=12)
+            self.start_date_entry.pack(fill=tk.X, pady=1)
             
-            # Time spinboxes for fallback with reduced spacing
-            ttk.Spinbox(date_controls_frame, from_=0, to=23, width=3,
-                        textvariable=self.start_hour_var, format="%02.0f").pack(side=tk.LEFT, padx=1)
-            ttk.Label(date_controls_frame, text=":").pack(side=tk.LEFT)
-            ttk.Spinbox(date_controls_frame, from_=0, to=59, width=3,
-                        textvariable=self.start_min_var, format="%02.0f").pack(side=tk.LEFT, padx=(0, SPACING['small']))
+            ttk.Label(date_inputs, text="To:", font=('TkDefaultFont', 8)).pack(anchor=tk.W)
+            self.end_date_entry = ttk.Entry(date_inputs, textvariable=self.custom_date_end_var, width=12)
+            self.end_date_entry.pack(fill=tk.X, pady=1)
             
-            create_info_label(date_controls_frame, "To:").pack(side=tk.LEFT, padx=(SPACING['small'], 0))
-            self.end_date_entry = create_input_entry(date_controls_frame, self.custom_date_end_var, width=12)
-            self.end_date_entry.pack(side=tk.LEFT, padx=SPACING['small']//2)
-            
-            ttk.Spinbox(date_controls_frame, from_=0, to=23, width=3,
-                        textvariable=self.end_hour_var, format="%02.0f").pack(side=tk.LEFT, padx=1)
-            ttk.Label(date_controls_frame, text=":").pack(side=tk.LEFT)
-            ttk.Spinbox(date_controls_frame, from_=0, to=59, width=3,
-                        textvariable=self.end_min_var, format="%02.0f").pack(side=tk.LEFT, padx=(0, SPACING['small']//2))
-            
-            # Second row: Apply button centered below the date controls
-            apply_button_frame = ttk.Frame(custom_frame)
-            apply_button_frame.pack(anchor=tk.CENTER, pady=(SPACING['small']//2, 0))
-            
-            apply_custom_btn = create_action_button(
-                apply_button_frame, "Apply Range", self._apply_custom_date_filter_text, 
-                button_type='primary', width=11
-            )
-            apply_custom_btn.pack()
+            go_btn = create_action_button(custom_content, "Apply", 
+                                         self._apply_custom_date_filter_text,
+                                         button_type='primary', width=10)
+            if go_btn:
+                go_btn.pack(fill=tk.X, pady=(SPACING['small']//2, 0))
+        
 
-        # Right section: Saved Searches with reduced padding
-        saved_search_section = ttk.LabelFrame(content_frame, text="Saved Searches", padding=(SPACING['small'], SPACING['small']))
-        saved_search_section.grid(row=0, column=2, sticky="nsew", padx=(SPACING['small']//2, SPACING['small']), 
-                                 pady=(0, SPACING['small']//2))
-        saved_search_section.configure(style="Centered.TLabelframe")
         
-        # Container for saved search elements with center alignment and reduced space
-        saved_container = ttk.Frame(saved_search_section)
-        saved_container.pack(expand=True, fill=tk.BOTH)
-        
-        # Dropdown for saved searches with reduced spacing
-        self.saved_search_var = tk.StringVar()
-        self.saved_searches_combo = ttk.Combobox(saved_container, textvariable=self.saved_search_var, width=18)
-        self.saved_searches_combo.pack(pady=(0, SPACING['small']))
+        # Section 4: Saved Searches (Column 3)
+        saved_section = ttk.LabelFrame(date_container, text="💾 Saved Searches",
+                                      padding=internal_padding)
+        saved_section.grid(row=0, column=3, sticky="nsew", padx=(section_padding//2, 0))
+
+        # Saved content with consistent height
+        saved_content = ttk.Frame(saved_section)
+        saved_content.pack(fill=tk.BOTH, expand=True)
+
+        saved_label = ttk.Label(saved_content, text="Searches:", font=('TkDefaultFont', 9, 'bold'))
+        saved_label.pack(anchor=tk.W, pady=(0, SPACING['small']//2))
+
+        # Compact combobox
+        self.saved_searches_combo = ttk.Combobox(saved_content, textvariable=self.saved_search_var,
+                                                width=12, state="readonly", font=('TkDefaultFont', 8))
+        self.saved_searches_combo.pack(fill=tk.X, pady=(0, SPACING['small']//2))
         self.saved_searches_combo.bind("<<ComboboxSelected>>", self._load_saved_search)
-        
-        # Buttons for saved search operations (stacked vertically with reduced spacing)
-        create_action_button(saved_container, "Load", self._load_saved_search, width=14, 
-                            button_type='info_outline').pack(pady=SPACING['small']//2, fill=tk.X)
-        create_action_button(saved_container, "Save Current", self._save_current_search, width=14, 
-                            button_type='success_outline').pack(pady=SPACING['small']//2, fill=tk.X)
-        create_action_button(saved_container, "Delete", self._delete_saved_search, width=14, 
-                            button_type='danger_outline').pack(pady=SPACING['small']//2, fill=tk.X)
 
-        # Apply default Live filter on initialization
+        # Compact 2x3 button grid
+        buttons_container = ttk.Frame(saved_content)
+        buttons_container.pack(fill=tk.X, expand=True)
+
+        # Configure button grid for equal distribution
+        for i in range(3):
+            buttons_container.grid_columnconfigure(i, weight=1)
+
+        # Button definitions with shorter labels for space
+        button_configs = [
+            # Row 0
+            ("Load", self._load_saved_search, 'info_outline'),
+            ("Save", self._save_current_search, 'success_outline'),
+            ("Del", self._delete_saved_search, 'danger_outline'),
+            # Row 1
+            ("Export", self._export_saved_searches, 'secondary'),
+            ("Import", self._import_saved_searches, 'secondary'),
+            ("Clean", self._clean_corrupted_searches, 'warning')
+        ]
+
+        for i, (text, command, btn_type) in enumerate(button_configs):
+            row = i // 3
+            col = i % 3
+            btn = create_action_button(buttons_container, text, command,
+                                     width=5, button_type=btn_type)
+            if btn:
+                btn.grid(row=row, column=col, padx=1, pady=1, sticky="ew")
+
+        # Update saved searches list
+        self._update_saved_searches_list()
+
+        # Apply default Live filter
         self._apply_status_filter("live")
 
-    def _apply_status_filter(self, status_type: str):
-        """Apply status-based filter (All, Live, Expired)."""
-        self.logger.info(f"Applying status filter: {status_type}")
+
+
+    def _create_link_icon(self):
+        """Create a link icon image for URL display."""
+        if not HAS_PIL or Image is None or ImageDraw is None or ImageTk is None:
+            # Return None if PIL is not available - will use text fallback
+            return None
+
+        try:
+            # Create a simple link icon (chain link)
+            size = (16, 16)
+            image = Image.new('RGBA', size, (255, 255, 255, 0))
+            draw = ImageDraw.Draw(image)
+
+            # Draw a simple chain link
+            # Left loop
+            draw.arc([2, 2, 10, 10], 45, 315, fill='#1976d2', width=2)
+            # Right loop
+            draw.arc([6, 6, 14, 14], 225, 135, fill='#1976d2', width=2)
+            # Connecting lines
+            draw.line([6, 4, 10, 8], fill='#1976d2', width=2)
+            draw.line([10, 4, 6, 8], fill='#1976d2', width=2)
+
+            # Convert to PhotoImage
+            return ImageTk.PhotoImage(image)
+        except Exception as e:
+            self.logger.error(f"Error creating link icon: {e}")
+            return None
+
+    def _detect_url_columns(self, df):
+        """Detect columns that contain URLs."""
+        if df is None or df.empty or not hasattr(df, 'columns'):
+            return []
+
+        url_columns = []
+        url_keywords = ['url', 'link', 'website', 'site', 'http', 'web']
+
+        for col in df.columns:
+            col_lower = str(col).lower()
+            if any(keyword in col_lower for keyword in url_keywords):
+                url_columns.append(col)
+
+        self.logger.info(f"Detected URL columns: {url_columns}")
+        return url_columns
+
+    def _refresh_tree_data(self):
+        """Refresh the treeview with current filtered data."""
+        if self.tree is None:
+            return
+
+        # Clear existing data - add null check for get_children()
+        try:
+            children = self.tree.get_children()
+            if children:  # Only iterate if children exist
+                for item in children:
+                    self.tree.delete(item)
+        except Exception as e:
+            self.logger.error(f"Error clearing tree data: {e}")
+            return
+
+        # Check if data exists
+        if (not hasattr(self.data_processor, 'filtered_data') or
+            self.data_processor.filtered_data is None or
+            self.data_processor.filtered_data.empty):
+            self.results_count_var.set("No data to display")
+            return
+
+        df = self.data_processor.filtered_data
+
+        # Detect URL columns
+        self.url_columns = self._detect_url_columns(df)
+
+        # Create link icon if needed
+        if self.url_columns and not hasattr(self, 'link_icon'):
+            self.link_icon = self._create_link_icon()
+
+        # Configure columns - add safety check
+        try:
+            cols = df.columns.tolist() if hasattr(df, 'columns') and df.columns is not None else []
+            if not cols:
+                self.results_count_var.set("No columns to display")
+                return
+
+            self.tree["columns"] = cols
+
+            for col in cols:
+                width = 100
+                anchor = 'w'  # Default left alignment
+
+                if col in self.url_columns:
+                    # URL columns can be narrower since we'll show an icon
+                    width = 80
+                    anchor = 'center'  # Center align URLs
+                elif any(kw in col.lower() for kw in ['title', 'description', 'summary']):
+                    width = 300
+                elif any(kw in col.lower() for kw in ['department', 'ministry', 'agency']):
+                    width = 200
+                elif any(kw in col.lower() for kw in ['date', 'time', 'closing', 'close', 'due', 'deadline', 'end']):
+                    width = 120
+                    anchor = 'center'  # Center align dates
+
+                self.tree.column(col, width=width, minwidth=50, anchor=anchor)
+
+                # Add sorting functionality to column headers
+                sort_indicator = " ▲" if col == self.sort_column and self.sort_ascending else " ▼" if col == self.sort_column else ""
+                self.tree.heading(col, text=col + sort_indicator, command=lambda c=col: self._sort_by_column(c))
+
+            # Apply column settings from config to the treeview
+            self._apply_column_settings_to_treeview()
+
+            # Insert data rows - limit for performance
+            max_rows = 1000
+            display_df = df.head(max_rows) if len(df) > max_rows else df
+
+            for row_index, (_, row) in enumerate(display_df.iterrows()):
+                try:
+                    values = []
+                    tags = []
+
+                    for i, col in enumerate(cols):
+                        val = row[col]
+                        # Check if value is not NA - handle both scalars and arrays
+                        pd_notna = pd.notna(val)
+                        if isinstance(pd_notna, (pd.Series, pd.Index)):
+                            display_val = str(val) if pd_notna.all() else ""
+                        else:  # Scalar bool
+                            display_val = str(val) if pd_notna else ""
+
+                        # Handle URL columns
+                        if col in self.url_columns and display_val:
+                            if display_val.startswith(('http://', 'https://', 'www.')):
+                                # Store URL in tags for double-click functionality
+                                tags.append(f"url_{i}_{val}")
+                                # Show chain link icon instead of text
+                                if hasattr(self, 'link_icon') and self.link_icon:
+                                    display_val = ""  # Empty text, will show icon
+                                    # Note: Tkinter Treeview doesn't directly support images in cells
+                                    # We'll use a text representation that looks like a link
+                                    display_val = "🔗"  # Chain link emoji as visual indicator
+                                else:
+                                    # Fallback: show shortened URL
+                                    if len(display_val) > 25:
+                                        display_val = display_val[:22] + "..."
+                            else:
+                                tags.append(f"url_{i}_{display_val}")
+
+                        values.append(display_val)
+
+                    # Insert row with tags and alternate row coloring
+                    item_id = self.tree.insert("", "end", values=values)
+
+                    # Apply alternate row coloring using tags
+                    if row_index % 2 == 0:
+                        tags.append('evenrow')
+                    else:
+                        tags.append('oddrow')
+
+                    if tags:
+                        self.tree.item(item_id, tags=tags)
+
+                except Exception as e:
+                    self.logger.error(f"Error inserting row: {e}")
+                    continue
+
+            total_records = len(df)
+            if total_records > max_rows:
+                self.results_count_var.set(f"Showing first {max_rows} of {total_records} records (limit for performance)")
+            else:
+                self.results_count_var.set(f"Showing all {total_records} records")
+
+        except Exception as e:
+            self.logger.error(f"Error refreshing tree data: {e}")
+            self.results_count_var.set("Error displaying data")
+
+    def _apply_column_settings_to_treeview(self):
+        """Apply column settings from config to the current treeview."""
+        if not self.tree:
+            return
+
+        try:
+            column_settings = self.main_app.global_config.get("treeview_column_settings", {})
+            column_order = self.main_app.global_config.get("treeview_column_order", [])
+
+            # Get current columns from treeview
+            current_columns = list(self.tree['columns']) if self.tree['columns'] else []
+
+            # If we have a defined column order, reorder the treeview columns
+            if column_order and len(column_order) > 0:
+                # Filter column_order to only include columns that exist in current data
+                ordered_columns = [col for col in column_order if col in current_columns]
+                # Add any columns from current data that aren't in the order yet
+                for col in current_columns:
+                    if col not in ordered_columns:
+                        ordered_columns.append(col)
+
+                # Update treeview column order
+                if ordered_columns:
+                    self.tree["columns"] = ordered_columns
+                    current_columns = ordered_columns
+
+            # Apply visibility and width settings
+            for col in current_columns:
+                settings = column_settings.get(col, {})
+
+                # Set visibility (hide/show column)
+                if not settings.get("visible", True):
+                    # Hide column by setting width to 0
+                    self.tree.column(col, width=0, minwidth=0)
+                else:
+                    # Show column with configured width
+                    width = settings.get("width", 100)
+                    self.tree.column(col, width=width, minwidth=50)
+
+            self.logger.info(f"Applied column settings to treeview: {len(current_columns)} columns")
+
+        except Exception as e:
+            self.logger.error(f"Error applying column settings to treeview: {e}")
+
+    def update_dashboard(self):
+        """Update the dashboard metrics."""
+        if not hasattr(self, 'dashboard_labels') or not self.dashboard_labels:
+            return
+
+        try:
+            # Default values
+            metrics = {
+                "total_tenders": 0,
+                "live_tenders": 0,
+                "expired_tenders": 0,
+                "filtered_tenders": 0,
+                "match_percentage": "0%",
+                "unique_departments": 0,
+                "closing_today": 0,
+                "closing_next_3_days": 0,
+                "closing_next_7_days": 0,
+                "data_sources": 0
+            }
+
+            # Calculate metrics if data is available
+            if (hasattr(self.data_processor, 'raw_data') and
+                self.data_processor.raw_data is not None and
+                not self.data_processor.raw_data.empty):
+
+                raw_data = self.data_processor.raw_data
+                metrics["total_tenders"] = len(raw_data)
+
+                # Safe column access
+                if hasattr(raw_data, 'columns') and raw_data.columns is not None:
+                    # Department metrics
+                    dept_cols = [col for col in raw_data.columns
+                               if any(kw in col.lower() for kw in ['department', 'dept', 'agency', 'organisation'])]
+                    if dept_cols:
+                        try:
+                            metrics["unique_departments"] = raw_data[dept_cols[0]].nunique()
+                        except Exception:
+                            metrics["unique_departments"] = 0
+
+                    # Date-based metrics - find closing date columns
+                    date_cols = [col for col in raw_data.columns
+                               if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+
+                    if date_cols:
+                        # Use current datetime for precise time-aware filtering
+                        current_datetime = pd.Timestamp.now()
+                        today_start = current_datetime.normalize()  # Start of today (00:00:00)
+                        today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)  # End of today (23:59:59)
+
+                        for col in date_cols:
+                            # Skip columns that aren't datetime type
+                            if not pd.api.types.is_datetime64_dtype(raw_data[col]):
+                                continue
+
+                            # Get non-NA values for this column
+                            valid_dates = raw_data[~raw_data[col].isna()]
+                            if valid_dates.empty:
+                                continue
+
+                            # Live tenders - closing datetime is in the future
+                            metrics["live_tenders"] += (valid_dates[col] > current_datetime).sum()
+
+                            # Expired tenders - closing datetime has passed
+                            metrics["expired_tenders"] += (valid_dates[col] < current_datetime).sum()
+
+                            # Closing today - from current time until end of today
+                            metrics["closing_today"] += ((valid_dates[col] >= current_datetime) &
+                                                        (valid_dates[col] <= today_end)).sum()
+
+                            # Next 3 days - from current time to end of 3 days from today
+                            end_3_days = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
+                            metrics["closing_next_3_days"] += ((valid_dates[col] >= current_datetime) &
+                                                             (valid_dates[col] <= end_3_days)).sum()
+
+                            # Next 7 days - from current time to end of 7 days from today
+                            end_7_days = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
+                            metrics["closing_next_7_days"] += ((valid_dates[col] >= current_datetime) &
+                                                             (valid_dates[col] <= end_7_days)).sum()
+
+            # Filtered data metrics
+            if (hasattr(self.data_processor, 'filtered_data') and
+                self.data_processor.filtered_data is not None and
+                not self.data_processor.filtered_data.empty):
+
+                filtered_data = self.data_processor.filtered_data
+                metrics["filtered_tenders"] = len(filtered_data)
+
+                # Calculate match percentage
+                if metrics["total_tenders"] > 0:
+                    match_pct = (len(filtered_data) / metrics["total_tenders"]) * 100
+                    metrics["match_percentage"] = f"{match_pct:.1f}%"
+
+            # Data sources count
+            metrics["data_sources"] = len(self.loaded_files) + len(self.remote_urls)
+
+            # Update dashboard labels safely
+            for key, value in metrics.items():
+                if key in self.dashboard_labels and self.dashboard_labels[key] is not None:
+                    try:
+                        self.dashboard_labels[key].configure(text=str(value))
+                    except Exception as e:
+                        self.logger.error(f"Error updating dashboard label {key}: {e}")
+
+        except Exception as e:
+            self.logger.error(f"Error updating dashboard: {e}")
+
+    def _apply_custom_date_range_filter(self, start_datetime, end_datetime):
+        """Apply a date range filter to the data."""
+        if not hasattr(self.data_processor, 'filtered_data') or self.data_processor.filtered_data.empty:
+            messagebox.showinfo("No Data", "No data available to filter.")
+            return
         
-        # Clear any time-based filters first
+        self.current_date_filter = {
+            'type': 'custom_date_range',
+            'start_date': start_datetime,
+            'end_date': end_datetime
+        }
+        
         self._clear_time_filter_selection()
         
-        # Set the active filter
-        self.active_date_filter = status_type
-        self.current_date_filter = {'type': status_type}
+        self.data_processor.filtered_data = self.data_processor.raw_data.copy()
         
-        # Apply the filter
-        self._apply_all_filters()
+        date_cols = [col for col in self.data_processor.filtered_data.columns 
+                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+        
+        if not date_cols:
+            messagebox.showinfo("Date Column Not Found", "Could not find a suitable date column to filter.")
+            return
+        
+        date_col = date_cols[0]
+        
+        try:
+            if not pd.api.types.is_datetime64_dtype(self.data_processor.filtered_data[date_col]):
+                self.data_processor.filtered_data[date_col] = pd.to_datetime(
+                    self.data_processor.filtered_data[date_col], errors='coerce')
+        except Exception as e:
+            self.logger.error(f"Error converting date column: {e}")
+            messagebox.showerror("Date Conversion Error", f"Could not convert dates: {str(e)}")
+            return
+        
+        try:
+            start_ts = pd.Timestamp(start_datetime)
+            end_ts = pd.Timestamp(end_datetime)
+            
+            mask = (
+                (self.data_processor.filtered_data[date_col] >= start_ts) & 
+                (self.data_processor.filtered_data[date_col] <= end_ts)
+            )
+            
+            self.data_processor.filtered_data = self.data_processor.filtered_data[mask]
+            
+            self._refresh_tree_data()
+            self.update_dashboard()
+            
+            record_count = len(self.data_processor.filtered_data)
+            self.logger.info(f"Applied custom date range filter: {start_datetime} to {end_datetime}, {record_count} records matching")
+            
+        except Exception as e:
+            self.logger.error(f"Error applying date range filter: {e}")
+            messagebox.showerror("Filter Error", f"Error filtering by date: {str(e)}")
 
-    def _apply_time_filter(self, time_preset: str):
-        """Apply time-based filter (Today, Next 3 Days, etc.)."""
-        self.logger.info(f"Applying time filter: {time_preset}")
+    def _on_live_search_key(self, event=None):
+        """Handle key press in search fields with debouncing and visual feedback."""
+        if hasattr(self, '_filter_after_id') and self._filter_after_id:
+            self.after_cancel(self._filter_after_id)
+
+        # Show search indicator
+        if hasattr(self, 'results_count_var'):
+            original_text = self.results_count_var.get()
+            if not original_text.startswith("Searching"):
+                self._original_search_text = original_text
+                self.results_count_var.set("Searching...")
+
+        self._filter_after_id = self.after(self.filter_delay_ms, self._apply_filters)
+
+    def _apply_filters(self):
+        """Apply all filters to the dataset."""
+        if (not hasattr(self.data_processor, 'raw_data') or
+            self.data_processor.raw_data is None or
+            self.data_processor.raw_data.empty):
+            # Restore original text if no data
+            if hasattr(self, '_original_search_text'):
+                self.results_count_var.set(self._original_search_text)
+            return
+
+        # Start with raw data
+        df = self.data_processor.raw_data.copy()
+
+        # Apply status filter first (live/expired/all)
+        current_status = getattr(self, 'status_filter_var', tk.StringVar()).get()
+        if current_status == "live":
+            df = self._apply_live_filter_to_df(df)
+        elif current_status == "expired":
+            df = self._apply_expired_filter_to_df(df)
+        # For "all", no status filtering needed
+
+        # Apply department filter
+        dept_filter = self.dept_filter_var.get().strip()
+        if dept_filter:
+            df = self._apply_department_filter_to_df(df, dept_filter)
+
+        # Apply global search filter
+        global_search = self.global_search_var.get().strip()
+        if global_search:
+            df = self._apply_global_search_to_df(df, global_search)
+
+        # Apply any time range filters if active
+        if hasattr(self, 'current_date_filter') and self.current_date_filter:
+            time_range = self.current_date_filter.get('time_range', '')
+            if time_range:
+                df = self._apply_time_range_to_df(df, time_range, current_status)
+
+        # Update filtered data - ensure df is not None before assignment
+        if df is not None:
+            self.data_processor.filtered_data = df
+
+        # Refresh display
+        self._refresh_tree_data()
+        self.update_dashboard()
+
+        # Restore original search text after filtering is complete
+        if hasattr(self, '_original_search_text'):
+            self.results_count_var.set(self._original_search_text)
+            del self._original_search_text
+
+    def _apply_time_filter(self, preset):
+        """Apply a time-based filter preset."""
+        self.logger.info(f"Applying time filter: {preset}")
         
-        # Keep the current status filter but add time constraint
+        # Get current status
         current_status = self.status_filter_var.get()
         
-        # Set the active filter to combine status + time
-        self.active_date_filter = f"{current_status}_{time_preset}"
+        # Set filter state
+        self.active_date_filter = f"{current_status}_{preset}"
         self.current_date_filter = {
             'type': 'combined',
             'status': current_status,
-            'time_range': time_preset
+            'time_range': preset
         }
         
-        # Reset custom date inputs
-        today = datetime.now().strftime("%Y-%m-%d")
-        if HAS_TKCALENDAR and hasattr(self, 'start_date_picker') and hasattr(self, 'end_date_picker'):
-            self.start_date_picker.set_date(today)
-            self.end_date_picker.set_date(today)
-        else:
-            if hasattr(self, 'custom_date_start_var') and hasattr(self, 'custom_date_end_var'):
-                self.custom_date_start_var.set("")
-                self.custom_date_end_var.set("")
+        # Update UI - reset all time filter buttons
+        self._clear_time_filter_selection()
         
-        # Reset time spinboxes to full day
+        # Highlight the selected time filter button
+        if preset in self.date_filter_buttons:
+            btn = self.date_filter_buttons[preset]
+            if isinstance(btn, ttk.Button):
+                if hasattr(btn, 'state'):
+                    btn.state(['pressed'])
+            elif isinstance(btn, tk.Button):
+                if hasattr(btn, 'configure'):
+                    btn['background'] = "#006400"
+                    btn['foreground'] = "white"
+        
+        # Apply the filter
+        self._apply_filters()
+
+    def _sort_by_column(self, col):
+        """Sort the treeview data by the specified column."""
+        if not hasattr(self.data_processor, 'filtered_data') or self.data_processor.filtered_data is None or self.data_processor.filtered_data.empty:
+            return
+
+        try:
+            # Toggle sort direction if same column clicked
+            if self.sort_column == col:
+                self.sort_ascending = not self.sort_ascending
+            else:
+                self.sort_column = col
+                self.sort_ascending = True
+
+            # Sort the dataframe
+            df = self.data_processor.filtered_data.copy()
+
+            # Handle different data types for sorting
+            if col in df.columns:
+                try:
+                    # Try to sort as numeric first
+                    if df[col].dtype in ['int64', 'float64']:
+                        df = df.sort_values(col, ascending=self.sort_ascending, na_position='last')
+                    else:
+                        # Try to convert to datetime for date columns
+                        if any(kw in col.lower() for kw in ['date', 'time', 'closing', 'close', 'due', 'deadline', 'end']):
+                            try:
+                                temp_col = pd.to_datetime(df[col], errors='coerce')
+                                df = df.assign(**{f'__sort_{col}': temp_col})
+                                df = df.sort_values(f'__sort_{col}', ascending=self.sort_ascending, na_position='last')
+                                df = df.drop(columns=[f'__sort_{col}'])
+                            except:
+                                # Fall back to string sorting
+                                df = df.sort_values(col, ascending=self.sort_ascending, na_position='last', key=lambda x: x.astype(str))
+                        else:
+                            # String sorting for other columns
+                            df = df.sort_values(col, ascending=self.sort_ascending, na_position='last', key=lambda x: x.astype(str).str.lower())
+                except Exception as e:
+                    self.logger.warning(f"Error sorting column {col}: {e}")
+                    # Fallback to simple sort
+                    df = df.sort_values(col, ascending=self.sort_ascending, na_position='last')
+
+            # Update the filtered data
+            self.data_processor.filtered_data = df
+
+            # Refresh the display
+            self._refresh_tree_data()
+
+            self.logger.info(f"Sorted by column '{col}' ({'ascending' if self.sort_ascending else 'descending'})")
+
+        except Exception as e:
+            self.logger.error(f"Error sorting by column {col}: {e}")
+
+    def _setup_treeview_bindings(self):
+        """Bind treeview events."""
+        if hasattr(self, 'tree') and self.tree:
+            self.tree.bind("<Double-1>", self._on_row_double_click)
+            self.tree.bind("<Button-3>", self._show_context_menu)
+
+    def _create_context_menu(self):
+        """Create context menu for treeview."""
+        menu = tk.Menu(self, tearoff=0)
+
+        # Get current selection
+        if not self.tree or not self.tree.selection():
+            return menu
+
+        item_id = self.tree.selection()[0]
+        values = self.tree.item(item_id, "values") or []
+
+        # Copy options
+        menu.add_command(label="Copy Row", command=lambda: self._copy_row(item_id))
+        menu.add_command(label="Copy Cell", command=lambda: self._copy_cell(item_id))
+        menu.add_separator()
+
+        # Show details
+        menu.add_command(label="Show Details", command=lambda: self._show_row_details(item_id))
+
+        # Add to calendar option (if applicable)
+        if self._can_add_to_calendar(values):
+            menu.add_separator()
+            menu.add_command(label="Add to Calendar", command=lambda: self._add_to_calendar(item_id))
+
+        return menu
+
+    def _export_to_excel(self):
+        """Export the current filtered data to Excel."""
+        if not hasattr(self, 'data_processor') or self.data_processor is None:
+            messagebox.showerror("Export Error", "No data available to export.")
+            return
+        
+        try:
+            # Get the filtered data
+            df = self.data_processor.filtered_data
+            
+            if df is None or df.empty:
+                messagebox.showerror("Export Error", "No data available to export.")
+                return
+            
+            # Ask for file save location
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".xlsx",
+                filetypes=[("Excel Files", "*.xlsx"), ("All Files", "*.*")],
+                title="Export to Excel"
+            )
+            
+            if not file_path:
+                return  # User canceled
+            
+            # Export to Excel
+            df.to_excel(file_path, index=False)
+            
+            messagebox.showinfo("Export Successful", f"Data exported to Excel successfully:\n{file_path}")
+            self.logger.info(f"Data exported to Excel: {file_path}")
+            
+        except Exception as e:
+            self.logger.error(f"Error exporting to Excel: {e}")
+            messagebox.showerror("Export Error", f"Failed to export to Excel: {str(e)}")
+
+    def _export_to_csv(self):
+        """Export the current filtered data to CSV."""
+        if not hasattr(self, 'data_processor') or self.data_processor is None:
+            messagebox.showerror("Export Error", "No data available to export.")
+            return
+        
+        try:
+            # Get the filtered data
+            df = self.data_processor.filtered_data
+            
+            if df is None or df.empty:
+                messagebox.showerror("Export Error", "No data available to export.")
+                return
+            
+            # Ask for file save location
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")],
+                title="Export to CSV"
+            )
+            
+            if not file_path:
+                return  # User canceled
+            
+            # Export to CSV
+            df.to_csv(file_path, index=False, encoding='utf-8')
+            
+            messagebox.showinfo("Export Successful", f"Data exported to CSV successfully:\n{file_path}")
+            self.logger.info(f"Data exported to CSV: {file_path}")
+            
+        except Exception as e:
+            self.logger.error(f"Error exporting to CSV: {e}")
+            messagebox.showerror("Export Error", f"Failed to export to CSV: {str(e)}")
+
+    def _on_row_double_click(self, event):
+        """Handle double-click on a treeview row to show details or open URLs."""
+        try:
+            if not self.tree:
+                return
+
+            # Get the clicked item and column
+            item = self.tree.identify_row(event.y)
+            if not item:
+                return
+
+            column = self.tree.identify_column(event.x)
+            if not column:
+                return
+
+            # Extract column index from column identifier (e.g., '#1' -> 0)
+            try:
+                col_index = int(column[1:]) - 1  # #1 -> 0, #2 -> 1, etc.
+            except (ValueError, IndexError):
+                col_index = -1
+
+            # Get column names to check if this is a URL column
+            columns = self.tree['columns']
+            if col_index >= 0 and col_index < len(columns):
+                col_name = columns[col_index]
+
+                # Check if this column is a URL column
+                if col_name in self.url_columns:
+                    # Get the tags for this item
+                    tags = self.tree.item(item, 'tags') or []
+
+                    # Look for URL tag for this column
+                    url = None
+                    for tag in tags:
+                        if isinstance(tag, str) and tag.startswith(f"url_{col_index}_"):
+                            url = tag[len(f"url_{col_index}_"):]
+                            break
+
+                    # If we found a URL, open it
+                    if url and url.startswith(('http://', 'https://', 'www.')):
+                        try:
+                            # Ensure it has http/https prefix
+                            if url.startswith('www.'):
+                                url = 'http://' + url
+
+                            webbrowser.open_new_tab(url)
+                            self.logger.info(f"Opened URL: {url}")
+                            return  # Don't show details window
+                        except Exception as e:
+                            self.logger.error(f"Failed to open URL {url}: {e}")
+                            messagebox.showerror("Open URL Failed", f"Could not open URL: {url}\nError: {e}")
+                            return
+
+            # Default behavior: show row details
+            if self.tree.selection():
+                item = self.tree.selection()[0]
+                self._show_row_details(item)
+
+        except Exception as e:
+            self.logger.error(f"Error on row double click: {e}")
+
+    def _show_context_menu(self, event):
+        """Show context menu on right-click in treeview."""
+        try:
+            if self.tree:
+                item = self.tree.identify_row(event.y)
+                if item:
+                    self.tree.selection_set(item)
+                    
+                    # Show the context menu
+                    menu = self._create_context_menu()
+                    menu.post(event.x_root, event.y_root)
+        except Exception as e:
+            self.logger.error(f"Error showing context menu: {e}")
+
+    def _copy_row(self, item_id):
+        """Copy the selected row's data to clipboard."""
+        try:
+            if self.tree:
+                values = self.tree.item(item_id, "values")
+                if values:
+                    # Create a tab-separated string
+                    data = "\t".join(str(v) for v in values)
+
+                    # Copy to clipboard
+                    self.clipboard_clear()
+                    self.clipboard_append(data)
+
+                    messagebox.showinfo("Copy Successful", "Row data copied to clipboard.")
+        except Exception as e:
+            self.logger.error(f"Error copying row data: {e}")
+
+    def _copy_cell(self, item_id):
+        """Copy the selected cell's data to clipboard."""
+        try:
+            if self.tree and self.tree.selection():
+                # Get the focused cell
+                focused = self.tree.focus()
+                if focused:
+                    # Get column and item
+                    column = self.tree.identify_column(self.tree.winfo_pointerx() - self.tree.winfo_rootx())
+                    if column:
+                        col_index = int(column[1:]) - 1  # #1 -> 0, #2 -> 1, etc.
+                        values = self.tree.item(item_id, "values")
+                        if values and 0 <= col_index < len(values):
+                            cell_value = str(values[col_index])
+
+                            # Copy to clipboard
+                            self.clipboard_clear()
+                            self.clipboard_append(cell_value)
+
+                            messagebox.showinfo("Copy Successful", f"Cell data copied to clipboard:\n{cell_value}")
+        except Exception as e:
+            self.logger.error(f"Error copying cell data: {e}")
+
+    def _can_add_to_calendar(self, values):
+        """Check if the selected row can be added to calendar."""
+        # Check if we have date/time information
+        if not values:
+            return False
+
+        # Look for date/time columns in the data
+        try:
+            if hasattr(self.data_processor, 'filtered_data') and not self.data_processor.filtered_data.empty:
+                df = self.data_processor.filtered_data
+                # Check if any date-related columns exist
+                date_cols = [col for col in df.columns
+                           if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end', 'date', 'time'])]
+                return len(date_cols) > 0
+        except Exception:
+            pass
+
+        return False
+
+    def _add_to_calendar(self, item_id):
+        """Add the selected tender to calendar."""
+        try:
+            messagebox.showinfo("Calendar Integration", "Calendar integration is under development.\n\nThis feature will allow adding tender deadlines to your calendar application.")
+        except Exception as e:
+            self.logger.error(f"Error adding to calendar: {e}")
+
+    def _show_row_details(self, item_id):
+        """Show detailed information about the selected row in a new window."""
+        try:
+            if self.tree:
+                values = self.tree.item(item_id, "values")
+                if not values:
+                    return
+                
+                # Create a new top-level window
+                details_window = tk.Toplevel(self)
+                details_window.title("Row Details")
+                details_window.geometry("600x400")
+                
+                # Add a close button
+                close_button = ttk.Button(details_window, text="Close", command=details_window.destroy)
+                close_button.pack(side=tk.BOTTOM, pady=10)
+                
+                # Create a text widget to display the details
+                text = tk.Text(details_window, wrap=tk.WORD)
+                text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+                
+                # Insert the data into the text widget
+                for value in values:
+                    text.insert(tk.END, str(value) + "\n")
+                
+                # Make the text widget read-only
+                text.config(state=tk.DISABLED)
+                
+        except Exception as e:
+            self.logger.error(f"Error showing row details: {e}")
+
+    def _create_tender_data_widgets(self, tender_data_frame):
+        """Create the widgets for displaying and interacting with tender data."""
+        # Status bar at top
+        status_frame = ttk.Frame(tender_data_frame)
+        status_frame.pack(fill=tk.X, padx=SPACING['small'], pady=(SPACING['small'], 0))
+        
+        # Results count label
+        results_label = ttk.Label(status_frame, textvariable=self.results_count_var)
+        results_label.pack(side=tk.LEFT)
+        
+        # Export buttons
+        export_frame = ttk.Frame(status_frame)
+        export_frame.pack(side=tk.RIGHT)
+        
+        create_action_button(export_frame, "Export Excel", self._export_to_excel, 
+                           button_type='success_outline', width=12).pack(side=tk.LEFT, padx=(0, SPACING['small']))
+        create_action_button(export_frame, "Export CSV", self._export_to_csv, 
+                           button_type='info_outline', width=12).pack(side=tk.LEFT)
+        
+        # Create frame for treeview and scrollbars
+        tree_frame = ttk.Frame(tender_data_frame)
+        tree_frame.pack(fill=tk.BOTH, expand=True, padx=SPACING['small'], pady=SPACING['small'])
+        
+        # Treeview for displaying tender data
+        self.tree = ttk.Treeview(tree_frame, show="headings")
+
+        # Configure tags for alternate row colors
+        self.tree.tag_configure('evenrow', background='#ffffff')  # White for even rows
+        self.tree.tag_configure('oddrow', background='#f8f9fa')   # Light gray for odd rows
+        self.tree.tag_configure('selected', background='#0078d4', foreground='white')  # Selection color
+        self.tree.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
+        
+        # Vertical scrollbar
+        vsb = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
+        vsb.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tree.configure(yscrollcommand=vsb.set)
+        
+        # Horizontal scrollbar frame
+        hsb_frame = ttk.Frame(tender_data_frame)
+        hsb_frame.pack(fill=tk.X, padx=SPACING['small'])
+        
+        hsb = ttk.Scrollbar(hsb_frame, orient="horizontal", command=self.tree.xview)
+        hsb.pack(fill=tk.X)
+        self.tree.configure(xscrollcommand=hsb.set)
+
+    def _apply_status_filter(self, status):
+        """Apply status-based filter (all, live, expired)."""
+        self.logger.info(f"Applying status filter: {status}")
+        
+        self.active_date_filter = status
+        self.current_date_filter = {
+            'type': status
+        }
+        
+        # Apply the filters
+        self._apply_filters()
+
+    def _toggle_data_folders_panel(self):
+        """Toggle visibility of data folders panel."""
+        if getattr(self, 'data_folders_frame_visible', False):
+            self.data_folders_content.pack_forget()
+            self.toggle_button.config(text="►")
+        else:
+            self.data_folders_content.pack(side=tk.TOP, fill=tk.X)
+            self.toggle_button.config(text="▼")
+        self.data_folders_frame_visible = not getattr(self, 'data_folders_frame_visible', False)
+
+    def _show_data_visualization(self):
+        """Open charts window with data visualization based on current Tree view data."""
+        try:
+            # Check if we have data to visualize
+            if not hasattr(self, 'data_processor') or not hasattr(self.data_processor, 'filtered_data') or self.data_processor.filtered_data is None or self.data_processor.filtered_data.empty:
+                messagebox.showinfo("No Data", "No data available to visualize. Please load some data first.")
+                return
+
+            # Check window instance limit
+            if len(self.open_chart_windows) >= self.max_chart_windows:
+                messagebox.showwarning("Window Limit Reached",
+                                     f"Maximum of {self.max_chart_windows} chart windows are already open.\n"
+                                     "Please close an existing chart window before opening a new one.")
+                return
+
+            # Create and show the charts window
+            charts_window = ChartsWindow(self, self.data_processor.filtered_data.copy())
+
+            # Track the window and add cleanup callback
+            def on_window_close():
+                if charts_window.window in self.open_chart_windows:
+                    self.open_chart_windows.remove(charts_window.window)
+
+            # Override the window's close method to clean up tracking
+            original_close = charts_window._on_close
+            def tracked_close():
+                on_window_close()
+                original_close()
+            charts_window._on_close = tracked_close
+
+            # Add to tracking list
+            if charts_window.window is not None:
+                self.open_chart_windows.append(charts_window.window)
+
+            charts_window.show()
+
+        except Exception as e:
+            self.logger.error(f"Error opening charts window: {e}")
+            messagebox.showerror("Charts Error", f"Failed to open charts window: {str(e)}")
+
+    def _add_folder(self):
+        """Add a folder to the list."""
+        folder = filedialog.askdirectory(title="Select Data Folder")
+        if folder and folder not in self.loaded_files:
+            self.loaded_files.append(folder)
+        self._update_selected_folders_display()
+
+    def _add_remote_url(self):
+        """Add a remote URL data source."""
+        dialog = RemoteUrlDialog(self, self.remote_loader)
+        self.wait_window(dialog)
+        
+        if dialog.result:
+            url, username, password = dialog.result
+            if username and password:
+                url_with_auth = f"{url}||{username}||{password}"
+            else:
+                url_with_auth = url
+            
+            if url_with_auth not in self.remote_urls:
+                self.remote_urls.append(url_with_auth)
+                self._update_selected_folders_display()
+                messagebox.showinfo("URL Added", f"Remote URL added successfully:\n{url}")
+
+    def _load_data_from_auto_path(self, auto_path):
+        """Load all Excel/CSV files from the auto-configured directory path."""
+        if not auto_path or not os.path.exists(auto_path):
+            self.logger.error(f"Auto-load path is invalid or does not exist: {auto_path}")
+            return
+
+        try:
+            # Get all Excel and CSV files from the directory
+            excel_files = []
+            for file in os.listdir(auto_path):
+                if file.lower().endswith(('.xlsx', '.xls', '.csv')):
+                    excel_files.append(os.path.join(auto_path, file))
+
+            if not excel_files:
+                messagebox.showinfo("No Files Found",
+                                  f"No Excel or CSV files found in the configured directory:\n{auto_path}")
+                return
+
+            # Show loading indicator
+            self.results_count_var.set(f"Loading {len(excel_files)} files from auto-path...")
+            self.update_idletasks()
+
+            # Load data from all files
+            dfs = []
+            loaded_count = 0
+            for file_path in excel_files:
+                try:
+                    if file_path.lower().endswith('.csv'):
+                        df = pd.read_csv(file_path, encoding='utf-8', low_memory=False)
+                    else:
+                        df = pd.read_excel(file_path, engine='openpyxl')
+
+                    if not df.empty:
+                        # Add source file column
+                        df['Source File'] = os.path.basename(file_path)
+                        dfs.append(df)
+                        loaded_count += 1
+                except Exception as e:
+                    self.logger.error(f"Error loading file {file_path}: {e}")
+                    continue
+
+            if not dfs:
+                messagebox.showinfo("No Data", "Could not load any data from the files in the configured directory.")
+                self.results_count_var.set("No data loaded")
+                return
+
+            # Combine all dataframes
+            combined_df = pd.concat(dfs, ignore_index=True)
+
+            # Store in data processor
+            self.data_processor.raw_data = combined_df
+            self.data_processor.filtered_data = combined_df.copy()
+
+            # Update the loaded files list to include the auto-path
+            self.loaded_files = [auto_path]
+            self.remote_urls = []
+            self._update_selected_folders_display()
+
+            # Update record count
+            record_count = len(combined_df)
+            messagebox.showinfo("Auto-Load Complete",
+                              f"Successfully auto-loaded data:\n\n"
+                              f"Directory: {os.path.basename(auto_path)}\n"
+                              f"Files loaded: {loaded_count}/{len(excel_files)}\n"
+                              f"Total records: {record_count}")
+
+            # Refresh the display
+            self._refresh_tree_data()
+            self.update_dashboard()
+
+            # Apply default filter (live tenders)
+            self._apply_status_filter("live")
+
+            self.logger.info(f"Auto-loaded {loaded_count} files with {record_count} total records from: {auto_path}")
+
+        except Exception as e:
+            self.logger.error(f"Error auto-loading data from path: {e}", exc_info=True)
+            messagebox.showerror("Auto-Load Error", f"An error occurred while auto-loading data:\n{str(e)}")
+            self.results_count_var.set("Error auto-loading data")
+
+    def _load_merged_file_from_path(self, file_path):
+        """Load a single merged file directly into the tree view for analysis using a provided file path."""
+        if not file_path or not os.path.exists(file_path):
+            self.logger.error(f"File path is invalid or file does not exist: {file_path}")
+            return
+
+        # Show loading indicator
+        self.results_count_var.set("Loading merged file, please wait...")
+        self.update_idletasks()  # Force UI update
+
+        try:
+            # Load the file
+            if file_path.lower().endswith('.csv'):
+                df = pd.read_csv(file_path, encoding='utf-8', low_memory=False)
+            else:
+                df = pd.read_excel(file_path, engine='openpyxl')
+
+            if df.empty:
+                messagebox.showinfo("Empty File", "The selected file is empty or could not be loaded.")
+                self.results_count_var.set("No data loaded")
+                return
+
+            # Store in data processor
+            self.data_processor.raw_data = df
+            self.data_processor.filtered_data = df.copy()
+
+            # Clear any existing folder/remote sources since we're loading a direct file
+            self.loaded_files = []
+            self.remote_urls = []
+            self._update_selected_folders_display()
+
+            # Update record count
+            record_count = len(df)
+            messagebox.showinfo("Merged File Loaded",
+                              f"Successfully loaded merged file for analysis:\n{os.path.basename(file_path)}\n\n"
+                              f"Records: {record_count}")
+
+            # Refresh the display
+            self._refresh_tree_data()
+            self.update_dashboard()
+
+            # Apply default filter (live tenders)
+            self._apply_status_filter("live")
+
+            self.logger.info(f"Loaded merged file for analysis: {file_path} ({record_count} records)")
+
+        except Exception as e:
+            self.logger.error(f"Error loading merged file: {e}", exc_info=True)
+            messagebox.showerror("Error", f"An error occurred while loading the merged file:\n{str(e)}")
+            self.results_count_var.set("Error loading merged file")
+
+    def _load_merged_file(self):
+        """Load a single merged file directly into the tree view for analysis."""
+        # Ask user to select a merged file
+        file_path = filedialog.askopenfilename(
+            title="Select Merged File for Analysis",
+            filetypes=[
+                ("Excel Files", "*.xlsx"),
+                ("CSV Files", "*.csv"),
+                ("All Files", "*.*")
+            ],
+            initialdir="data/merged_data"  # Default to merged data folder
+        )
+
+        if not file_path:
+            return  # User canceled
+
+        # Use the path-based method
+        self._load_merged_file_from_path(file_path)
+
+    def _clear_folders(self):
+        """Clear selected folders and remote URLs."""
+        self.loaded_files = []
+        self.remote_urls = []
+        if hasattr(self, 'remote_loader'):
+            self.remote_loader.cleanup_temp_files()
+        self._update_selected_folders_display()
+
+    def _update_selected_folders_display(self):
+        """Update label with selected folders and remote URLs."""
+        sources = []
+        
+        if self.loaded_files:
+            sources.extend([f"📁 {folder}" for folder in self.loaded_files])
+        
+        if self.remote_urls:
+            for url_entry in self.remote_urls:
+                url = url_entry.split('||')[0]
+                sources.append(f"🌐 {url}")
+        
+        if sources:
+            text = "\n".join(sources)
+        else:
+            text = "No data sources selected."
+        
+        self.selected_folders_var.set(text)
+
+
+
+    def _clear_time_filter_selection(self):
+        """Clear the visual selection of time filter buttons."""
+        for key in ["today", "next_3_days", "next_7_days", "next_30_days"]:
+            if key in self.date_filter_buttons:
+                btn = self.date_filter_buttons[key]
+                if isinstance(btn, ttk.Button):
+                    if hasattr(btn, 'state'):
+                        btn.state(['!pressed'])
+                elif isinstance(btn, tk.Button):
+                    if hasattr(btn, 'configure'):
+                        btn['background'] = "#f0f0f0"
+                        btn['foreground'] = "black"
+
+    def _reset_filters(self):
+        """Reset all filters to their default state."""
+        self.dept_filter_var.set("")
+        self.global_search_var.set("")
+        self.dept_operator_var.set("OR")
+        self.global_operator_var.set("AND")
+        self.status_filter_var.set("live")
+        self.current_date_filter = {}
+        self.active_date_filter = "live"
+        self._clear_time_filter_selection()
+        
+        if hasattr(self, 'custom_date_start_var'):
+            self.custom_date_start_var.set("")
+        if hasattr(self, 'custom_date_end_var'):
+            self.custom_date_end_var.set("")
+        
         self.start_hour_var.set("00")
         self.start_min_var.set("00")
         self.end_hour_var.set("23")
         self.end_min_var.set("59")
         
-        # Apply the filter
-        self._apply_all_filters()
-
-    def _clear_time_filter_selection(self):
-        """Clear visual selection of time filter buttons."""
-        # This would be used if we had visual state indication for the time buttons
-        # For now, it's a placeholder for future enhancement
-        pass
-
-    def _filter_by_date_preset_with_visual(self, preset: str, button_text: str):
-        """Legacy method - redirect to new structure."""
-        if preset in ["all", "live", "expired"]:
-            self.status_filter_var.set(preset)
-            self._apply_status_filter(preset)
-        else:
-            self._apply_time_filter(preset)
-
-    def update_dashboard(self):
-        """Update dashboard metrics with current data state."""
-        # Ensure filtered_data exists
-        if not hasattr(self.data_processor, 'filtered_data') or self.data_processor.filtered_data is None:
-            self.data_processor.filtered_data = pd.DataFrame()
-        
-        # Ensure raw_data exists
-        if not hasattr(self.data_processor, 'raw_data') or self.data_processor.raw_data is None:
-            self.data_processor.raw_data = pd.DataFrame()
-        
-        # Calculate metrics
-        total_tenders = len(self.data_processor.raw_data) if not self.data_processor.raw_data.empty else 0
-        filtered_tenders = len(self.data_processor.filtered_data) if not self.data_processor.filtered_data.empty else 0
-        
-        # Calculate match percentage
-        match_percentage = 0
-        if total_tenders > 0:
-            match_percentage = round((filtered_tenders / total_tenders) * 100, 1)
-        
-        # Count unique departments
-        unique_departments = 0
-        if not self.data_processor.filtered_data.empty:
-            dept_col = next((c for c in self.data_processor.filtered_data.columns if 'department' in c.lower() or 'dept' in c.lower()), None)
-            if dept_col:
-                unique_departments = self.data_processor.filtered_data[dept_col].nunique()
-        
-        # Calculate date-based metrics
-        live_tenders = expired_tenders = closing_today = closing_next_3_days = closing_next_7_days = 0
-        
-        if not self.data_processor.filtered_data.empty:
-            date_col = next((c for c in self.data_processor.filtered_data.columns if 'closing' in c.lower() or 'due' in c.lower() or 'deadline' in c.lower()), None)
-            if date_col:
-                df = self.data_processor.filtered_data.copy()
-                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-                df = df.dropna(subset=[date_col])
-                
-                now = pd.Timestamp.now()
-                today = now.date()
-                
-                # Live vs Expired
-                live_tenders = len(df[df[date_col] >= now])
-                expired_tenders = len(df[df[date_col] < now])
-                
-                # Closing timeframes
-                closing_today = len(df[df[date_col].dt.date == today])
-                closing_next_3_days = len(df[(df[date_col].dt.date > today) & (df[date_col].dt.date <= today + timedelta(days=3))])
-                closing_next_7_days = len(df[(df[date_col].dt.date > today) & (df[date_col].dt.date <= today + timedelta(days=7))])
-        
-        # Data sources count
-        data_sources = len(self.loaded_files)
-        
-        # Update dashboard labels
-        dashboard_values = {
-            "live_tenders": live_tenders,
-            "expired_tenders": expired_tenders,
-            "total_tenders": total_tenders,
-            "filtered_tenders": filtered_tenders,
-            "match_percentage": f"{match_percentage}%",
-            "unique_departments": unique_departments,
-            "closing_today": closing_today,
-            "closing_next_3_days": closing_next_3_days,
-            "closing_next_7_days": closing_next_7_days,
-            "data_sources": data_sources
-        }
-        
-        # Update the dashboard labels
-        for key, value in dashboard_values.items():
-            if key in self.dashboard_labels:
-                self.dashboard_labels[key].config(text=str(value))
-
-    def _get_custom_range_datetimes(self):
-        """Combine selected dates + time spinboxes into ISO strings (start, end)."""
-        start_date = self.custom_date_start_var.get()
-        end_date = self.custom_date_end_var.get()
-        sh = self.start_hour_var.get() or "00"
-        sm = self.start_min_var.get() or "00"
-        eh = self.end_hour_var.get() or "23"
-        em = self.end_min_var.get() or "59"
-        # Zero pad & validate
-        try:
-            sh_i, sm_i, eh_i, em_i = int(sh), int(sm), int(eh), int(em)
-            if not (0 <= sh_i <= 23 and 0 <= eh_i <= 23 and 0 <= sm_i <= 59 and 0 <= em_i <= 59):
-                raise ValueError
-        except Exception:
-            raise ValueError("Invalid time (HH:MM) values.")
-        
-        # Create proper ISO datetime strings with seconds
-        start_iso = f"{start_date} {sh_i:02d}:{sm_i:02d}:00"
-        end_iso = f"{end_date} {eh_i:02d}:{em_i:02d}:59"
-        
-        # Validate ordering
-        try:
-            sd_dt = datetime.strptime(start_iso, "%Y-%m-%d %H:%M:%S")
-            ed_dt = datetime.strptime(end_iso, "%Y-%m-%d %H:%M:%S")
-            if ed_dt < sd_dt:
-                raise ValueError("End datetime is before start datetime.")
-        except ValueError as ve:
-            raise ValueError(str(ve))
-        return start_iso, end_iso
-
-    def _on_calendar_date_selected(self, event=None):
-        """Update the custom date variables when a date is selected in the calendar."""
-        if HAS_TKCALENDAR and hasattr(self, 'start_date_picker') and hasattr(self, 'end_date_picker'):
-            self.custom_date_start_var.set(self.start_date_picker.get())
-            self.custom_date_end_var.set(self.end_date_picker.get())
-            self.logger.debug(f"Selected dates - Start: {self.custom_date_start_var.get()}, End: {self.custom_date_end_var.get()}")
+        self._apply_status_filter("live")
 
     def _apply_custom_date_filter(self):
-        """Apply the custom date range filter selected from the calendar pickers."""
-        if not HAS_TKCALENDAR or not hasattr(self, 'start_date_picker'):
-            return
-        self.custom_date_start_var.set(self.start_date_picker.get())
-        self.custom_date_end_var.set(self.end_date_picker.get())
+        """Apply a custom date filter using the calendar date pickers."""
         try:
-            start_iso, end_iso = self._get_custom_range_datetimes()
-        except ValueError as e:
-            messagebox.showerror("Invalid Time", str(e))
-            return
-        
-        self.logger.info(f"Applying custom date-time filter: {start_iso} -> {end_iso}")
-        
-        # Clear any existing date filter first
-        self._reset_date_filter_buttons()
-        
-        self.current_date_filter = {
-            'type': 'custom',
-            'start_date': self.custom_date_start_var.get(),
-            'end_date': self.custom_date_end_var.get(),
-            'start_datetime': start_iso,
-            'end_datetime': end_iso
-        }
-        
-        # Set visual indicator for custom filter
-        self.active_date_filter = 'custom'
-        
-        try:
-            self._apply_all_filters()
+            start_date = self.start_date_picker.get_date()
+            end_date = self.end_date_picker.get_date()
+            
+            try:
+                start_hour = int(self.start_hour_var.get())
+                start_min = int(self.start_min_var.get())
+                end_hour = int(self.end_hour_var.get())
+                end_min = int(self.end_min_var.get())
+            except ValueError:
+                start_hour, start_min = 0, 0
+                end_hour, end_min = 23, 59
+            
+            start_datetime = datetime.combine(start_date, time(start_hour, start_min))
+            end_datetime = datetime.combine(end_date, time(end_hour, end_min))
+            
+            self._apply_custom_date_range_filter(start_datetime, end_datetime)
+            
         except Exception as e:
-            self.logger.error(f"Error applying custom date-time filter: {e}")
-            messagebox.showerror("Filter Error", f"Error applying date-time filter: {str(e)}")
+            self.logger.error(f"Error applying custom date filter: {e}")
+            messagebox.showerror("Date Filter Error", f"Error applying date filter: {str(e)}")
 
     def _apply_custom_date_filter_text(self):
-        """Apply the custom date range filter from text entries (fallback when tkcalendar is not available)."""
-        start_raw = self.custom_date_start_var.get().strip()
-        end_raw = self.custom_date_end_var.get().strip()
-        if not start_raw or not end_raw:
-            messagebox.showwarning("Date Range Required", "Please enter both start and end dates.")
-            return
-        
-        # Allow optional time in the text (YYYY-MM-DD HH:MM); if absent we use spinboxes/defaults
-        def split_dt(txt):
-            parts = txt.split()
-            if len(parts) == 2:
-                return parts[0], parts[1]
-            return parts[0], None
-            
-        start_date, start_time = split_dt(start_raw)
-        end_date, end_time = split_dt(end_raw)
-        
+        """Apply a custom date filter using text entry fields."""
         try:
-            datetime.strptime(start_date, "%Y-%m-%d")
-            datetime.strptime(end_date, "%Y-%m-%d")
-        except ValueError:
-            messagebox.showerror("Invalid Date Format", "Use YYYY-MM-DD or YYYY-MM-DD HH:MM.")
-            return
+            start_date_str = self.custom_date_start_var.get().strip()
+            end_date_str = self.custom_date_end_var.get().strip()
             
-        if start_time:
-            try:
-                datetime.strptime(start_time, "%H:%M")
-                sh, sm = start_time.split(":")
-                self.start_hour_var.set(sh)
-                self.start_min_var.set(sm)
-            except ValueError:
-                messagebox.showerror("Invalid Time", "Start time must be HH:MM.")
+            if not start_date_str or not end_date_str:
+                messagebox.showwarning("Missing Dates", "Please enter both start and end dates.")
                 return
-                
-        if end_time:
-            try:
-                datetime.strptime(end_time, "%H:%M")
-                eh, em = end_time.split(":")
-                self.end_hour_var.set(eh)
-                self.end_min_var.set(em)
-            except ValueError:
-                messagebox.showerror("Invalid Time", "End time must be HH:MM.")
-                return
-                
-        try:
-            start_iso, end_iso = self._get_custom_range_datetimes()
-        except ValueError as e:
-            messagebox.showerror("Invalid Time", str(e))
-            return
             
-        self.logger.info(f"Applying custom date-time filter (text): {start_iso} -> {end_iso}")
-        
-        # Clear any existing date filter first
-        self._reset_date_filter_buttons()
-        
-        self.current_date_filter = {
-            'type': 'custom',
-            'start_date': start_date,
-            'end_date': end_date,
-            'start_datetime': start_iso,
-            'end_datetime': end_iso
-        }
-        
-        # Set visual indicator for custom filter
-        self.active_date_filter = 'custom'
-        
-        try:
-            self._apply_all_filters()
+            try:
+                start_hour = int(self.start_hour_var.get())
+                start_min = int(self.start_min_var.get())
+                end_hour = int(self.end_hour_var.get())
+                end_min = int(self.end_min_var.get())
+            except ValueError:
+                start_hour, start_min = 0, 0
+                end_hour, end_min = 23, 59
+            
+            try:
+                start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+                end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+            except ValueError:
+                messagebox.showerror("Invalid Date Format", "Please use YYYY-MM-DD format for dates.")
+                return
+            
+            start_datetime = datetime.combine(start_date, time(start_hour, start_min))
+            end_datetime = datetime.combine(end_date, time(end_hour, end_min))
+            
+            self._apply_custom_date_range_filter(start_datetime, end_datetime)
+            
         except Exception as e:
-            self.logger.error(f"Error applying custom date-time filter: {e}")
-            messagebox.showerror("Filter Error", f"Error applying date-time filter: {str(e)}")
+            self.logger.error(f"Error applying custom date filter: {e}")
+            messagebox.showerror("Date Filter Error", f"Error applying date filter: {str(e)}")
 
-    def _reset_filters(self):
-        """Reset all search and date filters to default values."""
-        # Clear text filters
-        self.dept_filter_var.set("")
-        self.global_search_var.set("")
-        
-        # Reset date filters and visual feedback
-        self.current_date_filter = {}
-        self._reset_date_filter_buttons()
-        
-        # Reset date pickers to today
-        today = datetime.now().strftime("%Y-%m-%d")
-        if HAS_TKCALENDAR and hasattr(self, 'start_date_picker') and hasattr(self, 'end_date_picker'):
-            self.start_date_picker.set_date(today)
-            self.end_date_picker.set_date(today)
-        else:
-            if hasattr(self, 'custom_date_start_var') and hasattr(self, 'custom_date_end_var'):
-                self.custom_date_start_var.set("")
-                self.custom_date_end_var.set("")
-        
-        # Reset time spinboxes
-        if hasattr(self, 'start_hour_var'):
-            self.start_hour_var.set("00")
-            self.start_min_var.set("00")
-            self.end_hour_var.set("23")
-            self.end_min_var.set("59")
+    def _apply_department_filter_to_df(self, df, dept_filter):
+        """Apply department filter to a dataframe."""
+        if df is None or df.empty or not dept_filter:
+            return df
             
-        # Reset status filter to default (Live)
-        if hasattr(self, 'status_filter_var'):
-            self.status_filter_var.set("live")
+        # Parse comma-separated terms
+        terms = [t.strip() for t in dept_filter.split(',') if t.strip()]
+        if not terms:
+            return df
             
-        # Apply changes to refresh data
-        self._apply_all_filters()
+        # Find department columns - ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        dept_cols = [c for c in df.columns
+                     if any(kw in c.lower() for kw in ['department', 'dept', 'agency', 'organisation', 'ministry'])]
         
-        self.logger.info("All filters have been reset")
-
-    def _reset_date_filter_buttons(self):
-        """Clear active date filter selection."""
-        self.active_date_filter = None
-        self.logger.debug("Date filter selection cleared")
-
-    def load_initial_data_if_any(self):
-        """Called from MainApplication after UI is ready."""
-        # First try to restore folders
-        persisted_folders = self.main_app.global_config.get("last_used_folders", [])
-        if persisted_folders and isinstance(persisted_folders, list):
-            self.loaded_files = [f for f in persisted_folders if isinstance(f, str) and os.path.isdir(f)]
-            if self.loaded_files:
-                self._update_selected_folders_display()
-    
-        # Now try to restore specific file paths (higher priority)
-        persisted_files = self.main_app.global_config.get("last_loaded_files", [])
-        if persisted_files and isinstance(persisted_files, list):
-            valid_files = [f for f in persisted_files if isinstance(f, str) and os.path.isfile(f)]
-            if valid_files:
-                # Load the specific files
-                success, message = self.data_processor.load_data_from_files(valid_files)
-                if success:
-                    self._update_treeview()
-                    self.update_dashboard()
-                    self.logger.info(f"Restored previous session data from {len(valid_files)} files")
-                    return
+        if not dept_cols:
+            self.logger.warning("No department columns found for filtering")
+            return df
+            
+        operator = getattr(self, 'dept_operator_var', tk.StringVar(value="OR")).get()
         
-        # If no specific files were loaded but we have folders, load from them
-        if self.loaded_files:
-            self._load_data_from_folders()
-
-    def _on_closing(self):
-        """Clean up when tab is closed or application exits"""
-        self.clock_running = False
-        self._filter_thread_running = False
-
-    def _create_tender_data_widgets(self, parent: Union[ttk.Frame, ttk.LabelFrame]):
-        """Create toolbar, treeview and status bar."""
-        main_frame = ttk.Frame(parent)
-        main_frame.pack(fill='both', expand=True)
-
-        toolbar = ttk.Frame(main_frame)
-        toolbar.pack(side=tk.TOP, fill=tk.X, pady=(0, SPACING['small']))
-        create_action_button(toolbar, "Column Settings", self._show_column_config_dialog,
-                             button_type='info_outline', width=15).pack(side=tk.LEFT, padx=SPACING['small'])
-        export_frame = ttk.Frame(toolbar)
-        export_frame.pack(side=tk.RIGHT, padx=SPACING['small'])
-        create_action_button(export_frame, "Export Excel", self._export_to_excel,
-                             button_type='success_outline', width=12).pack(side=tk.LEFT, padx=2)
-        create_action_button(export_frame, "Export CSV", self._export_to_csv,
-                             button_type='success_outline', width=10).pack(side=tk.LEFT, padx=2)
-
-        self.status_var = tk.StringVar(value="Ready. No data loaded.")
-        ttk.Label(parent, textvariable=self.status_var, anchor=tk.W, padding=(5, 2)).pack(side='bottom', fill='x')
-
-        tree_frame = ttk.Frame(main_frame)
-        tree_frame.pack(side=tk.TOP, fill='both', expand=True)
-        self.tree = ttk.Treeview(tree_frame, show='headings', style='Custom.Treeview')
-        vsb = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
-        hsb = ttk.Scrollbar(tree_frame, orient="horizontal", command=self.tree.xview)
-        self.tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
-        vsb.pack(side='right', fill='y')
-        hsb.pack(side='bottom', fill='x')
-        self.tree.pack(side='left', fill='both', expand=True)
-
-        style = ttk.Style()
-        style.configure("Custom.Treeview", font=FONTS.get('body', ('TkDefaultFont', 10)))
-        style.map('Custom.Treeview', background=[('selected', '#3366CC')])
-        style.configure("Treeview", rowheight=25)
-        self.tree.tag_configure('oddrow', background='#F5F5F5')
-        self.tree.tag_configure('evenrow', background='#FFFFFF')
-
-        self.url_columns: List[str] = []
-        self.column_config = {
-            "Department": {"visible": True, "order": 0, "width": 250},
-            "Closing Date": {"visible": True, "order": 1, "width": 120},
-            "Title": {"visible": True, "order": 2, "width": 500},
-            "Tender ID": {"visible": True, "order": 3, "width": 200},
-            "Direct URL": {"visible": True, "order": 4, "width": 80},
-            "Status URL": {"visible": True, "order": 5, "width": 80},
-        }
-        self.default_column_order = 100
-
-    def _setup_treeview_bindings(self):
-        """Bind treeview events (call after tree exists)."""
-        if not hasattr(self, 'tree'):
-            return
-        self.tree.bind("<Double-1>", self._on_treeview_double_click)
-        self.tree.bind("<Button-3>", self._show_treeview_context_menu)
-
-    def _add_folder(self):
-        default_folder = self.main_app.global_config.get("default_data_folder", "") or os.path.expanduser("~")
-        folder = filedialog.askdirectory(title="Select Folder Containing Excel/CSV Files", initialdir=default_folder)
-        if folder and folder not in self.loaded_files:
-            self.loaded_files.append(folder)
-            self.main_app.global_config.set("last_used_folders", self.loaded_files)
-            self.main_app.global_config.save_config()
-            self._update_selected_folders_display()
-            self.logger.info(f"Added folder: {folder}")
-            self._load_data_from_folders()
-
-    def _clear_folders(self):
-        self.loaded_files = []
-        self.main_app.global_config.set("last_used_folders", [])
-        self.main_app.global_config.save_config()
-        self._update_selected_folders_display()
-        self.data_processor.raw_data = pd.DataFrame()
-        self.data_processor.filtered_data = pd.DataFrame()
-        self._update_treeview()
-        self.update_dashboard()
-        self.logger.info("Cleared selected folders and data.")
-
-    def _update_selected_folders_display(self):
-        if not self.loaded_files:
-            self.selected_folders_var.set("No folders selected. Click 'Add Folder'.")
-        else:
-            folder_list = []
-            for path in self.loaded_files:
-                folder_list.append(f"- {path}")
-            self.selected_folders_var.set("Selected:\n" + "\n".join(folder_list))
-
-    def _get_all_files_from_selected_folders(self) -> List[str]:
-        files = []
-        for folder in self.loaded_files:
+        # Build the filter mask
+        overall_mask = None
+        
+        for term in terms:
+            term_mask = None
+            # Search across all department columns for this term
+            for col in dept_cols:
+                try:
+                    col_mask = df[col].astype(str).str.contains(term, case=False, na=False, regex=False)
+                    term_mask = col_mask if term_mask is None else (term_mask | col_mask)
+                except Exception as e:
+                    self.logger.error(f"Error filtering department column {col}: {e}")
+                    continue
+            
+            if term_mask is not None:
+                if overall_mask is None:
+                    overall_mask = term_mask
+                elif operator == "AND":
+                    overall_mask = overall_mask & term_mask
+                else:  # OR
+                    overall_mask = overall_mask | term_mask
+        
+        if overall_mask is not None:
             try:
-                for f in os.listdir(folder):
-                    if f.lower().endswith(('.xlsx', '.xls', '.csv')):
-                        files.append(os.path.join(folder, f))
+                df = df[overall_mask]
+                self.logger.info(f"Department filter applied: {len(df)} records match '{dept_filter}' with {operator} logic")
             except Exception as e:
-                self.logger.error(f"Error scanning {folder}: {e}")
-        return files
+                self.logger.error(f"Error applying department filter: {e}")
+        
+        return df
 
-    def _load_data_from_folders(self):
-        file_list = self._get_all_files_from_selected_folders()
-        if not file_list:
-            messagebox.showwarning("No Files", "No Excel or CSV files found in the selected folder(s).")
-            return
-        ok, msg = self.data_processor.load_data_from_files(file_list)
-        if ok:
-            messagebox.showinfo("Load Success", msg)
-            self._update_treeview()
-        else:
-            messagebox.showerror("Load Error", msg)
-        self.update_dashboard()
-
-    def _on_live_search_key(self, event=None):
-        if self._filter_after_id:
-            self.after_cancel(self._filter_after_id)
-        self._filter_after_id = self.after(self.filter_delay_ms, self._schedule_async_filter)
-
-    def _schedule_async_filter(self):
-        self._filter_after_id = None
-        row_count = len(getattr(self.data_processor, 'raw_data', []))
-        if row_count < 50000:
-            self._apply_all_filters()
-            return
-        if getattr(self, '_filter_thread_running', False):
-            self._pending_refilter = True
-            return
-        self._pending_refilter = False
-        self._filter_thread_running = True
-        def worker():
+    def _apply_global_search_to_df(self, df, global_search):
+        """Apply global search filter to a dataframe."""
+        if df is None or df.empty or not global_search:
+            return df
+            
+        # Parse comma-separated terms
+        terms = [t.strip() for t in global_search.split(',') if t.strip()]
+        if not terms:
+            return df
+            
+        # Ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        operator = getattr(self, 'global_operator_var', tk.StringVar(value="AND")).get()
+        
+        # Build the filter mask
+        overall_mask = None
+        
+        for term in terms:
+            term_mask = None
+            # Search across ALL columns for this term
+            for col in df.columns:
+                try:
+                    col_mask = df[col].astype(str).str.contains(term, case=False, na=False, regex=False)
+                    term_mask = col_mask if term_mask is None else (term_mask | col_mask)
+                except Exception as e:
+                    self.logger.error(f"Error searching column {col}: {e}")
+                    continue
+            
+            if term_mask is not None:
+                if overall_mask is None:
+                    overall_mask = term_mask
+                elif operator == "AND":
+                    overall_mask = overall_mask & term_mask
+                else:  # OR
+                    overall_mask = overall_mask | term_mask
+        
+        if overall_mask is not None:
             try:
-                self._apply_all_filters()
-            finally:
-                self._filter_thread_running = False
-                if getattr(self, '_pending_refilter', False):
-                    self._pending_refilter = False
-                    self.after(10, self._schedule_async_filter)
-        threading.Thread(target=worker, daemon=True).start()
+                df = df[overall_mask]
+                self.logger.info(f"Global search applied: {len(df)} records match '{global_search}' with {operator} logic")
+            except Exception as e:
+                self.logger.error(f"Error applying global search filter: {e}")
+        
+        return df
 
-    def _apply_filters_on_event(self, event=None):
-        self._on_live_search_key()
+    def _apply_live_filter_to_df(self, df):
+        """Apply live tenders filter to a dataframe."""
+        if df is None or df.empty:
+            return df
+            
+        # Ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        # Find date columns for closing dates
+        date_cols = [col for col in df.columns 
+                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+        
+        if date_cols:
+            date_col = date_cols[0]
+            
+            # Convert to datetime if needed - try multiple formats to avoid parsing warnings
+            if not pd.api.types.is_datetime64_dtype(df[date_col]):
+                df = df.copy()  # Avoid modifying original
+                # Try parsing with common date formats first
+                date_formats = [
+                    '%Y-%m-%d %H:%M:%S',
+                    '%Y-%m-%d',
+                    '%d/%m/%Y %H:%M:%S',
+                    '%d/%m/%Y',
+                    '%m/%d/%Y %H:%M:%S',
+                    '%m/%d/%Y',
+                    '%d-%m-%Y %H:%M:%S',
+                    '%d-%m-%Y',
+                    '%Y/%m/%d %H:%M:%S',
+                    '%Y/%m/%d'
+                ]
 
-    def _apply_all_filters(self):
-        def compute():
-            filters: Dict[str, Any] = {'CaseInsensitive': True}
-            if self.dept_filter_var.get():
-                filters['Department'] = self.dept_filter_var.get()
-                filters['DepartmentOperator'] = self.dept_operator_var.get()
-            if self.global_search_var.get():
-                filters['GlobalSearch'] = self.global_search_var.get()
-                filters['GlobalSearchOperator'] = self.global_operator_var.get()
-            if self.current_date_filter:
-                filters['DateFilter'] = self.current_date_filter
-            self.data_processor.apply_filters(filters)
-            return filters
-        filters_used = compute()
-        def ui():
-            self._update_treeview()
-            self.update_dashboard()
-            self.logger.info(f"Applied filters: {filters_used}")
-        if threading.current_thread().name == "MainThread":
-            ui()
+                # Try each format in order
+                for fmt in date_formats:
+                    try:
+                        temp_dt = pd.to_datetime(df[date_col], format=fmt, errors='coerce')
+                        if temp_dt.notna().any():
+                            df[date_col] = temp_dt
+                            break
+                    except Exception:
+                        continue
+                else:
+                    # If no format worked, fall back to infer (but suppress the warning)
+                    import warnings
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+            
+            # Filter for dates/times in the future (live tenders)
+            current_datetime = pd.Timestamp.now()
+            mask = df[date_col] > current_datetime
+            df = df[mask]
+            
+            self.logger.info(f"Live tenders filter: {len(df)} records closing after {current_datetime}")
         else:
-            self.after(0, ui)
+            # Fallback: look for status column
+            status_cols = [col for col in df.columns if 'status' in col.lower()]
+            if status_cols:
+                status_col = status_cols[0]
+                mask = df[status_col].astype(str).str.lower().str.contains('active|live|open', na=False, regex=True)
+                df = df[mask]
+                self.logger.info(f"Live tenders filter (status-based): {len(df)} records")
+        
+        return df
 
-    def _update_treeview(self):
-        if not hasattr(self, 'tree'):
-            return
-        if not hasattr(self.data_processor, 'filtered_data') or self.data_processor.filtered_data is None:
-            self.data_processor.filtered_data = pd.DataFrame()
-        self.tree.delete(*self.tree.get_children())
-        df = self.data_processor.filtered_data
-        if df.empty:
-            if hasattr(self, 'status_var'):
-                self.status_var.set("No data to display.")
-            return
+    def _apply_expired_filter_to_df(self, df):
+        """Apply expired tenders filter to a dataframe."""
+        if df is None or df.empty:
+            return df
+            
+        # Ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        # Find date columns for closing dates
+        date_cols = [col for col in df.columns 
+                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+        
+        if date_cols:
+            date_col = date_cols[0]
+            
+            # Convert to datetime if needed - try multiple formats to avoid parsing warnings
+            if not pd.api.types.is_datetime64_dtype(df[date_col]):
+                df = df.copy()  # Avoid modifying original
+                # Try parsing with common date formats first
+                date_formats = [
+                    '%Y-%m-%d %H:%M:%S',
+                    '%Y-%m-%d',
+                    '%d/%m/%Y %H:%M:%S',
+                    '%d/%m/%Y',
+                    '%m/%d/%Y %H:%M:%S',
+                    '%m/%d/%Y',
+                    '%d-%m-%Y %H:%M:%S',
+                    '%d-%m-%Y',
+                    '%Y/%m/%d %H:%M:%S',
+                    '%Y/%m/%d'
+                ]
 
-        all_cols = df.columns.tolist()
-        for c in all_cols:
-            if c not in self.column_config:
-                self.column_config[c] = {"visible": True, "order": self.default_column_order, "width": 150}
-                self.default_column_order += 1
-        mapping = self._build_column_mapping(all_cols)
-        priority = ["Department", "Closing Date", "Title", "Tender ID", "Direct URL", "Status URL"]
-        visible = []
-        for std in priority:
-            actual = mapping.get(std, std)
-            if actual in all_cols and self.column_config.get(actual, {}).get("visible", True):
-                visible.append(actual)
-        for c in sorted([c for c in all_cols if c not in visible],
-                        key=lambda x: self.column_config.get(x, {}).get("order", 999)):
-            if self.column_config.get(c, {}).get("visible", True):
-                visible.append(c)
+                # Try each format in order
+                for fmt in date_formats:
+                    try:
+                        temp_dt = pd.to_datetime(df[date_col], format=fmt, errors='coerce')
+                        if temp_dt.notna().any():
+                            df[date_col] = temp_dt
+                            break
+                    except Exception:
+                        continue
+                else:
+                    # If no format worked, fall back to infer (but suppress the warning)
+                    import warnings
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+            
+            # Filter for dates/times in the past (expired tenders)
+            current_datetime = pd.Timestamp.now()
+            mask = df[date_col] < current_datetime
+            df = df[mask]
+            
+            self.logger.info(f"Expired tenders filter: {len(df)} records closed before {current_datetime}")
+        else:
+            # Fallback: look for status column
+            status_cols = [col for col in df.columns if 'status' in col.lower()]
+            if status_cols:
+                status_col = status_cols[0]
+                mask = ~df[status_col].astype(str).str.lower().str.contains('active|live|open', na=False, regex=True)
+                df = df[mask]
+                self.logger.info(f"Expired tenders filter (status-based): {len(df)} records")
+        
+        return df
 
-        self.tree.configure(columns=visible)
-        self.url_columns = []
-        for col in visible:
-            lower = col.lower()
-            if any(k in lower for k in ['url', 'link', 'http']):
-                self.url_columns.append(col)
-            width = self.column_config.get(col, {}).get("width", 150)
-            heading = col + (" ↑" if col == self.sort_column and self.sort_ascending else
-                             " ↓" if col == self.sort_column else "")
-            self.tree.heading(col, text=heading,
-                              command=lambda c=col: self._on_treeview_heading_click(c))
-            anchor = 'center' if (col in self.url_columns or any(k in lower for k in
-                                                                 ['date', 'time', 'deadline', 'closing'])) else 'w'
-            self.tree.column(col, width=width, minwidth=80, anchor=anchor)
+    def _apply_time_range_to_df(self, df, time_range, current_status):
+        """Apply time range filter to a dataframe."""
+        if df is None or df.empty or not time_range:
+            return df
+            
+        # Ensure df.columns exists and is iterable
+        if not hasattr(df, 'columns') or df.columns is None:
+            return df
+            
+        # Find date columns
+        date_cols = [col for col in df.columns 
+                    if any(kw in col.lower() for kw in ['closing', 'close', 'due', 'deadline', 'end'])]
+        
+        if not date_cols:
+            return df
+        
+        date_col = date_cols[0]
+        
+        # Convert to datetime if needed - try multiple formats to avoid parsing warnings
+        if not pd.api.types.is_datetime64_dtype(df[date_col]):
+            df = df.copy()
+            # Try parsing with common date formats first
+            date_formats = [
+                '%Y-%m-%d %H:%M:%S',
+                '%Y-%m-%d',
+                '%d/%m/%Y %H:%M:%S',
+                '%d/%m/%Y',
+                '%m/%d/%Y %H:%M:%S',
+                '%m/%d/%Y',
+                '%d-%m-%Y %H:%M:%S',
+                '%d-%m-%Y',
+                '%Y/%m/%d %H:%M:%S',
+                '%Y/%m/%d'
+            ]
 
-        for _, row in df.iterrows():
-            vals = []
-            for col in visible:
-                v = row.get(col)
-                if isinstance(v, (pd.Series, pd.DataFrame)) or v is None or pd.isna(v):
-                    vals.append("")
+            # Try each format in order
+            for fmt in date_formats:
+                try:
+                    temp_dt = pd.to_datetime(df[date_col], format=fmt, errors='coerce')
+                    if temp_dt.notna().any():
+                        df[date_col] = temp_dt
+                        break
+                except Exception:
                     continue
-                if pd.api.types.is_datetime64_any_dtype(df[col].dtype):
-                    dt = pd.to_datetime(v, errors='coerce')
-                    vals.append("" if pd.isna(dt) else dt.strftime("%Y-%m-%d %H:%M" if dt.hour or dt.minute else "%Y-%m-%d"))
-                    continue
-                if col in self.url_columns and isinstance(v, str) and (v.startswith('http') or v.startswith('www')):
-                    vals.append("🔗")
-                    continue
-                vals.append(str(v))
-            item_id = self.tree.insert("", "end", values=vals)
-            base_tag = 'evenrow' if len(self.tree.get_children()) % 2 == 0 else 'oddrow'
-            self.tree.item(item_id, tags=[base_tag])
+            else:
+                # If no format worked, fall back to infer (but suppress the warning)
+                import warnings
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+        
+        # Calculate date ranges using current datetime for precise filtering
+        current_datetime = pd.Timestamp.now()
+        today_start = current_datetime.normalize()  # Start of today (00:00:00)
+        today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)  # End of today (23:59:59)
+        
+        if time_range == "today":
+            if current_status == "expired":
+                mask = (df[date_col] >= today_start) & (df[date_col] < current_datetime)
+            elif current_status == "live":
+                mask = (df[date_col] >= current_datetime) & (df[date_col] <= today_end)
+            else:  # "all"
+                mask = (df[date_col] >= today_start) & (df[date_col] <= today_end)
+        elif time_range == "next_3_days":
+            end_3_days = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
+            if current_status == "expired":
+                start_3_days_ago = today_start - pd.Timedelta(days=3)
+                mask = (df[date_col] >= start_3_days_ago) & (df[date_col] < current_datetime)
+            elif current_status == "live":
+                mask = (df[date_col] >= current_datetime) & (df[date_col] <= end_3_days)
+            else:  # "all"
+                mask = (df[date_col] >= today_start) & (df[date_col] <= end_3_days)
+        elif time_range == "next_7_days":
+            end_7_days = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
+            if current_status == "expired":
+                start_7_days_ago = today_start - pd.Timedelta(days=7)
+                mask = (df[date_col] >= start_7_days_ago) & (df[date_col] < current_datetime)
+            elif current_status == "live":
+                mask = (df[date_col] >= current_datetime) & (df[date_col] <= end_7_days)
+            else:  # "all"
+                mask = (df[date_col] >= today_start) & (df[date_col] <= end_7_days)
+        elif time_range == "next_30_days":
+            end_30_days = today_start + pd.Timedelta(days=30, hours=23, minutes=59, seconds=59)
+            if current_status == "expired":
+                start_30_days_ago = today_start - pd.Timedelta(days=30)
+                mask = (df[date_col] >= start_30_days_ago) & (df[date_col] < current_datetime)
+            elif current_status == "live":
+                mask = (df[date_col] >= current_datetime) & (df[date_col] <= end_30_days)
+            else:  # "all"
+                mask = (df[date_col] >= today_start) & (df[date_col] <= end_30_days)
+        else:
+            return df
+        
+        # Apply the date range filter
+        df = df[mask]
+        self.logger.info(f"Time range filter ({time_range}) with status ({current_status}): {len(df)} records")
 
-        if hasattr(self, 'status_var'):
-            self.status_var.set(f"Showing {len(df)} tender records.")
-        self.logger.info(f"Treeview updated with {len(df)} rows.")
-
-    def _build_column_mapping(self, all_columns: List[str]) -> Dict[str, str]:
-        """Build a resilient mapping from standardized logical names to actual dataset columns."""
-        mapping: Dict[str, str] = {}
-        for col in all_columns:
-            cl = str(col).lower()
-            if ("department" in cl or "dept" in cl) and "Department" not in mapping:
-                mapping["Department"] = col
-            if any(k in cl for k in ("closing", "due date", "deadline", "expiry")) and "Closing Date" not in mapping:
-                mapping["Closing Date"] = col
-            if any(k in cl for k in ("title", "name", "description", "subject")) and "Title" not in mapping:
-                mapping["Title"] = col
-            if (("tender" in cl and "id" in cl) or "ref.no" in cl or "reference" in cl) and "Tender ID" not in mapping:
-                mapping["Tender ID"] = col
-            if ("url" in cl or "link" in cl) and "direct" in cl and "Direct URL" not in mapping:
-                mapping["Direct URL"] = col
-            if ("url" in cl or "link" in cl) and "status" in cl and "Status URL" not in mapping:
-                mapping["Status URL"] = col
-        return mapping
-
-    def _show_data_visualization(self):
-        """Basic department + monthly charts (matplotlib optional)."""
-        if (not hasattr(self.data_processor, 'filtered_data') or
-                self.data_processor.filtered_data is None):
-            self.data_processor.filtered_data = pd.DataFrame()
-        if self.data_processor.filtered_data.empty:
-            messagebox.showinfo("No Data", "No data to visualize.")
-            return
-        try:
-            import matplotlib.pyplot as plt
-            from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-        except ImportError:
-            messagebox.showerror("Missing Dependency", "Install matplotlib to view charts.")
-            return
-        df = self.data_processor.filtered_data
-        dept_col = next((c for c in df.columns if 'department' in c.lower() or 'dept' in c.lower()), None)
-        if not dept_col:
-            messagebox.showinfo("Missing Column", "No department column found.")
-            return
-        win = tk.Toplevel(self)
-        win.title("Charts")
-        nb = ttk.Notebook(win)
-        nb.pack(fill='both', expand=True)
-        tab1 = ttk.Frame(nb)
-        tab2 = ttk.Frame(nb)
-        nb.add(tab1, text="Departments")
-        nb.add(tab2, text="Monthly")
-        fig1, ax1 = plt.subplots(figsize=(9,5))
-        df[dept_col].value_counts().head(15).plot(kind='bar', ax=ax1, color=COLORS.get('primary', '#1976d2'))
-        ax1.set_title("Top 15 Departments")
-        ax1.set_ylabel("Count")
-        ax1.grid(axis='y', linestyle='--', alpha=0.4)
-        FigureCanvasTkAgg(fig1, master=tab1).get_tk_widget().pack(fill='both', expand=True)
-        self.logger.info("Visualization window opened")
+        return df
 
     def _update_saved_searches_list(self):
-        saved = self.main_app.global_config.get("saved_searches", {})
-        names = list(saved.keys())
-        if hasattr(self, 'saved_searches_combo'):
-            self.saved_searches_combo['values'] = names
-            if not names:
-                self.saved_searches_combo.set("No saved searches")
-            elif self.saved_search_var.get() not in names:
-                self.saved_searches_combo.set("")
-
-    def _save_current_search(self):
-        profile = {
-            "department_filter": self.dept_filter_var.get(),
-            "global_search": self.global_search_var.get(),
-            "date_filter": self.current_date_filter.copy() if self.current_date_filter else {}
-        }
-        name = tkinter.simpledialog.askstring("Save Search Profile", "Enter profile name:", parent=self)
-        if not name:
+        """Update the saved searches dropdown list."""
+        if not hasattr(self, 'saved_searches_combo'):
             return
-        saved = self.main_app.global_config.get("saved_searches", {})
-        if name in saved:
-            if not messagebox.askyesno("Overwrite", f"Profile '{name}' exists. Overwrite?", parent=self):
-                return
-        saved[name] = profile
-        self.main_app.global_config.set("saved_searches", saved)
-        self.main_app.global_config.save_config()
-        self._update_saved_searches_list()
-        self.saved_search_var.set(name)
-        self.logger.info(f"Saved search profile '{name}'")
+
+        saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+        self.saved_searches_combo['values'] = saved_searches_list
 
     def _load_saved_search(self, event=None):
-        name = self.saved_search_var.get()
-        saved = self.main_app.global_config.get("saved_searches", {})
-        if name not in saved:
+        """Load a saved search configuration."""
+        search_name = self.saved_search_var.get()
+        if not search_name:
             return
-        profile = saved[name]
-        self.dept_filter_var.set(profile.get("department_filter", ""))
-        self.global_search_var.set(profile.get("global_search", ""))
-        self.current_date_filter = profile.get("date_filter", {})
-        self._apply_all_filters()
-        self.logger.info(f"Loaded search profile '{name}'")
+
+        try:
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+
+            if search_name not in saved_searches_data:
+                messagebox.showinfo("Not Found", f"Search '{search_name}' not found.")
+                return
+
+            search_config = saved_searches_data[search_name]
+
+            # Only load text search terms - ignore complex filter data
+            if 'dept_filter' in search_config:
+                self.dept_filter_var.set(search_config['dept_filter'])
+            if 'global_search' in search_config:
+                self.global_search_var.set(search_config['global_search'])
+            if 'dept_operator' in search_config:
+                self.dept_operator_var.set(search_config['dept_operator'])
+            if 'global_operator' in search_config:
+                self.global_operator_var.set(search_config['global_operator'])
+
+            # Apply the search filters
+            self._apply_filters()
+
+            # Show auto-dismissing success message
+            AutoDismissMessageDialog(self, "Search Loaded", f"Search '{search_name}' loaded successfully.")
+            self.logger.info(f"Loaded search configuration: {search_name}")
+
+        except Exception as e:
+            self.logger.error(f"Error loading saved search: {e}")
+            messagebox.showerror("Load Error", f"Error loading search '{search_name}'.\nThis search may be corrupted and should be deleted.")
+
+    def _save_current_search_by_name(self):
+        """Save the current search configuration with a custom name."""
+        # Check if there are any search terms to save
+        dept_search = self.dept_filter_var.get().strip()
+        global_search = self.global_search_var.get().strip()
+
+        if not dept_search and not global_search:
+            messagebox.showinfo("Nothing to Save", "Please enter some search terms before saving.")
+            return
+
+        # Get the search name from the entry field
+        search_name = self.save_search_name_var.get().strip()
+
+        if not search_name:
+            messagebox.showinfo("No Name", "Please enter a name for the search.")
+            return
+
+        # Create simplified search configuration - only text terms
+        search_config = {
+            'dept_filter': dept_search,
+            'global_search': global_search,
+            'dept_operator': self.dept_operator_var.get(),
+            'global_operator': self.global_operator_var.get(),
+            'saved_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+        try:
+            # Get existing saved searches
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+
+            # Check if name already exists
+            if search_name in saved_searches_data:
+                if not messagebox.askyesno("Overwrite Search",
+                                         f"A search named '{search_name}' already exists. Overwrite it?"):
+                    return
+            # Add this search to the saved searches
+            saved_searches_data[search_name] = search_config
+
+            # Update the list of saved search names if needed
+            if isinstance(saved_searches_list, dict):
+                if search_name not in saved_searches_list:
+                    saved_searches_list[search_name] = search_config
+            elif isinstance(saved_searches_list, list):
+                if search_name not in saved_searches_list:
+                    saved_searches_list.append(search_name)
+
+            # Update the config
+            self.main_app.global_config.set("saved_searches_data", saved_searches_data)
+            self.main_app.global_config.set("saved_searches", saved_searches_list)
+
+            # Save the config
+            self.main_app.global_config.save_config()
+
+            # Update the UI
+            self._update_saved_searches_list()
+            self.saved_search_var.set(search_name)
+            self.save_search_name_var.set("")  # Clear the save field
+
+            messagebox.showinfo("Search Saved", f"Search '{search_name}' saved successfully.")
+            self.logger.info(f"Saved search configuration: {search_name}")
+
+        except Exception as e:
+            self.logger.error(f"Error saving search: {e}")
+            messagebox.showerror("Save Error", f"Failed to save search: {str(e)}")
+
+    def _save_current_search(self):
+        """Save the current search configuration - only text search terms."""
+        # Check if there are any search terms to save
+        dept_search = self.dept_filter_var.get().strip()
+        global_search = self.global_search_var.get().strip()
+
+        if not dept_search and not global_search:
+            messagebox.showinfo("Nothing to Save", "Please enter some search terms before saving.")
+            return
+
+        # Ask for a name for the search
+        search_name = tkinter.simpledialog.askstring(
+            "Save Search",
+            "Enter a name for this search:",
+            parent=self
+        )
+
+        if not search_name or not search_name.strip():
+            return  # User canceled or entered empty name
+
+        search_name = search_name.strip()
+
+        # Create simplified search configuration - only text terms
+        search_config = {
+            'dept_filter': dept_search,
+            'global_search': global_search,
+            'dept_operator': self.dept_operator_var.get(),
+            'global_operator': self.global_operator_var.get(),
+            'saved_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+        try:
+            # Get existing saved searches
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+
+            # Check if name already exists
+            if search_name in saved_searches_data:
+                if not messagebox.askyesno("Overwrite Search",
+                                         f"A search named '{search_name}' already exists. Overwrite it?"):
+                    return
+            # Add this search to the saved searches
+            saved_searches_data[search_name] = search_config
+
+            # Update the list of saved search names if needed
+            if isinstance(saved_searches_list, dict):
+                if search_name not in saved_searches_list:
+                    saved_searches_list[search_name] = search_config
+            elif isinstance(saved_searches_list, list):
+                if search_name not in saved_searches_list:
+                    saved_searches_list.append(search_name)
+
+            # Update the config
+            self.main_app.global_config.set("saved_searches_data", saved_searches_data)
+            self.main_app.global_config.set("saved_searches", saved_searches_list)
+
+            # Save the config
+            self.main_app.global_config.save_config()
+
+            # Update the UI
+            self._update_saved_searches_list()
+            self.saved_search_var.set(search_name)
+
+            messagebox.showinfo("Search Saved", f"Search '{search_name}' saved successfully.")
+            self.logger.info(f"Saved search configuration: {search_name}")
+
+        except Exception as e:
+            self.logger.error(f"Error saving search: {e}")
+            messagebox.showerror("Save Error", f"Failed to save search: {str(e)}")
 
     def _delete_saved_search(self):
-        name = self.saved_search_var.get()
-        if not name:
-            return
-        saved = self.main_app.global_config.get("saved_searches", {})
-        if name not in saved:
-            return
-        if not messagebox.askyesno("Confirm", f"Delete search profile '{name}'?", parent=self):
-            return
-        del saved[name]
-        self.main_app.global_config.set("saved_searches", saved)
-        self.main_app.global_config.save_config()
-        self._update_saved_searches_list()
-        self.saved_search_var.set("")
-        self.logger.info(f"Deleted search profile '{name}'")
+        """Delete a saved search configuration with better error handling."""
+        search_name = self.saved_search_var.get()
 
-    def _show_column_config_dialog(self):
-        """Lightweight column visibility/order dialog."""
-        if not hasattr(self, 'tree'):
+        if not search_name:
+            messagebox.showinfo("No Selection", "Please select a saved search to delete.")
             return
-        win = tk.Toplevel(self)
-        win.title("Column Settings")
-        win.grab_set()
-        frm = ttk.Frame(win, padding=10)
-        frm.pack(fill='both', expand=True)
-        cols = list(self.column_config.keys())
-        for c in self.tree['columns']:
-            if c not in cols:
-                cols.append(c)
-        cols = sorted(cols, key=lambda c: self.column_config.get(c, {}).get("order", 999))
-        self._col_vars = {}
-        for i, c in enumerate(cols):
-            cfg = self.column_config.setdefault(c, {"visible": True, "order": 100+i, "width": 150})
-            var = tk.BooleanVar(value=cfg.get("visible", True))
-            self._col_vars[c] = var
-            row = ttk.Frame(frm)
-            row.pack(fill='x', pady=2)
-            ttk.Checkbutton(row, text=c, variable=var).pack(side='left')
-        btn_bar = ttk.Frame(frm)
-        btn_bar.pack(fill='x', pady=(8,0))
-        ttk.Button(btn_bar, text="Apply",
-                   command=lambda: (self._apply_column_visibility_changes(), self._update_treeview(), win.destroy())
-                  ).pack(side='right', padx=4)
-        ttk.Button(btn_bar, text="Cancel", command=win.destroy).pack(side='right')
 
-    def _apply_column_visibility_changes(self):
-        for name, var in self._col_vars.items():
-            self.column_config[name]["visible"] = bool(var.get())
+        # Confirm deletion
+        if not messagebox.askyesno("Confirm Delete",
+                                 f"Are you sure you want to delete the saved search '{search_name}'?"):
+            return
 
-    def _on_treeview_double_click(self, event):
-        """Handle double-click on treeview."""
-        if not hasattr(self, 'tree'):
-            return
-        item_id = self.tree.identify_row(event.y)
-        col_id = self.tree.identify_column(event.x)
-        if not item_id or not col_id.startswith("#"):
-            return
         try:
-            col_index = int(col_id[1:]) - 1
-        except ValueError:
-            return
-        columns = self.tree['columns']
-        if col_index < 0 or col_index >= len(columns):
-            return
-        col_name = columns[col_index]
-        val = self.tree.item(item_id, 'values')[col_index]
-        if col_name in getattr(self, 'url_columns', []) and val == "🔗":
-            url = None
-            for tag in self.tree.item(item_id, 'tags'):
-                if tag.startswith(f"url_{col_index}_"):
-                    url = tag.split("_", 2)[2]
-                    break
-            if url:
-                if not (url.startswith("http://") or url.startswith("https://")):
-                    url = "http://" + url
-                try:
-                    webbrowser.open_new_tab(url)
-                    if hasattr(self, 'status_var'):
-                        self.status_var.set(f"Opened URL: {url}")
-                except Exception as e:
-                    messagebox.showerror("Open URL Failed", str(e))
+            # Get saved searches from config
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
 
-    def _show_treeview_context_menu(self, event):
-        """Show context menu for treeview."""
-        if not hasattr(self, 'tree'):
-            return
-        menu = tk.Menu(self, tearoff=0)
-        item_id = self.tree.identify_row(event.y)
-        if item_id:
-            if item_id not in self.tree.selection():
-                self.tree.selection_set(item_id)
-            menu.add_command(label="Copy Row", command=lambda i=item_id: self._copy_single_treeview_row(i))
-        if menu.index(tk.END) is not None:
-            menu.tk_popup(event.x_root, event.y_root)
+            # Remove the search
+            if search_name in saved_searches_data:
+                del saved_searches_data[search_name]
 
-    def _copy_single_treeview_row(self, item_id: str):
-        if not item_id:
-            return
-        vals = self.tree.item(item_id, 'values')
-        self.clipboard_clear()
-        self.clipboard_append("\t".join(map(str, vals)))
+            if search_name in saved_searches_list:
+                saved_searches_list.remove(search_name)
 
-    def _on_treeview_heading_click(self, column: str):
-        """Toggle sort on a column and refresh tree."""
+            # Update the config
+            self.main_app.global_config.set("saved_searches_data", saved_searches_data)
+            self.main_app.global_config.set("saved_searches", saved_searches_list)
+
+            # Save the config
+            self.main_app.global_config.save_config()
+
+            # Update the UI
+            self._update_saved_searches_list()
+            self.saved_search_var.set("")
+
+            messagebox.showinfo("Search Deleted", f"Search '{search_name}' deleted successfully.")
+            self.logger.info(f"Deleted search configuration: {search_name}")
+
+        except Exception as e:
+            self.logger.error(f"Error deleting saved search: {e}")
+            messagebox.showerror("Delete Error", f"Failed to delete search: {str(e)}")
+
+    def _export_saved_searches_json(self):
+        """Export all saved searches to a JSON file."""
         try:
-            if self.sort_column == column:
-                self.sort_ascending = not self.sort_ascending
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+
+            if not saved_searches_data:
+                messagebox.showinfo("No Searches", "No saved searches to export.")
+                return
+
+            # Ask for export file location
+            filename = filedialog.asksaveasfilename(
+                title="Export Saved Searches",
+                defaultextension=".json",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+
+            if not filename:
+                return
+
+            # Export to JSON
+            import json
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(saved_searches_data, f, indent=2, ensure_ascii=False)
+
+            messagebox.showinfo("Export Complete", f"Saved searches exported to:\n{filename}")
+            self.logger.info(f"Exported saved searches to: {filename}")
+
+        except Exception as e:
+            self.logger.error(f"Error exporting saved searches: {e}")
+            messagebox.showerror("Export Error", f"Failed to export searches: {str(e)}")
+
+    def _export_saved_searches_csv(self):
+        """Export all saved searches to a CSV file."""
+        try:
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+
+            if not saved_searches_data:
+                messagebox.showinfo("No Searches", "No saved searches to export.")
+                return
+
+            # Ask for export file location
+            filename = filedialog.asksaveasfilename(
+                title="Export Saved Searches",
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
+            )
+
+            if not filename:
+                return
+
+            # Convert to CSV format
+            import csv
+            with open(filename, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+
+                # Write header
+                writer.writerow(['Search Name', 'Department Filter', 'Global Search', 'Department Operator', 'Global Operator', 'Saved Date'])
+
+                # Write data rows
+                for search_name, search_config in saved_searches_data.items():
+                    writer.writerow([
+                        search_name,
+                        search_config.get('dept_filter', ''),
+                        search_config.get('global_search', ''),
+                        search_config.get('dept_operator', 'OR'),
+                        search_config.get('global_operator', 'AND'),
+                        search_config.get('saved_date', '')
+                    ])
+
+            messagebox.showinfo("Export Complete", f"Saved searches exported to:\n{filename}")
+            self.logger.info(f"Exported saved searches to: {filename}")
+
+        except Exception as e:
+            self.logger.error(f"Error exporting saved searches: {e}")
+            messagebox.showerror("Export Error", f"Failed to export searches: {str(e)}")
+
+    def _export_saved_searches(self):
+        """Export all saved searches to a JSON file."""
+        try:
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+
+            if not saved_searches_data:
+                messagebox.showinfo("No Searches", "No saved searches to export.")
+                return
+
+            # Ask for export file location
+            filename = filedialog.asksaveasfilename(
+                title="Export Saved Searches",
+                defaultextension=".json",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+
+            if not filename:
+                return
+
+            # Export to JSON
+            import json
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(saved_searches_data, f, indent=2, ensure_ascii=False)
+
+            messagebox.showinfo("Export Complete", f"Saved searches exported to:\n{filename}")
+            self.logger.info(f"Exported saved searches to: {filename}")
+
+        except Exception as e:
+            self.logger.error(f"Error exporting saved searches: {e}")
+            messagebox.showerror("Export Error", f"Failed to export searches: {str(e)}")
+
+    def _import_saved_searches(self):
+        """Import saved searches from a JSON file."""
+        try:
+            # Ask for import file
+            filename = filedialog.askopenfilename(
+                title="Import Saved Searches",
+                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            )
+
+            if not filename:
+                return
+
+            import json
+            with open(filename, 'r', encoding='utf-8') as f:
+                imported_searches = json.load(f)
+
+            if not isinstance(imported_searches, dict):
+                messagebox.showerror("Invalid File", "Invalid saved searches file format.")
+                return
+
+            # Get current saved searches
+            current_searches = self.main_app.global_config.get("saved_searches_data", {})
+            current_list = self.main_app.global_config.get("saved_searches", [])
+
+            # Count new searches
+            new_count = 0
+            overwritten_count = 0
+
+            for search_name, search_config in imported_searches.items():
+                if search_name in current_searches:
+                    overwritten_count += 1
+                else:
+                    new_count += 1
+
+                current_searches[search_name] = search_config
+                if isinstance(current_list, dict):
+                    if search_name not in current_list:
+                        current_list[search_name] = search_config
+                elif isinstance(current_list, list):
+                    if search_name not in current_list:
+                        current_list.append(search_name)
+
+            # Update config
+            self.main_app.global_config.set("saved_searches_data", current_searches)
+            self.main_app.global_config.set("saved_searches", current_list)
+            self.main_app.global_config.save_config()
+
+            # Update UI
+            self._update_saved_searches_list()
+
+            message = f"Import complete!\n\nNew searches: {new_count}\nOverwritten: {overwritten_count}"
+            messagebox.showinfo("Import Complete", message)
+            self.logger.info(f"Imported saved searches from: {filename}")
+
+        except Exception as e:
+            self.logger.error(f"Error importing saved searches: {e}")
+            messagebox.showerror("Import Error", f"Failed to import searches: {str(e)}")
+
+    def load_initial_data_if_any(self):
+        """Load initial data if any was previously loaded (called on app startup)."""
+        try:
+            # PRIORITIZE: Load from MERGED DATA FOLDER setting first
+            merged_data_folder = self.main_app.global_config.get("merged_data_folder", "")
+
+            if merged_data_folder and os.path.exists(merged_data_folder):
+                self.logger.info(f"Loading merged data from settings path: {merged_data_folder}")
+
+                # Show loading message
+                self.results_count_var.set("Loading merged data from settings...")
+                self.update_idletasks()
+
+                # Load all files from the merged data folder
+                self._load_data_from_auto_path(merged_data_folder)
+
+                # Show success message briefly
+                record_count = len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0
+                self.results_count_var.set(f"Loaded merged data: {os.path.basename(merged_data_folder)}")
+                self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
+
+                self.logger.info(f"Successfully loaded merged data from settings: {merged_data_folder}")
+                return
+
+            # SECONDARY: Check if auto-loading is enabled with specific path
+            auto_load_enabled = self.main_app.global_config.get("auto_load_enabled", False)
+            auto_load_path = self.main_app.global_config.get("auto_load_data_path", "")
+
+            if auto_load_enabled and auto_load_path and os.path.exists(auto_load_path):
+                self.logger.info(f"Auto-loading data from configured path: {auto_load_path}")
+
+                # Show loading message
+                self.results_count_var.set("Auto-loading data from configured path...")
+                self.update_idletasks()
+
+                # Load all files from the configured directory
+                self._load_data_from_auto_path(auto_load_path)
+
+                # Show success message briefly
+                record_count = len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0
+                self.results_count_var.set(f"Auto-loaded data: {os.path.basename(auto_load_path)}")
+                self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
+
+                self.logger.info(f"Successfully auto-loaded data from: {auto_load_path}")
+                return
+
+            # TERTIARY: Check if there's a last loaded file in the config
+            last_loaded_files = self.main_app.global_config.get("last_loaded_files", [])
+
+            if last_loaded_files and isinstance(last_loaded_files, list) and len(last_loaded_files) > 0:
+                last_file = last_loaded_files[0]  # Get the most recent one
+
+                # Check if the file exists
+                if os.path.exists(last_file):
+                    self.logger.info(f"Loading last used data source: {last_file}")
+
+                    # Show loading message
+                    self.results_count_var.set("Loading last used data source...")
+                    self.update_idletasks()
+
+                    # Load the file
+                    self._load_merged_file_from_path(last_file)
+
+                    # Show success message briefly
+                    record_count = len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0
+                    self.results_count_var.set(f"Loaded last used data: {os.path.basename(last_file)}")
+                    self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
+
+                    self.logger.info(f"Successfully loaded last used data source: {last_file}")
+                    return
+                else:
+                    self.logger.warning(f"Last used data source not found: {last_file}")
+                    # Remove the invalid entry from config
+                    if last_file in last_loaded_files:
+                        last_loaded_files.remove(last_file)
+                        self.main_app.global_config.set("last_loaded_files", last_loaded_files)
+                        self.main_app.global_config.save_config()
+
+            # FALLBACK: Try to load from default merged data folder
+            default_merged_path = "./data/merged_data/"
+            if os.path.exists(default_merged_path):
+                self.logger.info(f"Loading from default merged data path: {default_merged_path}")
+
+                self.results_count_var.set("Loading from default merged data folder...")
+                self.update_idletasks()
+
+                self._load_data_from_auto_path(default_merged_path)
+
+                record_count = len(self.data_processor.filtered_data) if hasattr(self.data_processor, 'filtered_data') and self.data_processor.filtered_data is not None else 0
+                self.results_count_var.set(f"Loaded default merged data")
+                self.after(2000, lambda: self.results_count_var.set(f"Showing all {record_count} records"))
+
+                self.logger.info(f"Successfully loaded from default merged data path: {default_merged_path}")
+                return
+
+            self.logger.info("No data sources found, starting with empty state")
+
+        except Exception as e:
+            self.logger.error(f"Error loading initial data: {e}")
+            # Don't show error dialog on startup, just log it
+
+    def _clean_corrupted_searches(self):
+        """Clean up corrupted saved searches."""
+        try:
+            saved_searches_data = self.main_app.global_config.get("saved_searches_data", {})
+            saved_searches_list = self.main_app.global_config.get("saved_searches", [])
+
+            cleaned_data = {}
+            cleaned_list = []
+            removed_count = 0
+
+            # Handle both list and dict formats for saved_searches
+            if isinstance(saved_searches_list, dict):
+                search_names_to_check = list(saved_searches_list.keys())
+            elif isinstance(saved_searches_list, list):
+                search_names_to_check = saved_searches_list[:]
             else:
-                self.sort_column = column
-                self.sort_ascending = True
-            self.logger.info(f"Sorting by {column} {'ASC' if self.sort_ascending else 'DESC'}")
-            self._update_treeview()
-        except Exception as e:
-            self.logger.error(f"Error sorting column {column}: {e}")
+                search_names_to_check = []
 
-    def _export_to_excel(self):
-        """Export currently filtered + visible columns to Excel."""
-        if self.data_processor.filtered_data.empty:
-            messagebox.showinfo("No Data", "There is no data to export.")
-            return
-        filename = filedialog.asksaveasfilename(
-            defaultextension=".xlsx",
-            filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
-            title="Export Data to Excel"
-        )
-        if not filename:
-            return
-        try:
-            cols = list(self.tree["columns"])
-            self.data_processor.filtered_data[cols].to_excel(filename, index=False, engine='openpyxl')
-            messagebox.showinfo("Export", "Exported to Excel successfully.")
-            self.logger.info(f"Excel export: {filename}")
-        except Exception as e:
-            self.logger.error(f"Excel export failed: {e}", exc_info=True)
-            messagebox.showerror("Export Error", str(e))
+            for search_name in search_names_to_check:
+                if search_name in saved_searches_data:
+                    search_config = saved_searches_data[search_name]
 
-    def _export_to_csv(self):
-        """Export currently filtered + visible columns to CSV."""
-        if self.data_processor.filtered_data.empty:
-            messagebox.showinfo("No Data", "There is no data to export.")
-            return
-        filename = filedialog.asksaveasfilename(
-            defaultextension=".csv",
-            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
-            title="Export Data to CSV"
-        )
-        if not filename:
-            return
-        try:
-            cols = list(self.tree["columns"])
-            self.data_processor.filtered_data[cols].to_csv(filename, index=False)
-            messagebox.showinfo("Export", "Exported to CSV successfully.")
-            self.logger.info(f"CSV export: {filename}")
+                    # Check if it's a valid, simple search config
+                    if (isinstance(search_config, dict) and
+                        ('dept_filter' in search_config or 'global_search' in search_config)):
+                        # Keep valid searches
+                        cleaned_data[search_name] = {
+                            'dept_filter': search_config.get('dept_filter', ''),
+                            'global_search': search_config.get('global_search', ''),
+                            'dept_operator': search_config.get('dept_operator', 'OR'),
+                            'global_operator': search_config.get('global_operator', 'AND'),
+                            'saved_date': search_config.get('saved_date', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                        }
+                        cleaned_list.append(search_name)
+                    else:
+                        # Remove corrupted searches
+                        removed_count += 1
+                        self.logger.warning(f"Removed corrupted search: {search_name}")
+                else:
+                    # Remove references to non-existent searches
+                    removed_count += 1
+                    self.logger.warning(f"Removed reference to missing search: {search_name}")
+
+            # Update config with cleaned data
+            self.main_app.global_config.set("saved_searches_data", cleaned_data)
+            self.main_app.global_config.set("saved_searches", cleaned_list)
+            self.main_app.global_config.save_config()
+
+            # Update UI
+            self._update_saved_searches_list()
+            self.saved_search_var.set("")
+
+            if removed_count > 0:
+                messagebox.showinfo("Cleanup Complete",
+                                  f"Removed {removed_count} corrupted saved search(es).")
+            else:
+                messagebox.showinfo("No Issues Found", "All saved searches are valid.")
+
+            self.logger.info(f"Cleaned saved searches, removed {removed_count} corrupted entries")
+
         except Exception as e:
-            self.logger.error(f"CSV export failed: {e}", exc_info=True)
-            messagebox.showerror("Export Error", str(e))
+            self.logger.error(f"Error cleaning saved searches: {e}")
+            messagebox.showerror("Cleanup Error", f"Failed to clean searches: {str(e)}")
+
+    def _perform_ocr_from_clipboard(self):
+        """Extract text from clipboard content (text or image) and fill the Global Search field."""
+        try:
+            extracted_text = None
+
+            # First check clipboard contents to determine what type of data is available
+            try:
+                # Try to get text content from clipboard first
+                clipboard_text = self.clipboard_get()
+                if clipboard_text and clipboard_text.strip():
+                    # Plain text found in clipboard
+                    extracted_text = clipboard_text.strip()
+                    self.logger.info(f"Extracted text from clipboard: {len(extracted_text)} characters")
+                else:
+                    # No plain text available, try OCR on images
+                    self.logger.info("No text found in clipboard, attempting OCR on image...")
+                    extracted_text = self._perform_ocr_on_image()
+                    if extracted_text:
+                        self.logger.info(f"OCR extracted text from image: {len(extracted_text)} characters")
+                    else:
+                        self.logger.info("No text found in clipboard image or OCR failed")
+
+            except tk.TclError as clipboard_error:
+                self.logger.warning(f"Clipboard text access failed: {clipboard_error}")
+                # Try OCR on images as fallback
+                extracted_text = self._perform_ocr_on_image()
+                if extracted_text:
+                    self.logger.info(f"OCR extracted text from image: {len(extracted_text)} characters")
+                else:
+                    messagebox.showinfo("Clipboard Inaccessible",
+                                       "Could not access clipboard content. Please try copying again.")
+                    return
+
+            # Set the extracted text in the Global Search field
+            if extracted_text and extracted_text.strip():
+                self.global_search_var.set(extracted_text)
+
+                # Show success message
+                AutoDismissMessageDialog(self, "OCR Complete",
+                                        f"Extracted {len(extracted_text)} characters from clipboard.")
+
+                # Automatically trigger the search
+                self._apply_filters()
+
+                self.logger.info(f"OCR successfully filled Global Search with {len(extracted_text)} characters")
+            elif not extracted_text:
+                # No text found at all
+                messagebox.showinfo("No Text Found",
+                                   "No readable text was found in the clipboard.")
+                self.logger.info("No text found in clipboard")
+
+        except Exception as e:
+            self.logger.error(f"OCR processing error: {e}")
+            messagebox.showerror("OCR Error",
+                                f"An error occurred during OCR processing:\n{str(e)}")
+
+    def _perform_ocr_on_image(self):
+        """Perform OCR on image content from clipboard."""
+        try:
+            # Check if required modules are available
+            if not HAS_PYTESSERACT:
+                messagebox.showinfo("OCR Not Available",
+                                   "OCR functionality is not available because pytesseract is not installed.\n\n"
+                                   "To enable OCR, install pytesseract using:\n"
+                                   "pip install pytesseract\n\n"
+                                   "You may also need to install the Tesseract OCR engine from:\n"
+                                   "https://github.com/UB-Mannheim/tesseract/wiki")
+                return None
+
+            if not HAS_PIL:
+                messagebox.showinfo("PIL Not Available",
+                                   "PIL (Pillow) is required for OCR on images.\n"
+                                   "Install it using: pip install pillow")
+                return None
+
+            # Import PIL and pytesseract modules only when needed and available
+            from PIL import Image, ImageGrab
+            import pytesseract
+
+            # Configure tesseract executable path for Windows specifically
+            self._configure_tesseract_path(pytesseract)
+
+            # Try to get image from clipboard
+            clipboard_content = ImageGrab.grabclipboard()
+
+            if clipboard_content is None:
+                self.logger.warning("ImageGrab.grabclipboard() returned None")
+                return None
+
+            # Handle different types of clipboard content
+            if isinstance(clipboard_content, Image.Image):
+                # Direct PIL image
+                clipboard_image = clipboard_content
+                self.logger.info("Found PIL image in clipboard")
+            elif isinstance(clipboard_content, list) and len(clipboard_content) > 0:
+                # Sometimes Windows returns a list with file paths
+                first_item = clipboard_content[0]
+                if isinstance(first_item, str) and os.path.isfile(first_item):
+                    # It's a file path, try to open it as an image
+                    try:
+                        clipboard_image = Image.open(first_item)
+                        self.logger.info("Loaded image from clipboard file path")
+                    except Exception as e:
+                        self.logger.error(f"Failed to load image from path {first_item}: {e}")
+                        return None
+                else:
+                    self.logger.warning(f"Unsupported clipboard list content: {clipboard_content}")
+                    return None
+            else:
+                self.logger.warning(f"Unsupported clipboard content type: {type(clipboard_content)}")
+                return None
+
+            # Perform OCR on the image
+            try:
+                # Optionally convert to RGB if needed
+                if clipboard_image.mode not in ('RGB', 'L'):
+                    clipboard_image = clipboard_image.convert('RGB')
+
+                # Perform OCR
+                extracted_text = pytesseract.image_to_string(
+                    clipboard_image,
+                    config='--psm 6'  # Uniform block of text
+                )
+
+                # Clean up the extracted text
+                if extracted_text and extracted_text.strip():
+                    # Remove extra whitespace and normalize line breaks
+                    cleaned_text = ' '.join(extracted_text.split())
+                    self.logger.info(f"OCR successful: extracted {len(cleaned_text)} characters")
+                    return cleaned_text.strip()
+
+                return None
+
+            except Exception as ocr_err:
+                self.logger.error(f"OCR processing failed: {ocr_err}")
+                # Provide specific help for common tesseract errors
+                if "tesseract is not installed" in str(ocr_err).lower() or "not in path" in str(ocr_err).lower():
+                    messagebox.showerror("Tesseract Not Found", self._get_tesseract_help_message())
+                else:
+                    messagebox.showerror("OCR Error", f"OCR processing failed:\n{str(ocr_err)}")
+                return None
+
+        except Exception as e:
+            self.logger.error(f"Error in OCR image processing: {e}")
+            return None
+
+    def _configure_tesseract_path(self, pytesseract_module):
+        """Configure the tesseract executable path for Windows systems."""
+        try:
+            import platform
+            import subprocess
+
+            # Check if we're on Windows
+            if platform.system() == 'Windows':
+                # First check if tesseract is already in PATH
+                try:
+                    result = subprocess.run(['tesseract', '--version'],
+                                          capture_output=True, text=True, check=True)
+                    self.logger.info("Tesseract found in PATH - no configuration needed")
+                    return
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    pass  # Not in PATH, try to find it
+
+                # Try common tesseract installation paths on Windows
+                possible_paths = [
+                    r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+                    r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+                    r"C:\Users\{}\AppData\Local\Tesseract-OCR\tesseract.exe".format(os.environ.get('USERNAME', '')),
+                    r"C:\tesseract\tesseract.exe",
+                    r"D:\tesseract\tesseract.exe",
+                ]
+
+                for path in possible_paths:
+                    if os.path.exists(path):
+                        try:
+                            pytesseract_module.pytesseract.tesseract_cmd = path
+                            self.logger.info(f"Configured tesseract path: {path}")
+                            return
+                        except Exception as e:
+                            self.logger.warning(f"Failed to configure tesseract path {path}: {e}")
+
+                # If still not found, try to use system's tesseract discovery
+                self.logger.warning("Standard tesseract installation paths not found. You may need to manually configure the path.")
+            else:
+                # For non-Windows systems, let pytesseract use its default discovery
+                pass
+        except Exception as e:
+            self.logger.error(f"Error configuring tesseract path: {e}")
+
+    def _get_tesseract_help_message(self):
+        """Generate a helpful message for tesseract installation issues."""
+        return (
+            "Tesseract OCR engine not found or not properly configured.\n\n"
+            "Here are several ways to fix this:\n\n"
+            "1. If you have tesseract installed in a custom location:\n"
+            "   - Install pytesseract: pip install pytesseract\n"
+            "   - Add tesseract.exe to your Windows PATH environment variable\n\n"
+            "2. Common installation locations to check:\n"
+            "   - C:\\Program Files\\Tesseract-OCR\\\n"
+            "   - C:\\Program Files (x86)\\Tesseract-OCR\\\n"
+            "   - C:\\Users\\<username>\\AppData\\Local\\Tesseract-OCR\\\n\n"
+            "3. Download and install tesseract from:\n"
+            "   https://github.com/UB-Mannheim/tesseract/wiki\n\n"
+            "After installation, restart the application for changes to take effect."
+        )

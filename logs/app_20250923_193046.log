@@ -1,0 +1,49 @@
+2025-09-23 19:30:46 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250923_193046.log
+2025-09-23 19:30:47 - root - INFO - Application starting...
+2025-09-23 19:30:47 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-23 19:30:47 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-23 19:30:47 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-23 19:30:47 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-23 19:30:47 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-23 19:30:48 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-23 19:30:48 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-23 19:30:48 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-23 19:30:48 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-23 19:30:48 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-23 19:30:48 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-23 19:30:48 - ui.main_window - INFO - Main application initialized
+2025-09-23 19:30:48 - root - INFO - Main window initialized
+2025-09-23 19:31:28 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:31:28 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-23 19:31:28 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 19:31:28.728698
+2025-09-23 19:31:28 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:32:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:32:25 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'Closing Date' (ascending)
+2025-09-23 19:32:29 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:32:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'e-Published Date' (ascending)
+2025-09-23 19:32:32 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:32:32 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'e-Published Date' (descending)
+2025-09-23 19:32:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:32:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'e-Published Date' (ascending)
+2025-09-23 19:32:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:32:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'e-Published Date' (descending)
+2025-09-23 19:32:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:32:35 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'e-Published Date' (ascending)
+2025-09-23 19:32:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: today
+2025-09-23 19:32:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 19:32:39.361227
+2025-09-23 19:32:39 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (today) with status (live): 0 records
+2025-09-23 19:32:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: next_3_days
+2025-09-23 19:32:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1174 records closing after 2025-09-23 19:32:42.249919
+2025-09-23 19:32:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (next_3_days) with status (live): 507 records
+2025-09-23 19:32:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:32:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:32:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'Closing Date' (ascending)
+2025-09-23 19:32:47 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:32:47 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'Closing Date' (descending)
+2025-09-23 19:32:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:32:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'Closing Date' (ascending)
+2025-09-23 19:32:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:32:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'Closing Date' (descending)
+2025-09-23 19:32:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-23 19:32:57 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Sorted by column 'Closing Date' (ascending)
+2025-09-23 19:33:33 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed

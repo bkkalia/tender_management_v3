@@ -4,27 +4,35 @@
 ; 2. Install Inno Setup Compiler (from jrsoftware.org).
 ; 3. Open this file in Inno Setup and click "Compile".
 
+#define MyAppName "Tender Management Utility"
+#define MyAppVersion "3.0"
+#define MyAppPublisher "Your Name or Company"
+#define MyAppURL "https://github.com/yourusername/tender-management"
+#define MyAppExeName "TenderManagementUtility.exe"
+
 [Setup]
-AppName=Tender Management Utility
-AppVersion=3.0
-AppPublisher=Your Name or Company
-AppPublisherURL=https://github.com/yourusername/tender-management
-AppSupportURL=https://github.com/yourusername/tender-management
-AppUpdatesURL=https://github.com/yourusername/tender-management/releases
-DefaultDirName={autopf}\Tender Management Utility
-DefaultGroupName=Tender Management Utility
+AppId={{12345678-1234-1234-1234-123456789012}
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
+AppPublisher={#MyAppPublisher}
+AppPublisherURL={#MyAppURL}
+AppSupportURL={#MyAppURL}
+AppUpdatesURL={#MyAppURL}/releases
+DefaultDirName={autopf}\{#MyAppName}
+DefaultGroupName={#MyAppName}
 OutputDir=.\dist
-OutputBaseFilename=TenderManagementUtility_Setup_v3.0
+OutputBaseFilename=TenderManagementUtility_Setup_v{#MyAppVersion}
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=lowest
-UninstallDisplayIcon={app}\TenderManagementUtility.exe
+UninstallDisplayIcon={app}\{#MyAppExeName}
 ; Set the installer icon
 SetupIconFile=resources\app_icon.ico
-; Set the wizard images (optional - you can create these later)
-WizardImageFile=resources\installer_banner.bmp
-WizardSmallImageFile=resources\installer_small.bmp
+; License and info
+LicenseFile=resources\license.txt
+InfoBeforeFile=resources\readme.txt
+InfoAfterFile=resources\readme.txt
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -50,3 +58,59 @@ Filename: "{app}\TenderManagementUtility.exe"; Description: "{cm:LaunchProgram,T
 Type: filesandordirs; Name: "{app}\config\*.json.backup"
 Type: filesandordirs; Name: "{app}\logs"
 Type: filesandordirs; Name: "{app}\data\temp"
+
+[Code]
+function InitializeSetup(): Boolean;
+var
+  InstalledVersion: string;
+  UninstallString: string;
+  ResultCode: Integer;
+begin
+  if RegQueryStringValue(HKLM, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{12345678-1234-1234-1234-123456789012}_is1', 'DisplayVersion', InstalledVersion) then
+  begin
+    if CompareStr(InstalledVersion, '{#MyAppVersion}') = 0 then
+    begin
+      case MsgBox('The same version ({#MyAppVersion}) is already installed. What would you like to do?', mbConfirmation, MB_ABORTRETRYIGNORE + MB_DEFBUTTON2) of
+        IDABORT: Result := False;
+        IDRETRY: begin
+          // Repair: proceed with installation
+          Result := True;
+        end;
+        IDIGNORE: begin
+          // Uninstall and install
+          if RegQueryStringValue(HKLM, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{12345678-1234-1234-1234-123456789012}_is1', 'UninstallString', UninstallString) then
+          begin
+            Exec(RemoveQuotes(UninstallString), '/SILENT', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+          end;
+          Result := True;
+        end;
+      end;
+    end
+    else if CompareStr(InstalledVersion, '{#MyAppVersion}') < 0 then
+    begin
+      // Older version installed, uninstall it
+      if MsgBox('An older version (' + InstalledVersion + ') is installed. It will be uninstalled before installing the new version.', mbInformation, MB_OKCANCEL) = IDOK then
+      begin
+        if RegQueryStringValue(HKLM, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{12345678-1234-1234-1234-123456789012}_is1', 'UninstallString', UninstallString) then
+        begin
+          Exec(RemoveQuotes(UninstallString), '/SILENT', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+        end;
+        Result := True;
+      end
+      else
+      begin
+        Result := False;
+      end;
+    end
+    else
+    begin
+      // Newer version installed
+      MsgBox('A newer version (' + InstalledVersion + ') is already installed. Installation aborted.', mbInformation, MB_OK);
+      Result := False;
+    end;
+  end
+  else
+  begin
+    Result := True;
+  end;
+end;

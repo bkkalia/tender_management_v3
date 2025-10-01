@@ -6,6 +6,7 @@ import os
 import re
 import zipfile
 from datetime import datetime
+import csv
 
 if TYPE_CHECKING:
     from core.config_manager import GlobalConfig # Corrected import for GlobalConfig
@@ -28,52 +29,69 @@ class PortalDataMerger:
         self.max_backups_per_portal: int = self.config.get("merger_max_backups", 5)
         self.backup_subfolder_name: str = "portal_backups" # Subfolder within the output_folder for backups
 
-    def _extract_portal_name(self, filename: str) -> str:
+    def _load_portal_base_urls(self, base_urls_csv_path=None):
         """
-        Extracts the portal name from a filename.
-        Assumes pattern like 'portalname_tenders_timestamp.ext' or 'portalname_anything.ext'.
-        It will take the part before the first '_tenders_' or if not found, before the last underscore
-        if it seems to be part of a date/timestamp, otherwise before the first underscore.
+        Load portal base URLs and names from base_urls.csv for accurate portal identification.
+        Returns a dict mapping lowercased keywords to canonical portal names.
         """
-        basename = os.path.basename(filename)
-        
-        # Try to find '_tenders_' pattern
-        match_tenders = re.match(r"^(.*?)_tenders_.*$", basename, re.IGNORECASE)
-        if match_tenders:
-            return match_tenders.group(1)
+        if base_urls_csv_path is None:
+            base_urls_csv_path = os.path.join(os.path.dirname(__file__), "..", "base_urls.csv")
+        portal_map = {}
+        try:
+            with open(base_urls_csv_path, newline='', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    keyword = row.get("Keyword", "").strip().lower()
+                    name = row.get("Name", "").strip()
+                    if keyword and name:
+                        portal_map[keyword] = name
+        except Exception as e:
+            logger.warning(f"Could not load portal base URLs: {e}")
+        return portal_map
 
-        # Fallback: if no '_tenders_', try to split by underscores
-        parts = basename.split('_')
-        if len(parts) > 1:
-            # Heuristic: if the second to last part looks like a date (e.g., YYYYMMDD),
-            # then assume parts before that form the portal name.
-            # This is a simple heuristic and might need refinement.
-            # For "hptenders_gov_in_tenders_20250605_101301", parts are ['hptenders', 'gov', 'in', 'tenders', '20250605', '101301']
-            # For "etenders_assam_2023_12_12", parts are ['etenders', 'assam', '2023', '12', '12']
-            
-            # Try to find a part that looks like a date (e.g., YYYYMMDD or a year)
-            # and take everything before it.
-            for i, part in enumerate(parts):
-                if (len(part) == 8 and part.isdigit()) or \
-                   (len(part) == 4 and part.isdigit() and 2000 < int(part) < 2100): # Looks like YYYYMMDD or YYYY
-                    if i > 0:
-                        return "_".join(parts[:i])
-            # If no clear date-like part, return the first part
-            return parts[0]
-        
-        # If no underscores, return the filename without extension
-        return os.path.splitext(basename)[0]
+    def _extract_portal_name(self, file_path):
+        """
+        Improved portal name extraction using base_urls.csv keywords.
+        Ensures all files from the same portal (regardless of suffix) are merged together.
+        """
+        filename = os.path.basename(file_path).lower()
+        portal_map = getattr(self, "_portal_map", None)
+        if portal_map is None:
+            portal_map = self._load_portal_base_urls()
+            self._portal_map = portal_map
+
+        # Try to match any keyword from base_urls.csv in the filename
+        for keyword, canonical_name in portal_map.items():
+            # Match if keyword is present anywhere in filename (case-insensitive)
+            if keyword.lower() in filename:
+                return canonical_name
+        # Fallback: use first part of filename before first underscore
+        return filename.split("_")[0]
 
 
+    
     def _determine_unique_key(self, df1: pd.DataFrame, df2: Optional[pd.DataFrame]) -> Optional[str]:
-        """Determines the best unique key present in both dataframes."""
+        """
+        Determine unique key from preferred list, case-insensitive and space-insensitive.
+        """
+        def normalize(col: str) -> str:
+            return re.sub(r'[^a-z0-9]', '', col.lower())
+
+        df1_cols = {normalize(c): c for c in df1.columns}
+        df2_cols = {normalize(c): c for c in (df2.columns if df2 is not None else [])}
+
         for key in self.preferred_unique_keys:
-            if key in df1.columns:
-                if df2 is None or df2.empty or key in df2.columns:
-                    logger.info(f"Using unique key: '{key}' for merging.")
-                    return key
-        logger.warning(f"No suitable unique key found from preferred list: {self.preferred_unique_keys} in one or both dataframes.")
+            norm_key = normalize(key)
+            if norm_key in df1_cols:
+                if df2 is None or df2.empty or norm_key in df2_cols:
+                    actual = df1_cols[norm_key]
+                    logger.info(f"Using unique key: '{actual}' for merging (matched from '{key}').")
+                    return actual
+
+        logger.warning(f"No suitable unique key found. Preferred list: {self.preferred_unique_keys}")
         return None
+
+
 
     def _backup_existing_file(self, existing_file_path: str, portal_name: str, base_output_folder: str) -> None:
         """Creates a timestamped ZIP backup of the existing file, managing backup versions."""
@@ -152,7 +170,7 @@ class PortalDataMerger:
         
         # Create backup of existing master file if it exists
         if os.path.exists(output_path):
-            self._backup_existing_file(output_path, portal_name, output_folder)
+            self._backup_existing_file(output_path, portal_name if portal_name is not None else "unknown_portal", output_folder)
             existing_df = self.load_excel_or_csv(output_path)
         else:
             existing_df = pd.DataFrame()
@@ -173,171 +191,58 @@ class PortalDataMerger:
         updated_records_count = 0
         unchanged_records_count = 0
         
-        # Determine the unique key early
-        primary_key_candidates = self.preferred_unique_keys
-        unique_key = None
-        
-        # Check if key exists in existing_df first
-        for key in primary_key_candidates:
-            if existing_df is not None and not existing_df.empty and key in existing_df.columns:
-                unique_key = key
-                logger.info(f"Using '{unique_key}' as primary key for merging.")
-                break
-                
-        if unique_key is None and all_dfs:
-            # Try to find it in the first loaded dataframe
-            for key in primary_key_candidates:
-                if key in all_dfs[0].columns:
-                    unique_key = key
-                    logger.info(f"Using '{unique_key}' as primary key from first dataframe.")
-                    break
-        
         # Track record status across processing
         existing_ids = set()
-        if not existing_df.empty and unique_key and unique_key in existing_df.columns:
-            existing_ids = set(existing_df[unique_key].astype(str).unique())
-        
-        # Initialize combined_df early to prevent unbound variable issues
-        combined_df = pd.DataFrame()
         
         # Read all new data files and track counts
-        all_ids_in_files = set()  # Track unique IDs across all input files
-        file_records = {}  # Track record counts per file
+        total_input_records = len(existing_df) if not existing_df.empty else 0
         
-        # Initialize variables that might be referenced later to prevent unbound errors
-        new_df = pd.DataFrame()  # Initialize new_df to avoid unbound variable
-        file_basename = ""       # Initialize file_basename to avoid unbound variable
-    
         for file_path in files_list:
             new_df = self.load_excel_or_csv(file_path)
             if not new_df.empty:
-                file_basename = os.path.basename(file_path)
                 total_input_records += len(new_df)
                 all_dfs.append(new_df)
-                
-                # Track record details
-                file_records[file_basename] = len(new_df)
-                logger.info(f"Loaded {len(new_df)} records from {file_basename}")
-                
-                # Track unique IDs in this file
-                if unique_key in new_df.columns:
-                    file_ids = set(new_df[unique_key].astype(str).unique())
-                    new_in_file = len(file_ids - all_ids_in_files)
-                    all_ids_in_files.update(file_ids)
-                    
-                    # Count records that will be added or updated
-                    if not existing_df.empty:
-                        new_records_in_file = len(file_ids - existing_ids)
-                        updated_records_in_file = len(file_ids.intersection(existing_ids))
-        # Reconfirm or update the unique key with the combined data
-        if unique_key is None or unique_key not in combined_df.columns:
-            logger.info("Determining unique key from combined data...")
-            for key in self.preferred_unique_keys:
-                if key in combined_df.columns:
-                    unique_key = key
-                    logger.info(f"Using '{unique_key}' as primary key for merging.")
-                    break
-                logger.info(f"Loaded {len(new_df)} records from {file_basename}")
+                logger.info(f"Loaded {len(new_df)} records from {os.path.basename(file_path)}")
         
         if not all_dfs:
             return False, f"No data could be loaded from any of the {len(files_list)} files.", ""
         
         # Combine all dataframes
         combined_df = pd.concat(all_dfs, ignore_index=True)
-        
-        # Determine the unique key
-        primary_key_candidates = self.preferred_unique_keys
+
+        logger.info(f"Columns in combined data: {list(combined_df.columns)}")
+        logger.info(f"Preferred unique keys: {self.preferred_unique_keys}")
+
+        # Determine unique key from preferred list
         unique_key = None
-        
-        for key in primary_key_candidates:
+        for key in self.preferred_unique_keys:
             if key in combined_df.columns:
                 unique_key = key
-                logger.info(f"Using '{unique_key}' as primary key for merging.")
+                logger.info(f"Selected unique key: {unique_key}")
                 break
+        if not unique_key:
+            logger.warning("No suitable unique key found in merged data.")
+            return False, "No suitable unique key found in merged data.", ""
         
-        if unique_key is None:
-            logger.warning(f"No suitable primary key found from preferred list: {primary_key_candidates}")
-            logger.warning("Attempting to find a column with 'ID' in the name...")
-            
-            # Try to find any column with 'ID' in the name
-            id_cols = [col for col in combined_df.columns if 'ID' in col or 'Id' in col or 'id' in col]
-            if id_cols:
-                unique_key = id_cols[0]
-                logger.info(f"Found alternate ID column: '{unique_key}'")
-            else:
-                logger.warning("No ID column found. Will use 'Title and Ref.No./Tender ID' or similar for matching.")
-                title_cols = [col for col in combined_df.columns if 'Title' in col or 'title' in col]
-                if title_cols:
-                    unique_key = title_cols[0]
-                    logger.info(f"Using title column '{unique_key}' as fallback for matching.")
-                else:
-                    return False, "No suitable unique key or title column found in the data for matching records.", ""
-        
-        # Convert date columns to datetime objects
-        closing_date_col_actual = next((col for col in combined_df.columns 
-                                        if 'closing date' in col.lower() or 'due date' in col.lower()), None)
-        epub_date_col_actual = next((col for col in combined_df.columns 
-                                    if 'e-published date' in col.lower() or 'published date' in col.lower()), None)
-                                    
-        if closing_date_col_actual:
-            combined_df[closing_date_col_actual] = pd.to_datetime(combined_df[closing_date_col_actual], errors='coerce')
-        if epub_date_col_actual:
-            combined_df[epub_date_col_actual] = pd.to_datetime(combined_df[epub_date_col_actual], errors='coerce')
-            
-        # Ensure unique key column is string type and handle NaN values
-        if unique_key in combined_df.columns:
-            # Count missing values before conversion
-            nan_count = combined_df[unique_key].isna().sum()
-            if nan_count > 0:
-                logger.warning(f"{nan_count} records have NULL/NaN values in the unique key column '{unique_key}'")
-                
-                # For records with missing unique key, try to use a combination of other fields
-                # if title column exists
-                title_col = next((col for col in combined_df.columns if 'title' in col.lower()), None)
-                if title_col:
-                    logger.info(f"Attempting to use '{title_col}' as fallback for records with missing '{unique_key}'")
-                    
-                    # For rows with missing unique key, create a surrogate key from title (if not null)
-                    mask = combined_df[unique_key].isna() & ~combined_df[title_col].isna()
-                    if mask.any():
-                        # Create a surrogate key with prefix to avoid collisions with real IDs
-                        combined_df.loc[mask, unique_key] = "TITLE_ID:" + combined_df.loc[mask, title_col].astype(str)
-                        logger.info(f"Created {mask.sum()} surrogate keys from titles")
-                
-                # After fallback, check how many still have missing keys
-                still_null = combined_df[unique_key].isna().sum()
-                if still_null > 0:
-                    logger.warning(f"{still_null} records still have NULL values in '{unique_key}' after fallback")
-                    
-                    # Option 1: Drop rows with missing keys
-                    # combined_df = combined_df.dropna(subset=[unique_key])
-                    
-                    # Option 2: Create dummy unique keys (preferred to keep all data)
-                    combined_df[unique_key] = combined_df[unique_key].fillna(f"UNKNOWN_ID_{portal_name}")
-                    logger.info(f"Assigned generic ID to {still_null} records with missing keys")
-            
-            # Convert to string for consistent handling
-            combined_df[unique_key] = combined_df[unique_key].astype(str)
-            
-        # Sort the data by unique key, then by dates (newest last)
-        sort_columns = [unique_key]
-        sort_ascending = [True]  # Ascending for unique key
-        
-        if closing_date_col_actual:
-            sort_columns.append(closing_date_col_actual)
-            sort_ascending.append(False)  # Latest closing date first
-        
-        if epub_date_col_actual:
-            sort_columns.append(epub_date_col_actual)
-            sort_ascending.append(False)  # Latest published date first
-            
-        # Sort data so that when dropping duplicates, we keep the record with the latest dates
-        combined_df.sort_values(by=sort_columns, ascending=sort_ascending, na_position='last', inplace=True)
-            
-        # After sorting, drop duplicates keeping the records with the latest information
+        # Track existing_ids after determining unique_key
+        if not existing_df.empty and unique_key in existing_df.columns:
+            existing_ids = set(existing_df[unique_key].astype(str).unique())
+        else:
+            existing_ids = set()
+
+        # Convert closing date to datetime if available
+        closing_date_col = next((col for col in combined_df.columns if 'closing date' in col.lower()), None)
+        if closing_date_col:
+            combined_df[closing_date_col] = pd.to_datetime(combined_df[closing_date_col], errors='coerce')
+            # Sort by Tender ID ascending, Closing Date descending
+            combined_df.sort_values([unique_key, closing_date_col], ascending=[True, False], inplace=True)
+        else:
+            combined_df.sort_values([unique_key], ascending=True, inplace=True)
+
+        # Drop duplicates, keep latest closing date
         merged_df = combined_df.drop_duplicates(subset=[unique_key], keep='first')
         total_unique_records = len(merged_df)
-        
+
         # Enhanced statistics for the merge process
         dupes_removed = len(combined_df) - len(merged_df)
         
@@ -359,8 +264,8 @@ class PortalDataMerger:
             # This is an approximation without full record comparison
             updated_records_count = len(common_ids)
             
-            # Unchanged is just an estimate
-            unchanged_records_count = total_unique_records - new_records_count
+            # Unchanged is just an estimate (assuming all common are updated)
+            unchanged_records_count = 0
         
         logger.info(
             f"Merge for portal '{portal_name}': {total_input_records} total input records -> "

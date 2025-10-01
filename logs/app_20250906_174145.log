@@ -1,0 +1,84 @@
+2025-09-06 17:41:45 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250906_174145.log
+2025-09-06 17:41:45 - root - INFO - Application starting...
+2025-09-06 17:41:45 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-06 17:41:45 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-06 17:41:45 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-06 17:41:45 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-06 17:41:46 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-06 17:41:47 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-06 17:41:47 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-06 17:41:47 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-06 17:41:47 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-06 17:41:47 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-06 17:41:47 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-06 17:41:47 - ui.main_window - INFO - Main application initialized
+2025-09-06 17:41:47 - root - INFO - Main window initialized
+2025-09-06 17:42:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-06 17:42:00 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:42:00.631644
+2025-09-06 17:42:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:42:42.289052
+2025-09-06 17:42:42 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 50 records match 'u' with AND logic
+2025-09-06 17:42:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:42:43.000125
+2025-09-06 17:42:43 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 12 records match 'una' with AND logic
+2025-09-06 17:42:53 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:42:53.964459
+2025-09-06 17:42:53 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'una, mand' with AND logic
+2025-09-06 17:42:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:42:54.485204
+2025-09-06 17:42:54 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 0 records match 'una, mandi' with AND logic
+2025-09-06 17:42:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:42:59.038926
+2025-09-06 17:42:59 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 15 records match 'una, mandi' with OR logic
+2025-09-06 17:43:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:43:12.032414
+2025-09-06 17:43:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 3 records match 'mandi' with OR logic
+2025-09-06 17:43:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:43:20.463138
+2025-09-06 17:43:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 50 records match 's' with OR logic
+2025-09-06 17:43:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:43:20.993084
+2025-09-06 17:43:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 9 records match 'shi' with OR logic
+2025-09-06 17:43:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:43:21.328431
+2025-09-06 17:43:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 9 records match 'shi' with OR logic
+2025-09-06 17:43:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:43:21.729620
+2025-09-06 17:43:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 8 records match 'shiml' with OR logic
+2025-09-06 17:43:22 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:43:22.026751
+2025-09-06 17:43:22 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 8 records match 'shimla' with OR logic
+2025-09-06 17:43:22 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:43:22.470642
+2025-09-06 17:43:22 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 8 records match 'shimla' with OR logic
+2025-09-06 17:43:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-06 17:43:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:43:50.974993
+2025-09-06 17:44:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:04.932478
+2025-09-06 17:44:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 41 records match 'h' with OR logic
+2025-09-06 17:44:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:05.415230
+2025-09-06 17:44:05 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 28 records match 'hp' with OR logic
+2025-09-06 17:44:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:06.273290
+2025-09-06 17:44:06 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 5 records match 'hpse' with OR logic
+2025-09-06 17:44:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:07.022266
+2025-09-06 17:44:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 4 records match 'hpseb' with OR logic
+2025-09-06 17:44:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:07.479333
+2025-09-06 17:44:07 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 4 records match 'hpsebl' with OR logic
+2025-09-06 17:44:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:12.031368
+2025-09-06 17:44:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 4 records match 'hpsebl,' with OR logic
+2025-09-06 17:44:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:12.422209
+2025-09-06 17:44:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 4 records match 'hpsebl,' with OR logic
+2025-09-06 17:44:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:12.903899
+2025-09-06 17:44:12 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 39 records match 'hpsebl, p' with OR logic
+2025-09-06 17:44:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:13.819691
+2025-09-06 17:44:13 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 5 records match 'hpsebl, pwd' with OR logic
+2025-09-06 17:44:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:20.496319
+2025-09-06 17:44:20 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 0 records match 'hpsebl, pwd' with AND logic
+2025-09-06 17:44:22 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:22.963643
+2025-09-06 17:44:22 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 5 records match 'hpsebl, pwd' with OR logic
+2025-09-06 17:44:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:24.488272
+2025-09-06 17:44:24 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 5 records match 'hpsebl, pwd' with OR logic
+2025-09-06 17:44:32 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:32.885098
+2025-09-06 17:44:32 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 5 records match 'hpsebl, pwd' with OR logic
+2025-09-06 17:44:32 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 2 records match 'un' with OR logic
+2025-09-06 17:44:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:33.378575
+2025-09-06 17:44:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 5 records match 'hpsebl, pwd' with OR logic
+2025-09-06 17:44:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 1 records match 'una' with OR logic
+2025-09-06 17:44:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-06 17:44:37 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:37.294407
+2025-09-06 17:44:48 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:48.599036
+2025-09-06 17:44:49 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:49.666183
+2025-09-06 17:44:50 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:44:50.697253
+2025-09-06 17:45:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying time filter: today
+2025-09-06 17:45:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 50 records closing after 2025-09-06 17:45:15.668332
+2025-09-06 17:45:15 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Time range filter (today) with status (live): 0 records
+2025-09-06 17:45:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: expired
+2025-09-06 17:45:21 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Expired tenders filter: 9766 records closed before 2025-09-06 17:45:21.851450
+2025-09-06 17:45:30 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied custom date range filter: 2025-09-06 00:00:00 to 2025-09-06 11:59:00, 16 records matching

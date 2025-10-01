@@ -1,0 +1,319 @@
+2025-09-27 11:01:33 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250927_110133.log
+2025-09-27 11:01:33 - root - INFO - Application starting...
+2025-09-27 11:01:33 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-27 11:01:33 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-27 11:01:33 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-27 11:01:33 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-27 11:01:34 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-27 11:01:34 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-27 11:01:34 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-27 11:01:34 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-27 11:01:34 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-27 11:01:34 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-27 11:01:34 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-27 11:01:34 - ui.main_window - INFO - Main application initialized
+2025-09-27 11:01:34 - root - INFO - Main window initialized
+2025-09-27 11:01:51 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loaded search configuration: pwd una
+2025-09-27 11:02:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 11:02:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-27 11:02:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1418 records closing after 2025-09-27 11:02:04.617313
+2025-09-27 11:02:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 775 records match 'pwd' with OR logic
+2025-09-27 11:02:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 13 records match 'una' with AND logic
+2025-09-27 11:02:04 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 11:02:14 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:16 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:16 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:18 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:18 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:20 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:20 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:22 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:22 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:24 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:24 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:26 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:28 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:29 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:31 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:31 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:33 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:35 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:37 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:39 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:39 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:41 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:41 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:43 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:02:43 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:47 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:49 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:51 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:54 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:56 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:58 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:02:59 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:03:00 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:03:00 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:02 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:03:02 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:04 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:07 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:08 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:10 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:11 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:12 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:12 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:14 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:14 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:16 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:18 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:18 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:20 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:21 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:23 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:23 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:25 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:25 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:27 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:27 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:29 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:29 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:31 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:31 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:33 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:35 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:37 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:38 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:40 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:40 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:42 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:42 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:44 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:44 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:46 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:46 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:48 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:48 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:50 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:50 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:52 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:52 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:54 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:54 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:56 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:56 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:03:58 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:03:58 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:00 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:01 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:03 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:03 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:05 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:05 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:07 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:07 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:09 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:09 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:11 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:11 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:13 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:13 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:15 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:15 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:17 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:18 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:20 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:20 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:22 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:22 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:24 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:24 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:26 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:28 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:28 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:30 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:30 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:32 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:04:32 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:34 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:36 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:38 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:41 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:43 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:47 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:49 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:51 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:53 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:54 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:04:55 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:04:55 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:57 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:04:57 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:04:59 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:05:00 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:02 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:05:02 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:04 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:05:04 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:04 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:06 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:08 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:10 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:10 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:12 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:12 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:14 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:14 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:16 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:17 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:19 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:19 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:21 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:21 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:23 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:23 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:25 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:25 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:27 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:27 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:29 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:29 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:31 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:31 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:33 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:35 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:37 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:38 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:40 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:40 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:42 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:42 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:44 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:44 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:46 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:46 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:48 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:48 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:50 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:50 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:52 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:52 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:54 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:55 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:57 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:57 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:05:59 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:05:59 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:01 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:01 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:03 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:03 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:05 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:05 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:07 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:07 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:09 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:09 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:11 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:11 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:13 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:14 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:16 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:18 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:18 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:20 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:20 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:22 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:22 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:24 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:24 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:26 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:26 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:28 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:28 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:30 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:30 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:33 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:35 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:37 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:39 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:39 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:41 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:41 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:43 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:43 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:45 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:47 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:47 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:49 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:49 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:51 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:52 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:54 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:54 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-27 11:06:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1418 records closing after 2025-09-27 11:06:55.501063
+2025-09-27 11:06:55 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-27 11:06:56 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:56 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:06:58 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:06:58 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:00 - ui.charts_window - ERROR - Error creating histogram: 'Category'
+2025-09-27 11:07:00 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:00 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:07:02 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:04 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:06 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:08 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:10 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:12 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:14 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:16 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:19 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:21 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:23 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:25 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:27 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:29 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:31 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:33 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:35 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:37 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:39 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:41 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:43 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:45 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:47 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:48 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:07:49 - ui.charts_window - ERROR - Error creating bar chart: 'Category'
+2025-09-27 11:07:50 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:52 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:07:54 - ui.charts_window - INFO - Charts data refreshed from Tree view
+2025-09-27 11:08:15 - core.config_manager - INFO - Configuration saved to G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-27 11:08:17 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Deleted search configuration: pwd una
+2025-09-27 11:08:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1418 records closing after 2025-09-27 11:08:19.719652
+2025-09-27 11:08:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Department filter applied: 775 records match 'pwd' with OR logic
+2025-09-27 11:08:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Global search applied: 13 records match 'una' with AND logic
+2025-09-27 11:08:19 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']

@@ -569,7 +569,7 @@ class TenderDataProcessor:
             "closing_next_3_days": 0,
             "closing_next_7_days": 0,
             "expired_tenders": 0,
-            "live_tenders": 0,  # Add live tenders count
+            "live_tenders": 0,
             "data_sources": 0
         }
         
@@ -593,11 +593,11 @@ class TenderDataProcessor:
                     unique_depts.update(d.strip() for d in depts if d.strip() and d.strip().lower() not in ['nan', 'none', ''])
                 stats["unique_departments"] = len(unique_depts)
             
-            # Date-based stats - ONLY USE CLOSING DATE COLUMNS with precise time handling
+            # Date-based stats - USE CURRENT DATETIME for precise time-aware filtering
             if hasattr(self, 'closing_date_columns') and self.closing_date_columns:
-                current_time = pd.Timestamp.now()  # Use precise timestamp for all calculations
-                today_start = current_time.normalize()
-                today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)
+                current_datetime = pd.Timestamp.now()  # Use precise datetime
+                today_start = current_datetime.normalize()  # Start of today (00:00:00)
+                today_end = today_start + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)  # End of today (23:59:59)
                 
                 for col in self.closing_date_columns:
                     # Skip columns that aren't datetime type
@@ -609,25 +609,25 @@ class TenderDataProcessor:
                     if valid_dates.empty:
                         continue
                         
-                    # Closing today (precise time comparison)
-                    stats["closing_today"] += ((valid_dates[col] >= today_start) & 
-                                            (valid_dates[col] <= today_end)).sum()
+                    # Closing today - from current time until end of today
+                    stats["closing_today"] += ((valid_dates[col] >= current_datetime) & 
+                                              (valid_dates[col] <= today_end)).sum()
                     
-                    # Next 3 days (from now to 3 days ahead)
+                    # Next 3 days - from current time to end of 3 days from today
                     end_3_days = today_start + pd.Timedelta(days=3, hours=23, minutes=59, seconds=59)
-                    stats["closing_next_3_days"] += ((valid_dates[col] >= current_time) & 
-                                                  (valid_dates[col] <= end_3_days)).sum()
+                    stats["closing_next_3_days"] += ((valid_dates[col] >= current_datetime) & 
+                                                    (valid_dates[col] <= end_3_days)).sum()
                     
-                    # Next 7 days (from now to 7 days ahead)
+                    # Next 7 days - from current time to end of 7 days from today
                     end_7_days = today_start + pd.Timedelta(days=7, hours=23, minutes=59, seconds=59)
-                    stats["closing_next_7_days"] += ((valid_dates[col] >= current_time) & 
-                                                  (valid_dates[col] <= end_7_days)).sum()
+                    stats["closing_next_7_days"] += ((valid_dates[col] >= current_datetime) & 
+                                                    (valid_dates[col] <= end_7_days)).sum()
                     
-                    # Expired - closing date/time has passed
-                    stats["expired_tenders"] += (valid_dates[col] < current_time).sum()
+                    # Expired - closing datetime has passed
+                    stats["expired_tenders"] += (valid_dates[col] < current_datetime).sum()
                     
-                    # Live - closing date/time is in the future
-                    stats["live_tenders"] += (valid_dates[col] > current_time).sum()
+                    # Live - closing datetime is in the future
+                    stats["live_tenders"] += (valid_dates[col] > current_datetime).sum()
 
             # Count data sources
             stats["data_sources"] = len(set(self.last_loaded_files))

@@ -1,0 +1,40 @@
+2025-09-28 14:34:26 - root - INFO - Logging to file: G:\My Drive\0dev\Search Utility v3\tender_management_v3\logs\app_20250928_143426.log
+2025-09-28 14:34:26 - root - INFO - Application starting...
+2025-09-28 14:34:26 - ui.main_window.MainApplication - INFO - Initializing MainApplication...
+2025-09-28 14:34:26 - core.config_manager - INFO - Configuration loaded from G:\My Drive\0dev\Search Utility v3\tender_management_v3\config\config.json
+2025-09-28 14:34:26 - ui.main_window.MainApplication - INFO - Global configuration loaded successfully
+2025-09-28 14:34:26 - ui.main_window.MainApplication - INFO - Window geometry set to 1200x800+168+32
+2025-09-28 14:34:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 14:34:27 - ui.calendar_tab.CalendarTab - INFO - CalendarTab initialized
+2025-09-28 14:34:27 - ui.calendar_tab.CalendarTab - INFO - Loaded 12 calendar events from G:\My Drive\0dev\Search Utility v3\tender_management_v3\data\calendar_events.json
+2025-09-28 14:34:27 - ui.tender_tasks_tab.TenderTasksTab - INFO - TenderTasksTab initialized (placeholder)
+2025-09-28 14:34:27 - ui.settings_tab.SettingsTab - INFO - Default column settings initialized
+2025-09-28 14:34:27 - ui.settings_tab.SettingsTab - INFO - Loaded column settings for 18 columns
+2025-09-28 14:34:27 - ui.settings_tab.SettingsTab - INFO - SettingsTab initialized
+2025-09-28 14:34:27 - ui.logs_tab.LogsTab - INFO - Log handler attached to root logger
+2025-09-28 14:34:27 - ui.main_window.MainApplication - INFO - All tabs initialized successfully
+2025-09-28 14:34:27 - ui.main_window - INFO - Main application initialized
+2025-09-28 14:34:27 - root - INFO - Main window initialized
+2025-09-28 14:34:27 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loading last used data source: export_test_data.xlsx
+2025-09-28 14:34:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: []
+2025-09-28 14:34:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 7 columns
+2025-09-28 14:34:31 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 14:34:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 0 records closing after 2025-09-28 14:34:33.911412
+2025-09-28 14:34:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Loaded merged file for analysis: export_test_data.xlsx (15000 records)
+2025-09-28 14:34:33 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Successfully loaded last used data source: export_test_data.xlsx
+2025-09-28 14:34:33 - ui.main_window.MainApplication - INFO - Initial data loaded for Search tab
+2025-09-28 14:34:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 14:34:44 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 14:34:45 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applying status filter: live
+2025-09-28 14:34:45 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Live tenders filter: 1283 records closing after 2025-09-28 14:34:45.062278
+2025-09-28 14:34:45 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Detected URL columns: ['Direct URL', 'Status URL']
+2025-09-28 14:34:45 - ui.search_dashboard_tab.SearchDashboardTab - INFO - Applied column settings to treeview: 11 columns
+2025-09-28 14:34:49 - ui.settings_tab.SettingsTab - INFO - Settings tab selected and refreshed
+2025-09-28 14:35:11 - ui.benchmark_window.BenchmarkWindow - INFO - Matplotlib charts initialized successfully
+2025-09-28 14:35:11 - ui.benchmark_window.BenchmarkWindow - INFO - Benchmark window initialized
+2025-09-28 14:35:11 - ui.settings_tab.SettingsTab - INFO - Benchmark window opened from settings
+2025-09-28 14:35:25 - ui.benchmark_window.BenchmarkWindow - INFO - Real-time monitoring started
+2025-09-28 14:53:28 - ui.benchmark_window.BenchmarkWindow - INFO - Benchmark window closed
+2025-09-28 14:57:45 - ui.benchmark_window.BenchmarkWindow - INFO - Matplotlib charts initialized successfully
+2025-09-28 14:57:45 - ui.benchmark_window.BenchmarkWindow - INFO - Benchmark window initialized
+2025-09-28 14:57:45 - ui.settings_tab.SettingsTab - INFO - Benchmark window opened from settings
