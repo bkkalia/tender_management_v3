@@ -1,0 +1,114 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer distributions
+*.exe
+*.msi
+*.dmg
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Build artifacts
+build/
+dist/
+
+# Test outputs
+test_output/
+*.xlsx
+*.csv
+
+# Benchmark artifacts (keep reports, ignore generated files)
+benchmark/*.log
+benchmark/*.tmp
+benchmark/cache/
+
+# Performance data (optional - comment out if you want to keep)
+# benchmark/*.json
+# benchmark/*.png
+
+# Node modules (if any)
+node_modules/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets and config
+secrets.json
+config/local_config.json
+.env.local
+
+# Backup files
+*.bak
+*.backup
+*~
