@@ -1,0 +1,41 @@
+include README.md
+include LICENSE
+include requirements.txt
+include requirements-dev.txt
+include .pre-commit-config.yaml
+
+# Documentation
+recursive-include docs *.md
+recursive-include docs *.txt
+
+# Benchmark data (reports only, not scripts)
+include benchmark/*.json
+include benchmark/*.png
+
+# Configuration files
+include config/*.json
+include config/*.yaml
+include config/*.yml
+
+# Data files
+include data/*.json
+include data/*.xlsx
+include data/*.csv
+
+# Resources
+recursive-include resources *
+
+# Exclude development files
+exclude .gitignore
+exclude .pre-commit-config.yaml
+exclude pyproject.toml
+exclude .github/
+exclude tests/
+exclude benchmark/
+exclude scripts/
+exclude tools/
+exclude docs/
+global-exclude *.pyc
+global-exclude __pycache__/
+global-exclude *.log
+global-exclude .DS_Store
